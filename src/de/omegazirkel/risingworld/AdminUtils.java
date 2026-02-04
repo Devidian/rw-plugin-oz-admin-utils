@@ -7,6 +7,7 @@ import de.omegazirkel.risingworld.adminutils.DiscordConnect;
 import de.omegazirkel.risingworld.adminutils.PluginGUI;
 import de.omegazirkel.risingworld.adminutils.PluginSettings;
 import de.omegazirkel.risingworld.adminutils.ui.AdminUtilsPlayerPluginSettings;
+import de.omegazirkel.risingworld.tools.AreaUtils;
 import de.omegazirkel.risingworld.tools.Colors;
 import de.omegazirkel.risingworld.tools.FileChangeListener;
 import de.omegazirkel.risingworld.tools.I18n;
@@ -22,13 +23,23 @@ import net.risingworld.api.Server;
 import net.risingworld.api.definitions.Npcs;
 import net.risingworld.api.events.EventMethod;
 import net.risingworld.api.events.Listener;
+import net.risingworld.api.events.npc.NpcDamageEvent;
+import net.risingworld.api.events.npc.NpcDamageEvent.Cause;
 import net.risingworld.api.events.npc.NpcRemoveSaddleBagEvent;
 import net.risingworld.api.events.npc.NpcRemoveSaddleEvent;
+import net.risingworld.api.events.player.PlayerChangeStateEvent;
 import net.risingworld.api.events.player.PlayerCommandEvent;
+import net.risingworld.api.events.player.PlayerHitNpcEvent;
 import net.risingworld.api.events.player.PlayerMountNpcEvent;
+import net.risingworld.api.events.player.PlayerNpcInteractionEvent;
 import net.risingworld.api.events.player.PlayerSpawnEvent;
+import net.risingworld.api.objects.Area;
 import net.risingworld.api.objects.Npc;
 import net.risingworld.api.objects.Player;
+import net.risingworld.api.objects.Player.State;
+import net.risingworld.api.objects.Time.Unit;
+import net.risingworld.api.utils.Vector3i;
+import net.risingworld.api.utils.Utils.ChunkUtils;
 
 public class AdminUtils extends Plugin implements Listener, FileChangeListener {
 	static final String pluginCMD = "au";
@@ -135,6 +146,62 @@ public class AdminUtils extends Plugin implements Listener, FileChangeListener {
 		}
 	}
 
+	@EventMethod
+	public void onPlayerChangeStateEvent(PlayerChangeStateEvent event) {
+		State fromState = event.getOldState();
+		State toState = event.getNewState();
+		Player player = event.getPlayer();
+		if (fromState == State.Sleeping || toState == State.Sleeping) {
+			handleSleepState(player, fromState, toState);
+		}
+	}
+
+	private void handleSleepState(Player player, State fromState, State toState) {
+		if (!s.enableSleepAnnouncement)
+			return;
+		int currentGameHour = Server.getGameTime(Unit.Hours);
+		// only working between 21:00 and 7:00
+		if (toState == State.Sleeping && currentGameHour < (int) s.upperSleepTimeHour
+				&& currentGameHour > (int) s.lowerSleepTimeHour) {
+			player.sendTextMessage(t().get("TC_SLEEP_DAYTIME", player)
+					.replace("PH_UPPER_HOUR", s.upperSleepTimeHour + "")
+					.replace("PH_LOWER_HOUR", s.lowerSleepTimeHour + ""));
+			return;
+		}
+		String translateKey = "";
+		if (fromState == State.Sleeping) {
+			translateKey = "TC_PLAYER_STATE_AWAKE";
+		}
+		if (toState == State.Sleeping) {
+			translateKey = "TC_PLAYER_STATE_SLEEPING";
+		}
+		for (Player p : Server.getAllPlayers()) {
+			p.sendTextMessage(t().get(translateKey, p).replace("PH_PLAYER_NAME", player.getName()));
+			if (toState == State.Sleeping)
+				checkPlayerIdleTime(p);
+		}
+	}
+
+	private void checkPlayerIdleTime(Player player) {
+		int idleTime = player.getIdleTime();
+		if (!s.enableSleepKickAFKPlayer)
+			return;
+		if (idleTime > 30) {
+			player.sendTextMessage(t().get("TC_IDLE_WARN", player));
+		}
+		if (idleTime > s.afkPlayerSleepTimeoutSeconds) {
+			player.kick(t().get("TC_IDLE_KICK", player));
+			for (Player p : Server.getAllPlayers()) {
+
+				p.sendTextMessage(t().get("TC_PLAYER_STATE_IDLE", p)
+						.replace("PH_PLAYER_NAME", player.getName())
+						.replace("PH_IDLE_TIME", idleTime + ""));
+
+			}
+
+		}
+	}
+
 	private boolean verifyPlayerMountInteraction(Player player, Npc mount) {
 		String mountName = mount.getName();
 		String mountOwnershipPrefix = player.getDbID() + "::";
@@ -154,6 +221,7 @@ public class AdminUtils extends Plugin implements Listener, FileChangeListener {
 		mount.setName(playerMountName);
 		mount.setInvincible(true);
 		player.sendTextMessage(t().get("TC_MOUNT_CLAIMED", player));
+		logger().info("ℹ️ Player " + player.getName() + " claimed a mount (id:" + mount.getGlobalID() + ")");
 		return true;
 	}
 
@@ -235,12 +303,79 @@ public class AdminUtils extends Plugin implements Listener, FileChangeListener {
 	}
 
 	@EventMethod
+	public void onNpcDamageEvent(NpcDamageEvent event) {
+		Npc npc = event.getNpc();
+		Cause cause = event.getCause();
+		Boolean isAnimal = npc.getDefinition().type == Npcs.Type.Animal;
+		// we only want to check for animals
+		if (!isAnimal)
+			return;
+		// we only want to protect player damage
+		if (cause != Cause.HitByPlayer && cause != Cause.ShotByPlayer)
+			return;
+		Vector3i chunkPos = ChunkUtils.getChunkPosition(npc.getPosition());
+		Area vArea = AreaUtils.getVirtualAreaFromChunkVector(chunkPos);
+		Area area = AreaUtils.isAreaIntersecting(vArea);
+		// we only check in areas not in the public world
+		if (area == null) {
+			return;
+		}
+
+		Player lastAttacker = (Player) npc.getAttribute("lastAttacker");
+		if (lastAttacker != null) {
+			Boolean canHurt = (Boolean) lastAttacker.getPermissionValue("general_pve", true);
+			if (!canHurt) {
+				event.setCancelled(true);
+			} else {
+				logger().warn("Animal in Area " + area.getName() + " was hurt by " + lastAttacker.getName());
+			}
+		}
+	}
+
+	@EventMethod
+	public void onPlayerHitNpcEvent(PlayerHitNpcEvent event) {
+
+		Npc npc = event.getNpc();
+		Server.broadcastTextMessage("NPC " + npc.getTypeID() + " is beeing hit");
+		Player player = event.getPlayer();
+		npc.setAttribute("lastAttacker", player);
+	}
+
+	@EventMethod
+	public void onPlayerNpcInteractionEvent(PlayerNpcInteractionEvent event) {
+		Npc npc = event.getNpc();
+		Player player = event.getPlayer();
+		Boolean isAnimal = npc.getDefinition().type == Npcs.Type.Animal;
+		// we only want to check for animals
+		if (!isAnimal)
+			return;
+		Vector3i chunkPos = ChunkUtils.getChunkPosition(npc.getPosition());
+		Area vArea = AreaUtils.getVirtualAreaFromChunkVector(chunkPos);
+		Area area = AreaUtils.isAreaIntersecting(vArea);
+		// we only check in areas not in the public world
+		if (area == null) {
+			return;
+		}
+
+		Boolean canInteract = (Boolean) player.getPermissionValue("general_pickupitems", true);
+
+		if (!canInteract) {
+			logger().info("Player " + player.getName() + " tried to interact with npc:" + npc.getGlobalID()
+					+ " in area " + area.getName() + " (id: " + area.getID() + ") (chunk: " + chunkPos.toString()
+					+ ")");
+			player.sendTextMessage(t().get("TC_ANIMAL_PROTECTED_INTERACTION", player));
+			event.setCancelled(true);
+		}
+	}
+
+	@EventMethod
 	public void onPlayerMountNpcEvent(PlayerMountNpcEvent event) {
 		Npc npc = event.getNpc();
 		Player player = event.getPlayer();
 		Boolean isMount = npc.getDefinition().type == Npcs.Type.Mount;
 		if (!isMount)
 			return;
+
 		Boolean isOwner = verifyPlayerMountInteraction(player, npc);
 
 		if (isOwner)

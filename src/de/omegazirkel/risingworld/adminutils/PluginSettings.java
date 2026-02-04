@@ -29,10 +29,17 @@ public class PluginSettings {
 	public boolean punishMountTheft = false;
 	public boolean logTheftAttempt = true;
 
+	// Sleeping feature
+	public boolean enableSleepAnnouncement = false;
+	public boolean enableSleepKickAFKPlayer = false;
+	public int afkPlayerSleepTimeoutSeconds = 300;
+	public int afkPlayerSleepWarnSeconds = 60;
+	public short upperSleepTimeHour = 21;
+	public short lowerSleepTimeHour = 7;
+
 	// Discord Settings
 	public boolean enableDiscordTheftReport = false;
 	public long discordTheftReportChannelId = 0;
-
 
 	// END Settings
 
@@ -82,18 +89,23 @@ public class PluginSettings {
 			// motd settings
 			enableWelcomeMessage = settings.getProperty("enableWelcomeMessage", "false").contentEquals("true");
 
-
 			punishMountTheft = settings.getProperty("punishMountTheft", "false").contentEquals("true");
 			logTheftAttempt = settings.getProperty("logTheftAttempt", "true").contentEquals("true");
+			enableSleepAnnouncement = settings.getProperty("enableSleepAnnouncement", "false").contentEquals("true");
+			enableSleepKickAFKPlayer = settings.getProperty("enableSleepKickAFKPlayer", "false").contentEquals("true");
+			afkPlayerSleepTimeoutSeconds = Integer
+					.parseInt(settings.getProperty("afkPlayerSleepTimeoutSeconds", "300"));
+			afkPlayerSleepWarnSeconds = Integer.parseInt(settings.getProperty("afkPlayerSleepWarnSeconds", "60"));
+			upperSleepTimeHour = Short.parseShort(settings.getProperty("upperSleepTimeHour", "21"));
+			lowerSleepTimeHour = Short.parseShort(settings.getProperty("lowerSleepTimeHour", "7"));
 
 			// discord settings
 			enableDiscordTheftReport = settings.getProperty("enableDiscordTheftReport", "false").contentEquals("true");
 			discordTheftReportChannelId = Long.parseLong(settings.getProperty("discordTheftReportChannelId", "0"));
 
-
-
 			logger().info(plugin.getName() + " Plugin settings loaded");
 			logger().info("Sending welcome message on login is: " + String.valueOf(enableWelcomeMessage));
+			logger().info("enableSleepAnnouncement is: " + enableSleepAnnouncement);
 			logger().info("Loglevel is set to " + logLevel);
 			logger().setLevel(logLevel);
 

@@ -18,8 +18,7 @@ public class PluginGUI {
 
     public static PluginGUI getInstance(Plugin p) {
 
-        // FIXME: rename this for a new plugin
-        AssetManager.loadIconFromPlugin(p, "template-icon");
+        AssetManager.loadIconFromPlugin(p, "oz-admin-utils-logo");
 
         return getInstance();
     }
