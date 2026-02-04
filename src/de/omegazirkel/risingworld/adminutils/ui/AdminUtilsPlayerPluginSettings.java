@@ -1,15 +1,15 @@
-package de.omegazirkel.risingworld.template.ui;
+package de.omegazirkel.risingworld.adminutils.ui;
 
-import de.omegazirkel.risingworld.MavenTemplate;
+import de.omegazirkel.risingworld.AdminUtils;
 import de.omegazirkel.risingworld.tools.ui.BasePlayerPluginSettingsPanel;
 import de.omegazirkel.risingworld.tools.ui.PlayerPluginSettings;
 import net.risingworld.api.objects.Player;
 import net.risingworld.api.ui.UILabel;
 
-public class TemplatePlayerPluginSettings extends PlayerPluginSettings {
+public class AdminUtilsPlayerPluginSettings extends PlayerPluginSettings {
 
-    public TemplatePlayerPluginSettings() {
-        this.pluginLabel = MavenTemplate.name;
+    public AdminUtilsPlayerPluginSettings() {
+        this.pluginLabel = AdminUtils.name;
     }
 
     @Override
@@ -19,8 +19,8 @@ public class TemplatePlayerPluginSettings extends PlayerPluginSettings {
             @Override
             protected void redrawContent() {
                 flexWrapper.removeAllChilds();
-                // TODO: implement actual settings content for MavenTemplate plugin
-                UILabel placeholderLabel = new UILabel("MavenTemplate plugin settings will be here.");
+                // TODO: implement actual settings content for AdminUtils plugin
+                UILabel placeholderLabel = new UILabel("Currently no player plugin settings available.");
                 flexWrapper.addChild(placeholderLabel);
             }
 

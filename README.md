@@ -1,22 +1,11 @@
-# Maven Plugin Template for Rising World
+# Server administration utilities plugin for rising world
 
-Use this repository as template for new Rising World Plugins.
+Collection of utilities to help server admins to manage their servers (logging, anti griefer, etc)
 
-## Files included
+## Current features
 
-- [.github/workflows/ci.yml](.github/workflows/ci.yml)
-  - for GitHub Action, you have to change `Devidian/rw-plugin-maven-template` here (2x)
-- [src/assembly/rw-plugin-maven-template.xml](src/assembly/rw-plugin-maven-template.xml)
-  - this is needed to pack you plugin as zip, change atleast directory/outputDirectory here
-  - change name to your `pom.project.artifactId`
-  - i use `pom.project.name` for directory/outputDirectory
-- [src/resources/plugin.yml](src/resources/plugin.yml)
-  - your plugin definition file, change as you need
-- [src/de/omegazirkel/risingworld/MavenTemplate.java](src/de/omegazirkel/risingworld/MavenTemplate.java)
-  - sample main file for your plugin, change name and path as you need (dont forget to change it in plugin.yml too)
-- [pom.xml](pom.xml)
-  - maven file, change as you need it
-- [HISTORY.md](HISTORY.md)
-  - for your changelog
-- [README.md](README.md)
-  - this file, override it as you like
+### Mount protection
+
+If you interact with a mount the first time, it will be named with [PLAYER_ID]::[PLAYER_NAME] and now its yours.
+
+If anyone else tries to interact with it, they will be warned and for every additional attempt they are punished more until ban.

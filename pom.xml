@@ -7,10 +7,10 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.github.devidian</groupId>
-    <artifactId>rw-plugin-maven-template</artifactId>
-    <version>0.0.0</version>
+    <artifactId>rw-plugin-oz-admin-utils</artifactId>
+    <version>0.1.0</version>
 
-    <name>MavenTemplate</name>
+    <name>OZAdminUtils</name>
     <description>No description yet</description>
 
     <!-- Repositories -->
@@ -63,7 +63,7 @@
         <dependency>
             <groupId>com.github.devidian</groupId>
             <artifactId>rw-plugin-oz-tools</artifactId>
-            <version>0.14.0</version>
+            <version>0.15.0</version>
         </dependency>
 
         <!-- Rising World PluginAPI -->

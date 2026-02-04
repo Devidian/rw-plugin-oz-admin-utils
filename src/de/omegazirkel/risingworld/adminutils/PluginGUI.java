@@ -1,4 +1,4 @@
-package de.omegazirkel.risingworld.template;
+package de.omegazirkel.risingworld.adminutils;
 
 import java.util.ArrayList;
 import java.util.List;

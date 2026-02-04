@@ -1,4 +1,4 @@
-package de.omegazirkel.risingworld.template;
+package de.omegazirkel.risingworld.adminutils;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -10,26 +10,27 @@ import java.util.Properties;
 
 import org.apache.logging.log4j.Level;
 
-import de.omegazirkel.risingworld.MavenTemplate;
+import de.omegazirkel.risingworld.AdminUtils;
 import de.omegazirkel.risingworld.tools.OZLogger;
 
 public class PluginSettings {
 	private static PluginSettings instance = null;
 
-	private static MavenTemplate plugin;
+	private static AdminUtils plugin;
 
 	private static OZLogger logger() {
-		return OZLogger.getInstance("MavenTemplate.Settings");
+		return OZLogger.getInstance("OZ.AdminUtils.Settings");
 	}
 
 	// Settings
 	public String logLevel = Level.DEBUG.name();
 	public boolean reloadOnChange = false;
 	public boolean enableWelcomeMessage = false;
+	public boolean punishMountTheft = false;
 
 	// END Settings
 
-	public static PluginSettings getInstance(MavenTemplate p) {
+	public static PluginSettings getInstance(AdminUtils p) {
 		plugin = p;
 		return getInstance();
 	}
@@ -73,7 +74,8 @@ public class PluginSettings {
 			reloadOnChange = settings.getProperty("reloadOnChange", "false").contentEquals("true");
 
 			// motd settings
-			enableWelcomeMessage = settings.getProperty("sendPluginWelcome", "false").contentEquals("true");
+			enableWelcomeMessage = settings.getProperty("enableWelcomeMessage", "false").contentEquals("true");
+			punishMountTheft = settings.getProperty("punishMountTheft", "false").contentEquals("true");
 
 			logger().info(plugin.getName() + " Plugin settings loaded");
 			logger().info("Sending welcome message on login is: " + String.valueOf(enableWelcomeMessage));
