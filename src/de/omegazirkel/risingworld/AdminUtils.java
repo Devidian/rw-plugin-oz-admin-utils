@@ -140,11 +140,11 @@ public class AdminUtils extends Plugin implements Listener, FileChangeListener {
 		String mountOwnershipPrefix = player.getDbID() + "::";
 
 		// the player is owner if the name matches (attributes will vanish on restart)
-		if (mountName.startsWith(mountOwnershipPrefix))
+		if (mountName != null && mountName.startsWith(mountOwnershipPrefix))
 			return true;
 
 		// someone else has ownership
-		if (mountName.contains("::"))
+		if (mountName != null && mountName.contains("::"))
 			return false;
 
 		// If mount has no name register it to the player
