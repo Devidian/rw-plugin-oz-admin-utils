@@ -4,6 +4,8 @@
 
 ## [unreleased]
 
+- refactor: allow custom names after ownership-prefix
+
 ## [0.2.0] - 2026-02-04 | Discord integration and logging
 
 - feat: DiscordConnect integration (optional, default off)

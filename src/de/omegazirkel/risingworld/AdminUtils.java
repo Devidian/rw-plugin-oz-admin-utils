@@ -64,8 +64,8 @@ public class AdminUtils extends Plugin implements Listener, FileChangeListener {
 						new MenuItem(AssetManager.getIcon("oz-admin-utils-logo"), "Admin Utils", (Player p) -> {
 							gui.openMainMenu(p);
 						}));
-        // connect plugins
-        DiscordConnect.init(this);
+		// connect plugins
+		DiscordConnect.init(this);
 		// register plugin settings
 		PlayerPluginSettingsOverlay.registerPlayerPluginSettings(new AdminUtilsPlayerPluginSettings());
 		logger().info("✅ " + this.getName() + " Plugin is enabled version:" + this.getDescription("version"));
@@ -137,20 +137,24 @@ public class AdminUtils extends Plugin implements Listener, FileChangeListener {
 
 	private boolean verifyPlayerMountInteraction(Player player, Npc mount) {
 		String mountName = mount.getName();
-		String playerMountName = player.getDbID() + "::" + player.getName();
+		String mountOwnershipPrefix = player.getDbID() + "::";
+
+		// the player is owner if the name matches (attributes will vanish on restart)
+		if (mountName.startsWith(mountOwnershipPrefix))
+			return true;
+
+		// someone else has ownership
+		if (mountName.contains("::"))
+			return false;
 
 		// If mount has no name register it to the player
-		if (mountName == null || mountName.length() == 0) {
-			mount.setName(playerMountName);
-			mount.setInvincible(true);
-			player.sendTextMessage(t().get("TC_MOUNT_CLAIMED", player));
-			return true;
-		}
-		// the player is owner if the name matches (attributes will vanish on restart)
-		if (mountName.contains(playerMountName))
-			return true;
+		String playerMountName = mountOwnershipPrefix
+				+ ((mountName == null || mountName.length() == 0) ? player.getName() : mountName);
 
-		return false;
+		mount.setName(playerMountName);
+		mount.setInvincible(true);
+		player.sendTextMessage(t().get("TC_MOUNT_CLAIMED", player));
+		return true;
 	}
 
 	private void punishMountTheft(Player player, Npc mount) {
@@ -243,8 +247,8 @@ public class AdminUtils extends Plugin implements Listener, FileChangeListener {
 			return;
 
 		if (s.logTheftAttempt) {
-			logger().warn("⚠️ Player " + player.getName() + " attempted to steal mount " + npc.getName() + " (id:"
-					+ npc.getGlobalID() + ")");
+			logger().warn("⚠️ Player " + player.getName() + " attempted to steal mount "
+					+ npc.getName() + " (id:" + npc.getGlobalID() + ")");
 		}
 
 		if (s.punishMountTheft)
@@ -267,8 +271,8 @@ public class AdminUtils extends Plugin implements Listener, FileChangeListener {
 
 		if (s.logTheftAttempt) {
 			logger().warn(
-					"⚠️ Player " + player.getName() + " attempted to steal saddle of mount " + npc.getName() + " (id:"
-							+ npc.getGlobalID() + ")");
+					"⚠️ Player " + player.getName() + " attempted to steal saddle of mount "
+							+ npc.getName() + " (id:" + npc.getGlobalID() + ")");
 		}
 
 		if (s.punishMountTheft)
@@ -291,8 +295,8 @@ public class AdminUtils extends Plugin implements Listener, FileChangeListener {
 
 		if (s.logTheftAttempt) {
 			logger().warn(
-					"⚠️ Player " + player.getName() + " attempted to steal saddlebag of mount " + npc.getName() + " (id:"
-							+ npc.getGlobalID() + ")");
+					"⚠️ Player " + player.getName() + " attempted to steal saddlebag of mount "
+							+ npc.getName() + " (id:" + npc.getGlobalID() + ")");
 		}
 
 		if (s.punishMountTheft)
