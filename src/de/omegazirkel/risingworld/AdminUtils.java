@@ -3,6 +3,7 @@ package de.omegazirkel.risingworld;
 import java.nio.file.Path;
 import java.sql.Connection;
 
+import de.omegazirkel.risingworld.adminutils.DiscordConnect;
 import de.omegazirkel.risingworld.adminutils.PluginGUI;
 import de.omegazirkel.risingworld.adminutils.PluginSettings;
 import de.omegazirkel.risingworld.adminutils.ui.AdminUtilsPlayerPluginSettings;
@@ -63,6 +64,8 @@ public class AdminUtils extends Plugin implements Listener, FileChangeListener {
 						new MenuItem(AssetManager.getIcon("oz-admin-utils-logo"), "Admin Utils", (Player p) -> {
 							gui.openMainMenu(p);
 						}));
+        // connect plugins
+        DiscordConnect.init(this);
 		// register plugin settings
 		PlayerPluginSettingsOverlay.registerPlayerPluginSettings(new AdminUtilsPlayerPluginSettings());
 		logger().info("✅ " + this.getName() + " Plugin is enabled version:" + this.getDescription("version"));
@@ -132,7 +135,7 @@ public class AdminUtils extends Plugin implements Listener, FileChangeListener {
 		}
 	}
 
-	private boolean handlePlayerMountInteraction(Player player, Npc mount) {
+	private boolean verifyPlayerMountInteraction(Player player, Npc mount) {
 		String mountName = mount.getName();
 		String playerMountName = player.getDbID() + "::" + player.getName();
 
@@ -146,9 +149,11 @@ public class AdminUtils extends Plugin implements Listener, FileChangeListener {
 		// the player is owner if the name matches (attributes will vanish on restart)
 		if (mountName.contains(playerMountName))
 			return true;
-		if (!s.punishMountTheft)
-			return false;
 
+		return false;
+	}
+
+	private void punishMountTheft(Player player, Npc mount) {
 		// if we are still here, we need to punish the player for theft
 		mount.playAlertSound();
 		Integer playerTheftKicked = ps.getInt(player.getDbID(), "oz.adminutils.theftkick").orElse(0);
@@ -172,9 +177,11 @@ public class AdminUtils extends Plugin implements Listener, FileChangeListener {
 
 		if (playerTheftAttempt > 5) {
 			player.kill();
-			Server.broadcastTextMessage(t().get("TC_THEFT_KILL", player)
+			String message = t().get("TC_THEFT_KILL", player)
 					.replace("PH_PLAYER_NAME", player.getName())
-					.replace("PH_MOUNT_NAME", mount.getName()));
+					.replace("PH_MOUNT_NAME", mount.getName());
+			DiscordConnect.sendDiscordTheftReport(message);
+			Server.broadcastTextMessage(message);
 		}
 		if (playerTheftAttempt > 6) {
 			playerTheftKicked++;
@@ -204,21 +211,23 @@ public class AdminUtils extends Plugin implements Listener, FileChangeListener {
 				}
 
 				player.ban(t().get("TC_THEFT_BAN_" + playerTheftKicked.toString(), player), durationSeconds);
-
-				Server.broadcastTextMessage(t().get("TC_THEFT_BANNED_" + playerTheftKicked.toString(), player)
+				String message = t().get("TC_THEFT_BANNED_" + playerTheftKicked.toString(), player)
 						.replace("PH_PLAYER_NAME", player.getName())
-						.replace("PH_MOUNT_NAME", mount.getName()));
+						.replace("PH_MOUNT_NAME", mount.getName());
+				DiscordConnect.sendDiscordTheftReport(message);
+				Server.broadcastTextMessage(message);
 			} else {
-
+				// the thief has some more tries next login ... reset theft counter
+				mount.setAttribute("theftCounter", 0);
 				player.kick(t().get("TC_THEFT_KICK", player));
-
-				Server.broadcastTextMessage(t().get("TC_THEFT_KICKED", player)
+				String message = t().get("TC_THEFT_KICKED", player)
 						.replace("PH_PLAYER_NAME", player.getName())
-						.replace("PH_MOUNT_NAME", mount.getName()));
+						.replace("PH_MOUNT_NAME", mount.getName());
+				DiscordConnect.sendDiscordTheftReport(message);
+				Server.broadcastTextMessage(message);
 			}
 
 		}
-		return false;
 	}
 
 	@EventMethod
@@ -228,10 +237,18 @@ public class AdminUtils extends Plugin implements Listener, FileChangeListener {
 		Boolean isMount = npc.getDefinition().type == Npcs.Type.Mount;
 		if (!isMount)
 			return;
-		Boolean isOwner = handlePlayerMountInteraction(player, npc);
+		Boolean isOwner = verifyPlayerMountInteraction(player, npc);
 
 		if (isOwner)
 			return;
+
+		if (s.logTheftAttempt) {
+			logger().warn("⚠️ Player " + player.getName() + " attempted to steal mount " + npc.getName() + " (id:"
+					+ npc.getGlobalID() + ")");
+		}
+
+		if (s.punishMountTheft)
+			punishMountTheft(player, npc);
 
 		event.setCancelled(true);
 	}
@@ -243,10 +260,19 @@ public class AdminUtils extends Plugin implements Listener, FileChangeListener {
 		Boolean isMount = npc.getDefinition().type == Npcs.Type.Mount;
 		if (!isMount)
 			return;
-		Boolean isOwner = handlePlayerMountInteraction(player, npc);
+		Boolean isOwner = verifyPlayerMountInteraction(player, npc);
 
 		if (isOwner)
 			return;
+
+		if (s.logTheftAttempt) {
+			logger().warn(
+					"⚠️ Player " + player.getName() + " attempted to steal saddle of mount " + npc.getName() + " (id:"
+							+ npc.getGlobalID() + ")");
+		}
+
+		if (s.punishMountTheft)
+			punishMountTheft(player, npc);
 
 		event.setCancelled(true);
 	}
@@ -258,10 +284,19 @@ public class AdminUtils extends Plugin implements Listener, FileChangeListener {
 		Boolean isMount = npc.getDefinition().type == Npcs.Type.Mount;
 		if (!isMount)
 			return;
-		Boolean isOwner = handlePlayerMountInteraction(player, npc);
+		Boolean isOwner = verifyPlayerMountInteraction(player, npc);
 
 		if (isOwner)
 			return;
+
+		if (s.logTheftAttempt) {
+			logger().warn(
+					"⚠️ Player " + player.getName() + " attempted to steal saddlebag of mount " + npc.getName() + " (id:"
+							+ npc.getGlobalID() + ")");
+		}
+
+		if (s.punishMountTheft)
+			punishMountTheft(player, npc);
 
 		event.setCancelled(true);
 	}

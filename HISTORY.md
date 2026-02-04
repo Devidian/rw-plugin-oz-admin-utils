@@ -4,6 +4,12 @@
 
 ## [unreleased]
 
+## [0.2.0] - 2026-02-04 | Discord integration and logging
+
+- feat: DiscordConnect integration (optional, default off)
+- feat: log theft attempts (default on)
+- fix: missing english translations
+
 ## [0.1.0] - 2026-02-04 | Initial commit / mount theft protection
 
 - feat: mount theft protection

@@ -1,6 +1,6 @@
 name: "OZ - Admin Utils"
 main: de.omegazirkel.risingworld.AdminUtils
-version: 0.1.0
+version: 0.2.0
 author: "Maik 'Devidian' Laschober"
 team: "Omega Zirkel"
 description: "Server administration utilities for Rising World"

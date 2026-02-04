@@ -27,6 +27,12 @@ public class PluginSettings {
 	public boolean reloadOnChange = false;
 	public boolean enableWelcomeMessage = false;
 	public boolean punishMountTheft = false;
+	public boolean logTheftAttempt = true;
+
+	// Discord Settings
+	public boolean enableDiscordTheftReport = false;
+	public long discordTheftReportChannelId = 0;
+
 
 	// END Settings
 
@@ -75,7 +81,16 @@ public class PluginSettings {
 
 			// motd settings
 			enableWelcomeMessage = settings.getProperty("enableWelcomeMessage", "false").contentEquals("true");
+
+
 			punishMountTheft = settings.getProperty("punishMountTheft", "false").contentEquals("true");
+			logTheftAttempt = settings.getProperty("logTheftAttempt", "true").contentEquals("true");
+
+			// discord settings
+			enableDiscordTheftReport = settings.getProperty("enableDiscordTheftReport", "false").contentEquals("true");
+			discordTheftReportChannelId = Long.parseLong(settings.getProperty("discordTheftReportChannelId", "0"));
+
+
 
 			logger().info(plugin.getName() + " Plugin settings loaded");
 			logger().info("Sending welcome message on login is: " + String.valueOf(enableWelcomeMessage));
