@@ -21,18 +21,29 @@ import de.omegazirkel.risingworld.tools.ui.PluginMenuManager;
 import net.risingworld.api.Plugin;
 import net.risingworld.api.Server;
 import net.risingworld.api.definitions.Npcs;
+import net.risingworld.api.definitions.Npcs.Behaviour;
+import net.risingworld.api.definitions.WeatherDefs;
 import net.risingworld.api.events.EventMethod;
 import net.risingworld.api.events.Listener;
 import net.risingworld.api.events.npc.NpcDamageEvent;
 import net.risingworld.api.events.npc.NpcDamageEvent.Cause;
+import net.risingworld.api.events.npc.NpcDeathEvent;
 import net.risingworld.api.events.npc.NpcRemoveSaddleBagEvent;
 import net.risingworld.api.events.npc.NpcRemoveSaddleEvent;
 import net.risingworld.api.events.player.PlayerChangeStateEvent;
 import net.risingworld.api.events.player.PlayerCommandEvent;
+import net.risingworld.api.events.player.PlayerConnectEvent;
+import net.risingworld.api.events.player.PlayerDeathEvent;
+import net.risingworld.api.events.player.PlayerDisconnectEvent;
 import net.risingworld.api.events.player.PlayerHitNpcEvent;
 import net.risingworld.api.events.player.PlayerMountNpcEvent;
 import net.risingworld.api.events.player.PlayerNpcInteractionEvent;
 import net.risingworld.api.events.player.PlayerSpawnEvent;
+import net.risingworld.api.events.player.PlayerTeleportEvent;
+import net.risingworld.api.events.player.world.PlayerDestroyObjectEvent;
+import net.risingworld.api.events.player.world.PlayerRemoveObjectEvent;
+import net.risingworld.api.events.world.SeasonChangeEvent;
+import net.risingworld.api.events.world.WeatherChangeEvent;
 import net.risingworld.api.objects.Area;
 import net.risingworld.api.objects.Npc;
 import net.risingworld.api.objects.Player;
@@ -40,6 +51,7 @@ import net.risingworld.api.objects.Player.State;
 import net.risingworld.api.objects.Time.Unit;
 import net.risingworld.api.utils.Vector3i;
 import net.risingworld.api.utils.Utils.ChunkUtils;
+import net.risingworld.api.utils.Vector3f;
 
 public class AdminUtils extends Plugin implements Listener, FileChangeListener {
 	static final String pluginCMD = "au";
@@ -53,6 +65,10 @@ public class AdminUtils extends Plugin implements Listener, FileChangeListener {
 
 	public static OZLogger logger() {
 		return OZLogger.getInstance("OZ.AdminUtils");
+	}
+
+	public static OZLogger eventLogger() {
+		return OZLogger.getInstance("OZ.AdminUtils.EventTracking");
 	}
 
 	private final I18n t() {
@@ -438,6 +454,209 @@ public class AdminUtils extends Plugin implements Listener, FileChangeListener {
 			punishMountTheft(player, npc);
 
 		event.setCancelled(true);
+	}
+
+	// Event tracking (previously handled in DiscordConnect)
+
+	@EventMethod
+	public void onPlayerDeath(PlayerDeathEvent event) {
+		Player player = event.getPlayer();
+		String message = t.get("TC_EVENT_PLAYER_DEATH", DiscordConnect.botLang())
+				.replace("PH_PLAYER", player.getName())
+				.replace("PH_CAUSE", event.getCause().toString())
+				.replace("PH_LOCATION", event.getDeathPosition().toString().replaceAll("[,()]", ""));
+
+		if (s.enablePlayerDeathLogging)
+			eventLogger().info(message);
+		if (s.discordPlayerDeathChannelId != 0)
+			DiscordConnect.sendDiscordMessage(message, s.discordPlayerDeathChannelId);
+	}
+
+	@EventMethod
+	public void onPlayerConnect(PlayerConnectEvent event) {
+		Player player = event.getPlayer();
+		if (s.enablePlayerStatusLogging)
+			eventLogger().info("Player " + player.getName() + " connected at "
+					+ player.getPosition().toString().replaceAll("[,()]", ""));
+
+		if (s.discordPlayerStatusChannelId != 0)
+			DiscordConnect.sendDiscordMessage(
+					t.get("TC_EVENT_PLAYER_CONNECTED", DiscordConnect.botLang())
+							.replace("PH_PLAYER", player.getName()),
+					s.discordPlayerStatusChannelId);
+
+	}
+
+	@EventMethod
+	public void onPlayerDisconnect(PlayerDisconnectEvent event) {
+
+		Player player = event.getPlayer();
+		if (s.enablePlayerStatusLogging) {
+			eventLogger().info("Player " + player.getName() + " disconnected at "
+					+ player.getPosition().toString().replaceAll("[,()]", ""));
+			DiscordConnect.sendDiscordMessage(
+					t.get("TC_EVENT_PLAYER_DISCONNECTED", DiscordConnect.botLang())
+							.replace("PH_PLAYER", player.getName()),
+					s.discordPlayerStatusChannelId);
+
+		}
+	}
+
+	@EventMethod
+	public void onPlayerRemoveObject(PlayerRemoveObjectEvent event) {
+		boolean pickupable = event.getObjectDefinition().pickupable;
+		String name = event.getObjectDefinition().name;
+		Player player = event.getPlayer();
+		int posX = event.getChunkPositionX();
+		int posZ = event.getChunkPositionZ();
+		String posMap = ((int) posX) + (posX > 0 ? "W" : "E") + " " + ((int) posZ) + (posZ > 0 ? "N" : "S");
+		if (!pickupable)
+			return;
+
+		String msg = t.get("TC_EVENT_OBJECT_REMOVE", DiscordConnect.botLang())
+				.replace("PH_PLAYER", player.getName())
+				.replace("PH_OBJECT_NAME", name)
+				.replace("PH_LOCATION", player.getPosition().toString().replaceAll("[,()]", ""))
+				.replace("PH_MAP_COORDINATES", posMap);
+
+		if (s.enablePlayerRemoveObjectLogging)
+			eventLogger().info(msg);
+		if (s.discordPlayerRemoveObjectChannelId != 0)
+			DiscordConnect.sendDiscordMessage(msg, s.discordPlayerRemoveObjectChannelId);
+	}
+
+	@EventMethod
+	public void onPlayerDestroyObject(PlayerDestroyObjectEvent event) {
+		boolean pickupable = event.getObjectDefinition().pickupable;
+		String name = event.getObjectDefinition().name;
+		Player player = event.getPlayer();
+		int posX = event.getChunkPositionX();
+		int posZ = event.getChunkPositionZ();
+		String posMap = ((int) posX) + (posX > 0 ? "W" : "E") + " " + ((int) posZ) + (posZ > 0 ? "N" : "S");
+		if (!pickupable)
+			return;
+		String msg = t.get("TC_EVENT_OBJECT_DESTROY", DiscordConnect.botLang())
+				.replace("PH_PLAYER", player.getName())
+				.replace("PH_OBJECT_NAME", name)
+				.replace("PH_LOCATION", player.getPosition().toString().replaceAll("[,()]", ""))
+				.replace("PH_MAP_COORDINATES", posMap);
+		if (s.enablePlayerDestroyObjectLogging)
+			eventLogger().warn(msg);
+		if (s.discordPlayerDestroyObjectChannelId != 0)
+			DiscordConnect.sendDiscordMessage(msg, s.discordPlayerDestroyObjectChannelId);
+	}
+
+	@EventMethod
+	public void onNpcDeath(NpcDeathEvent event) {
+		// Cause.KilledByPlayer);
+		Npc npc = event.getNpc();
+		String name = npc.getName();
+		String npcClass = npc.getDefinition().name;
+		Vector3f pos = event.getDeathPosition();
+		String posMap = ((int) pos.x) + (pos.x > 0 ? "W" : "E") + " " + ((int) pos.z) + (pos.z > 0 ? "N" : "S");
+
+		String replacementNPCNameString = (name != null) ? name : "Unnamed NPC";
+		String replacementNPCClassString = (npcClass != null) ? npcClass : "Unknown class";
+		String replacementLocatioString = (pos != null) ? pos.toString() : "x x x (N/A)";
+		String replacementMapCoordinates = (posMap != null) ? posMap : "xW xN";
+
+		boolean isMount = npc.getDefinition().type == Npcs.Type.Mount;
+		boolean isAnimal = npc.getDefinition().type == Npcs.Type.Animal;
+		boolean isAggressive = npc.getDefinition().behaviour.compareTo(Behaviour.Aggressive) == 0;
+
+		if (event.getCause() != NpcDeathEvent.Cause.KilledByPlayer) {
+			if (s.enableNpcDeathByNonPlayerLogging)
+				eventLogger().debug(
+						"NPC <" + replacementNPCNameString + "> <" + replacementNPCClassString + "> died from "
+								+ event.getCause() + " at "
+								+ replacementLocatioString + " (" + replacementMapCoordinates + ")");
+			return;
+		}
+		Player player = (Player) event.getKiller();
+
+		if (isMount) {
+			// a mount was killed
+			String msg = t.get("TC_EVENT_KILL_MOUNT", DiscordConnect.botLang())
+					.replace("PH_PLAYER", player.getName())
+					.replace("PH_NPC_NAME", replacementNPCNameString)
+					.replace("PH_NPC_CLASS", replacementNPCClassString)
+					.replace("PH_LOCATION", replacementLocatioString)
+					.replace("PH_MAP_COORDINATES", replacementMapCoordinates);
+			if (s.enableMountDeathByPlayerLogging)
+				eventLogger().warn(msg);
+			if (s.discordMountDeathByPlayerChannelId != 0)
+				DiscordConnect.sendDiscordMessage(msg, s.discordMountDeathByPlayerChannelId);
+			return;
+		} else if (isAnimal && !isAggressive) {
+			// Non agressive animal was killed
+			String msg = t.get("TC_EVENT_KILL_ANIMAL", DiscordConnect.botLang())
+					.replace("PH_PLAYER", player.getName())
+					.replace("PH_NPC_NAME", replacementNPCNameString)
+					.replace("PH_NPC_CLASS", replacementNPCClassString)
+					.replace("PH_LOCATION", replacementLocatioString)
+					.replace("PH_MAP_COORDINATES", replacementMapCoordinates);
+			if (s.enableAnimalDeathByPlayerLogging)
+				eventLogger().warn(msg);
+			if (s.discordAnimalDeathByPlayerChannelId != 0)
+				DiscordConnect.sendDiscordMessage(msg, s.discordAnimalDeathByPlayerChannelId);
+			return;
+		} else if (s.enableAllAnimalDeathByPlayerLogging)
+			eventLogger().debug(
+					player.getName()
+							+ " killed NPC <name: " + replacementNPCNameString + "> <class:" + replacementNPCClassString
+							+ "> <typeId: " + npc.getTypeID() + "> <variant: " + npc.getVariant() + "> at "
+							+ replacementLocatioString + " (" + replacementMapCoordinates + ")");
+
+	}
+
+	@EventMethod
+	public void onSeasonChange(SeasonChangeEvent event) {
+		String season = t.get("TC_SEASON_" + Server.getCurrentSeason().toString().toUpperCase(),
+				DiscordConnect.botLang());
+		String seasonTo = t.get("TC_SEASON_" + event.getSeason().toString().toUpperCase(),
+				DiscordConnect.botLang());
+		String message = t.get("TC_EVENT_SEASON_CHANGE", DiscordConnect.botLang())
+				.replace("PH_SEASON_FROM", season)
+				.replace("PH_SEASON_TO", seasonTo);
+		if (s.enableSeasonChangeEventLogging)
+			eventLogger().info(message);
+
+		if (s.discordSeasonChangeEventChannelId != 0)
+			DiscordConnect.sendDiscordMessage(message, s.discordSeasonChangeEventChannelId);
+	}
+
+	@EventMethod
+	public void onWeatherChange(WeatherChangeEvent event) {
+		WeatherDefs.Weather defCurrent = event.getCurrentWeather();
+		String currentWeatherName = defCurrent.name;
+		WeatherDefs.Weather defNext = event.getNextWeather();
+		String nextWeatherName = defNext != null ? defNext.name : "";
+
+		String message = t.get("TC_EVENT_WEATHER_CHANGE", DiscordConnect.botLang())
+				.replace("PH_WEATHER_FROM",
+						t.get("TC_WEATHER_" + currentWeatherName.toUpperCase(), DiscordConnect.botLang()))
+				.replace("PH_WEATHER_TO",
+						t.get("TC_WEATHER_" + nextWeatherName.toUpperCase(), DiscordConnect.botLang()));
+
+		if (s.enableWeatherChangeEventLogging)
+			eventLogger().info(message);
+
+		if (s.discordWeatherChangeEventChannelId != 0)
+			DiscordConnect.sendDiscordMessage(message, s.discordWeatherChangeEventChannelId);
+	}
+
+	@EventMethod
+	public void onPlayerTeleport(PlayerTeleportEvent event) {
+		Player player = event.getPlayer();
+
+		String message = t.get("TC_EVENT_PLAYER_TELEPORT", DiscordConnect.botLang())
+				.replace("PH_PLAYER", player.getName())
+				.replace("PH_LOCATION", player.getPosition().toString().replaceAll("[,()]", ""));
+
+		if (s.enablePlayerTeleportEventLogging)
+			eventLogger().info(message);
+		if (s.discordPlayerTeleportChannelId != 0)
+			DiscordConnect.sendDiscordMessage(message, s.discordPlayerTeleportChannelId);
 	}
 
 }

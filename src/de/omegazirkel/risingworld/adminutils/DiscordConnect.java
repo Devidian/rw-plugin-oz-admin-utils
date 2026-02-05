@@ -10,12 +10,13 @@ public class DiscordConnect {
 
     private static Plugin pluginRef = null;
     private static final PluginSettings s = PluginSettings.getInstance();
-    public static final String botLang(){
+
+    public static final String botLang() {
         String lang = (String) callPluginMethod("getBotLanguage", null, null);
-        return lang != null ?  lang : "en";
+        return lang != null ? lang : "en";
     }
 
-    public static final OZLogger logger(){
+    public static final OZLogger logger() {
         return AdminUtils.logger();
     }
 
@@ -58,13 +59,14 @@ public class DiscordConnect {
     }
 
     public static void sendDiscordMessage(String message, long channelId, byte[] image) {
-        callPluginMethod("sendDiscordMessageToTextChannel",
-                new Class<?>[] { String.class, long.class, byte[].class },
-                new Object[] { message, channelId, image });
+        if (channelId != 0)
+            callPluginMethod("sendDiscordMessageToTextChannel",
+                    new Class<?>[] { String.class, long.class, byte[].class },
+                    new Object[] { message, channelId, image });
     }
 
     public static void sendDiscordTheftReport(String message) {
-        if (s.enableDiscordTheftReport && s.discordTheftReportChannelId != 0)
+        if (s.enableDiscordTheftReport)
             sendDiscordMessage(message, s.discordTheftReportChannelId);
     }
 

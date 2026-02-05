@@ -19,7 +19,7 @@ public class PluginSettings {
 	private static AdminUtils plugin;
 
 	private static OZLogger logger() {
-		return OZLogger.getInstance("OZ.AdminUtils.Settings");
+		return AdminUtils.logger();
 	}
 
 	// Settings
@@ -40,6 +40,44 @@ public class PluginSettings {
 	// Discord Settings
 	public boolean enableDiscordTheftReport = false;
 	public long discordTheftReportChannelId = 0;
+
+	// player death
+	public boolean enablePlayerDeathLogging = false;
+	public long discordPlayerDeathChannelId = 0;
+
+	// player connect and disconnect
+	public boolean enablePlayerStatusLogging = false;
+	public long discordPlayerStatusChannelId = 0;
+
+	// player remove object
+	public boolean enablePlayerRemoveObjectLogging = false;
+	public long discordPlayerRemoveObjectChannelId = 0;
+
+	// player destroy object
+	public boolean enablePlayerDestroyObjectLogging = false;
+	public long discordPlayerDestroyObjectChannelId = 0;
+
+	// npc death
+	public boolean enableNpcDeathByNonPlayerLogging = false;
+	public long discordNpcDeathByNonPlayerChannelId = 0;
+
+	public boolean enableMountDeathByPlayerLogging = false;
+	public long discordMountDeathByPlayerChannelId = 0;
+
+	public boolean enableAnimalDeathByPlayerLogging = false;
+	public long discordAnimalDeathByPlayerChannelId = 0;
+
+	public boolean enableAllAnimalDeathByPlayerLogging = false;
+
+	// season change event
+	public boolean enableSeasonChangeEventLogging = false;
+	public long discordSeasonChangeEventChannelId = 0;
+	public boolean enableWeatherChangeEventLogging = false;
+	public long discordWeatherChangeEventChannelId = 0;
+
+	// player teleport
+	public boolean enablePlayerTeleportEventLogging = false;
+	public long discordPlayerTeleportChannelId = 0;
 
 	// END Settings
 
@@ -102,6 +140,53 @@ public class PluginSettings {
 			// discord settings
 			enableDiscordTheftReport = settings.getProperty("enableDiscordTheftReport", "false").contentEquals("true");
 			discordTheftReportChannelId = Long.parseLong(settings.getProperty("discordTheftReportChannelId", "0"));
+
+			// player death
+			enablePlayerDeathLogging = settings.getProperty("enablePlayerDeathLogging", "false").contentEquals("true");
+			discordPlayerDeathChannelId = Long.parseLong(settings.getProperty("discordPlayerDeathChannelId", "0"));
+			// player connect and disconnect
+			enablePlayerStatusLogging = settings
+					.getProperty("enablePlayerStatusLogging", "false").contentEquals("true");
+			discordPlayerStatusChannelId = Long.parseLong(settings.getProperty("discordPlayerStatusChannelId", "0"));
+			// player remove object
+			enablePlayerRemoveObjectLogging = settings
+					.getProperty("enablePlayerRemoveObjectLogging", "false").contentEquals("true");
+			discordPlayerRemoveObjectChannelId = Long
+					.parseLong(settings.getProperty("discordPlayerRemoveObjectChannelId", "0"));
+			// player destroy object
+			enablePlayerDestroyObjectLogging = settings
+					.getProperty("enablePlayerDestroyObjectLogging", "false").contentEquals("true");
+			discordPlayerDestroyObjectChannelId = Long
+					.parseLong(settings.getProperty("discordPlayerDestroyObjectChannelId", "0"));
+			// npc death
+			enableNpcDeathByNonPlayerLogging = settings
+					.getProperty("enableNpcDeathByNonPlayerLogging", "false").contentEquals("true");
+			discordNpcDeathByNonPlayerChannelId = Long
+					.parseLong(settings.getProperty("discordNpcDeathByNonPlayerChannelId", "0"));
+			enableMountDeathByPlayerLogging = settings
+					.getProperty("enableMountDeathByPlayerLogging", "false").contentEquals("true");
+			discordMountDeathByPlayerChannelId = Long
+					.parseLong(settings.getProperty("discordMountDeathByPlayerChannelId", "0"));
+			enableAnimalDeathByPlayerLogging = settings
+					.getProperty("enableAnimalDeathByPlayerLogging", "false").contentEquals("true");
+			discordAnimalDeathByPlayerChannelId = Long
+					.parseLong(settings.getProperty("discordAnimalDeathByPlayerChannelId", "0"));
+			enableAllAnimalDeathByPlayerLogging = settings
+					.getProperty("enableAllAnimalDeathByPlayerLogging", "false").contentEquals("true");
+			// season change event
+			enableSeasonChangeEventLogging = settings
+					.getProperty("enableSeasonChangeEventLogging", "false").contentEquals("true");
+			discordSeasonChangeEventChannelId = Long
+					.parseLong(settings.getProperty("discordSeasonChangeEventChannelId", "0"));
+			enableWeatherChangeEventLogging = settings
+					.getProperty("enableWeatherChangeEventLogging", "false").contentEquals("true");
+			discordWeatherChangeEventChannelId = Long
+					.parseLong(settings.getProperty("discordWeatherChangeEventChannelId", "0"));
+			// player teleport
+			enablePlayerTeleportEventLogging = settings
+					.getProperty("enablePlayerTeleportEventLogging", "false").contentEquals("true");
+			discordPlayerTeleportChannelId = Long
+					.parseLong(settings.getProperty("discordPlayerTeleportChannelId", "0"));
 
 			logger().info(plugin.getName() + " Plugin settings loaded");
 			logger().info("Sending welcome message on login is: " + String.valueOf(enableWelcomeMessage));
