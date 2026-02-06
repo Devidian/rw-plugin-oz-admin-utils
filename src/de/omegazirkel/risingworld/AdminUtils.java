@@ -289,11 +289,15 @@ public class AdminUtils extends Plugin implements Listener, FileChangeListener {
 
 		if (playerTheftAttempt > 5) {
 			player.kill();
-			String message = t().get("TC_THEFT_KILL", player)
+			DiscordConnect.sendDiscordTheftReport(t().get("TC_THEFT_KILL", DiscordConnect.botLang())
 					.replace("PH_PLAYER_NAME", player.getName())
-					.replace("PH_MOUNT_NAME", mount.getName());
-			DiscordConnect.sendDiscordTheftReport(message);
-			Server.broadcastTextMessage(message);
+					.replace("PH_MOUNT_NAME", mount.getName()));
+			// loop all player
+			for (Player p : Server.getAllPlayers()) {
+				p.sendTextMessage(t().get("TC_THEFT_KILL", p)
+						.replace("PH_PLAYER_NAME", player.getName())
+						.replace("PH_MOUNT_NAME", mount.getName()));
+			}
 		}
 		if (playerTheftAttempt > 6) {
 			playerTheftKicked++;
@@ -323,20 +327,29 @@ public class AdminUtils extends Plugin implements Listener, FileChangeListener {
 				}
 
 				player.ban(t().get("TC_THEFT_BAN_" + playerTheftKicked.toString(), player), durationSeconds);
-				String message = t().get("TC_THEFT_BANNED_" + playerTheftKicked.toString(), player)
-						.replace("PH_PLAYER_NAME", player.getName())
-						.replace("PH_MOUNT_NAME", mount.getName());
-				DiscordConnect.sendDiscordTheftReport(message);
-				Server.broadcastTextMessage(message);
+				DiscordConnect.sendDiscordTheftReport(
+						t().get("TC_THEFT_BANNED_" + playerTheftKicked.toString(), DiscordConnect.botLang())
+								.replace("PH_PLAYER_NAME", player.getName())
+								.replace("PH_MOUNT_NAME", mount.getName()));
+				for (Player p : Server.getAllPlayers()) {
+					p.sendTextMessage(t().get("TC_THEFT_BANNED_" + playerTheftKicked.toString(), p)
+							.replace("PH_PLAYER_NAME", player.getName())
+							.replace("PH_MOUNT_NAME", mount.getName()));
+				}
+
 			} else {
 				// the thief has some more tries next login ... reset theft counter
 				mount.setAttribute("theftCounter", 0);
 				player.kick(t().get("TC_THEFT_KICK", player));
-				String message = t().get("TC_THEFT_KICKED", player)
+				DiscordConnect.sendDiscordTheftReport(t().get("TC_THEFT_KICKED", DiscordConnect.botLang())
 						.replace("PH_PLAYER_NAME", player.getName())
-						.replace("PH_MOUNT_NAME", mount.getName());
-				DiscordConnect.sendDiscordTheftReport(message);
-				Server.broadcastTextMessage(message);
+						.replace("PH_MOUNT_NAME", mount.getName()));
+				for (Player p : Server.getAllPlayers()) {
+					p.sendTextMessage(t().get("TC_THEFT_KICKED", p)
+							.replace("PH_PLAYER_NAME", player.getName())
+							.replace("PH_MOUNT_NAME", mount.getName()));
+				}
+
 			}
 
 		}
@@ -376,7 +389,6 @@ public class AdminUtils extends Plugin implements Listener, FileChangeListener {
 	public void onPlayerHitNpcEvent(PlayerHitNpcEvent event) {
 
 		Npc npc = event.getNpc();
-		Server.broadcastTextMessage("NPC " + npc.getTypeID() + " is beeing hit");
 		Player player = event.getPlayer();
 		npc.setAttribute("lastAttacker", player);
 	}
