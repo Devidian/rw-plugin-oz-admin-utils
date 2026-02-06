@@ -25,6 +25,7 @@ import net.risingworld.api.definitions.Npcs.Behaviour;
 import net.risingworld.api.definitions.WeatherDefs;
 import net.risingworld.api.events.EventMethod;
 import net.risingworld.api.events.Listener;
+import net.risingworld.api.events.npc.NpcAddSaddleEvent;
 import net.risingworld.api.events.npc.NpcDamageEvent;
 import net.risingworld.api.events.npc.NpcDamageEvent.Cause;
 import net.risingworld.api.events.npc.NpcDeathEvent;
@@ -219,8 +220,19 @@ public class AdminUtils extends Plugin implements Listener, FileChangeListener {
 	}
 
 	private boolean verifyPlayerMountInteraction(Player player, Npc mount) {
+		return verifyPlayerMountInteraction(player, mount, false);
+	}
+
+	private boolean verifyPlayerMountInteraction(Player player, Npc mount, boolean claimIfPossible) {
+		// if feature is disabled always return true
+		if (!s.enableMountOwnership)
+			return true;
+
 		String mountName = mount.getName();
 		String mountOwnershipPrefix = player.getDbID() + "::";
+
+		boolean isInArea = player.getCurrentArea() != null;
+		boolean hasPermission = (boolean) player.getPermissionValue("area_addplayer", true);
 
 		// the player is owner if the name matches (attributes will vanish on restart)
 		if (mountName != null && mountName.startsWith(mountOwnershipPrefix))
@@ -229,6 +241,18 @@ public class AdminUtils extends Plugin implements Listener, FileChangeListener {
 		// someone else has ownership
 		if (mountName != null && mountName.contains("::"))
 			return false;
+
+		if (!claimIfPossible)
+			return true;
+
+		// mount has no owner but taking ownership is only allowed in areas
+		if (s.forceAreaOwnership && !isInArea)
+			return true;
+
+		// mount has no owner but is in an area where the player has no permission
+		// area_addplayer
+		if (s.forceAreaOwnership && !hasPermission)
+			return true;
 
 		// If mount has no name register it to the player
 		String playerMountName = mountOwnershipPrefix
@@ -392,7 +416,7 @@ public class AdminUtils extends Plugin implements Listener, FileChangeListener {
 		if (!isMount)
 			return;
 
-		Boolean isOwner = verifyPlayerMountInteraction(player, npc);
+		Boolean isOwner = verifyPlayerMountInteraction(player, npc, true);
 
 		if (isOwner)
 			return;
@@ -406,6 +430,18 @@ public class AdminUtils extends Plugin implements Listener, FileChangeListener {
 			punishMountTheft(player, npc);
 
 		event.setCancelled(true);
+	}
+
+	@EventMethod
+	public void onNpcAddSaddleEvent(NpcAddSaddleEvent event) {
+		Npc npc = event.getNpc();
+		Player player = event.getRelatedPlayer();
+		Boolean isMount = npc.getDefinition().type == Npcs.Type.Mount;
+		if (!isMount)
+			return;
+		Boolean isOwner = verifyPlayerMountInteraction(player, npc);
+		if (!isOwner)
+			event.setCancelled(true);
 	}
 
 	@EventMethod

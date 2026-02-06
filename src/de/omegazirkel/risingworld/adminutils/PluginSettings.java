@@ -26,6 +26,10 @@ public class PluginSettings {
 	public String logLevel = Level.DEBUG.name();
 	public boolean reloadOnChange = false;
 	public boolean enableWelcomeMessage = false;
+
+	// Mount ownership
+	public boolean enableMountOwnership = true;
+	public boolean forceAreaOwnership = false;
 	public boolean punishMountTheft = false;
 	public boolean logTheftAttempt = true;
 
@@ -127,6 +131,9 @@ public class PluginSettings {
 			// motd settings
 			enableWelcomeMessage = settings.getProperty("enableWelcomeMessage", "false").contentEquals("true");
 
+			// mount ownership
+			enableMountOwnership = settings.getProperty("enableMountOwnership", "true").contentEquals("true");
+			forceAreaOwnership = settings.getProperty("forceAreaOwnership", "false").contentEquals("true");
 			punishMountTheft = settings.getProperty("punishMountTheft", "false").contentEquals("true");
 			logTheftAttempt = settings.getProperty("logTheftAttempt", "true").contentEquals("true");
 			enableSleepAnnouncement = settings.getProperty("enableSleepAnnouncement", "false").contentEquals("true");

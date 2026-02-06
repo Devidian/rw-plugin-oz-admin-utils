@@ -4,6 +4,10 @@
 
 ## [unreleased]
 
+- feat: added option to disable mount ownership
+- feat: added option to force mount ownership only in areas
+  - player must be in an area where he has `area_addplayer` permission
+
 ## [0.4.0] - 2026-02-05 | Event logging (moved from DiscordConnect)
 
 - feat: event logging implemented (from DiscordConnect)
