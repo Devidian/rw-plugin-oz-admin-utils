@@ -9,6 +9,7 @@
   - player must be in an area where he has `area_addplayer` permission
 - fix: remove on hit debug message broadcast
 - fix: theft messages not properly removed for each player
+- fix: ignore player idle time if player state is sleeping
 
 ## [0.4.0] - 2026-02-05 | Event logging (moved from DiscordConnect)
 

@@ -203,6 +203,8 @@ public class AdminUtils extends Plugin implements Listener, FileChangeListener {
 		int idleTime = player.getIdleTime();
 		if (!s.enableSleepKickAFKPlayer)
 			return;
+		if (player.getState() == State.Sleeping)
+			return;
 		if (idleTime > 30) {
 			player.sendTextMessage(t().get("TC_IDLE_WARN", player));
 		}
