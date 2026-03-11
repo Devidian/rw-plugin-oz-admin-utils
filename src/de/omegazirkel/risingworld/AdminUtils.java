@@ -69,7 +69,7 @@ public class AdminUtils extends Plugin implements Listener, FileChangeListener {
 	}
 
 	public static OZLogger eventLogger() {
-		return OZLogger.getInstance("OZ.AdminUtils.EventTracking");
+		return logger();
 	}
 
 	private final I18n t() {

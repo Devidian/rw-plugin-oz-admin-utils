@@ -4,6 +4,10 @@
 
 ## [unreleased]
 
+- docs: standardize agent prompts, PR checklist, and runtime smoke-test guidance
+- build: add API verification helper and stricter CI/release validation flow
+- build: package only `README.md` and `HISTORY.md` into release artifacts
+
 - feat: added option to disable mount ownership
 - feat: added option to force mount ownership only in areas
   - player must be in an area where he has `area_addplayer` permission
