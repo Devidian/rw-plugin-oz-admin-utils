@@ -63,6 +63,8 @@ public class AdminUtils extends Plugin implements Listener, FileChangeListener {
 	public static String name;
 	public static Connection sqliteCon;
 	public static PlayerSettings ps;
+	private static boolean isInSpeedmode = false;
+	private static float normalGameSpeed = 2.5f;
 
 	public static OZLogger logger() {
 		return OZLogger.getInstance("OZ.AdminUtils");
@@ -92,6 +94,9 @@ public class AdminUtils extends Plugin implements Listener, FileChangeListener {
 						new MenuItem(AssetManager.getIcon("oz-admin-utils-logo"), "Admin Utils", (Player p) -> {
 							gui.openMainMenu(p);
 						}));
+		normalGameSpeed = Server.getGameTimeSpeed();
+		if (normalGameSpeed == 0)
+			normalGameSpeed = 2.5f;
 		// connect plugins
 		DiscordConnect.init(this);
 		// register plugin settings
@@ -173,26 +178,98 @@ public class AdminUtils extends Plugin implements Listener, FileChangeListener {
 		}
 	}
 
+	private void returnToNormalTimeSpeed() {
+		float currentSpeed = Server.getGameTimeSpeed();
+		// abort if time is already returned to normal
+		if (currentSpeed == normalGameSpeed) {
+			isInSpeedmode = false;
+			return;
+		}
+
+		// reset game time speed
+		Server.setGameTimeSpeed(normalGameSpeed);
+		for (Player p : Server.getAllPlayers()) {
+			p.sendTextMessage(t().get("TC_SLEEP_TIME_SPEED_NORMAL", p));
+		}
+		if (s.discordSleepEventChannelId != 0)
+			DiscordConnect.sendDiscordMessage(
+					t().get("TC_SLEEP_TIME_SPEED_NORMAL", DiscordConnect.botLang()),
+					s.discordSleepEventChannelId);
+		isInSpeedmode = false;
+	}
+
+	private short getSleepingPlayerCount() {
+		short sleepingPlayers = 0;
+		for (Player p : Server.getAllPlayers()) {
+			if (p.getState() == State.Sleeping)
+				sleepingPlayers++;
+		}
+		return sleepingPlayers;
+	}
+
+	private void speedUpTime() {
+		int currentGameHour = Server.getGameTime(Unit.Hours);
+		Player[] allPlayers = Server.getAllPlayers();
+		float targetTimeSpeed = 0.5f;
+		// skip if already in speed mode or not enough players or feature not enabled
+		if (isInSpeedmode || allPlayers.length < 2 || !s.enableSpeedUpTime)
+			return;
+
+		short sleepingPlayers = getSleepingPlayerCount();
+		// only trigger if at least 50% of players are sleeping
+		if (sleepingPlayers * 2 >= allPlayers.length) {
+			normalGameSpeed = Server.getGameTimeSpeed();
+			if (normalGameSpeed == 0)
+				normalGameSpeed = 2.5f;
+			isInSpeedmode = true;
+			int hoursToSkip = (int) s.lowerSleepTimeHour
+					- (currentGameHour > s.lowerSleepTimeHour ? currentGameHour - 24 : currentGameHour);
+			int minutesToSkip = hoursToSkip * 60 - Server.getGameTime(Unit.Minutes);
+
+			this.executeDelayed(minutesToSkip * targetTimeSpeed, () -> returnToNormalTimeSpeed());
+
+			for (Player p : allPlayers) {
+				p.sendTextMessage(t().get("TC_SLEEP_TIME_SPEED_UP", p));
+			}
+			if (s.discordSleepEventChannelId != 0)
+				DiscordConnect.sendDiscordMessage(
+						t().get("TC_SLEEP_TIME_SPEED_UP", DiscordConnect.botLang()),
+						s.discordSleepEventChannelId);
+			// time per minute in seconds, 60 = real-time, 1 = 1 in game minute per second
+			// we set it to 1/60 so 1 second real life should be 1 hour ingame
+			Server.setGameTimeSpeed(targetTimeSpeed);
+		}
+
+	}
+
 	private void handleSleepState(Player player, State fromState, State toState) {
 		if (!s.enableSleepAnnouncement)
 			return;
 		int currentGameHour = Server.getGameTime(Unit.Hours);
 		// only working between 21:00 and 7:00
 		if (toState == State.Sleeping && currentGameHour < (int) s.upperSleepTimeHour
-				&& currentGameHour > (int) s.lowerSleepTimeHour) {
+				&& currentGameHour >= (int) s.lowerSleepTimeHour) {
 			player.sendTextMessage(t().get("TC_SLEEP_DAYTIME", player)
 					.replace("PH_UPPER_HOUR", s.upperSleepTimeHour + "")
 					.replace("PH_LOWER_HOUR", s.lowerSleepTimeHour + ""));
 			return;
 		}
 		String translateKey = "";
+		Player[] allPlayers = Server.getAllPlayers();
 		if (fromState == State.Sleeping) {
 			translateKey = "TC_PLAYER_STATE_AWAKE";
+			// must be executed delayed because event is not persisted until all handlers are done
+			this.executeDelayed(1, () -> {
+				if (getSleepingPlayerCount() == 0)
+					returnToNormalTimeSpeed();
+			});
 		}
 		if (toState == State.Sleeping) {
 			translateKey = "TC_PLAYER_STATE_SLEEPING";
+			// must be executed delayed because event is not persisted until all handlers are done
+			this.executeDelayed(1, () -> speedUpTime());
 		}
-		for (Player p : Server.getAllPlayers()) {
+		for (Player p : allPlayers) {
 			p.sendTextMessage(t().get(translateKey, p).replace("PH_PLAYER_NAME", player.getName()));
 			if (toState == State.Sleeping)
 				checkPlayerIdleTime(p);

@@ -40,6 +40,8 @@ public class PluginSettings {
 	public int afkPlayerSleepWarnSeconds = 60;
 	public short upperSleepTimeHour = 21;
 	public short lowerSleepTimeHour = 7;
+	public boolean enableSpeedUpTime = false;
+	public long discordSleepEventChannelId = 0;
 
 	// Discord Settings
 	public boolean enableDiscordTheftReport = false;
@@ -143,6 +145,8 @@ public class PluginSettings {
 			afkPlayerSleepWarnSeconds = Integer.parseInt(settings.getProperty("afkPlayerSleepWarnSeconds", "60"));
 			upperSleepTimeHour = Short.parseShort(settings.getProperty("upperSleepTimeHour", "21"));
 			lowerSleepTimeHour = Short.parseShort(settings.getProperty("lowerSleepTimeHour", "7"));
+			enableSpeedUpTime = settings.getProperty("enableSpeedUpTime", "false").contentEquals("true");
+			discordSleepEventChannelId = Long.parseLong(settings.getProperty("discordSleepEventChannelId", "0"));
 
 			// discord settings
 			enableDiscordTheftReport = settings.getProperty("enableDiscordTheftReport", "false").contentEquals("true");

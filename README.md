@@ -15,7 +15,10 @@ If anyone else tries to interact with it, they will be warned and for every addi
 ### Sleep Announcement
 
 If players go to bed during night time (default 21:00-7:00) all players will receive an announcement.
-Players that are idle for a while will be kicked.
+Players that are idle for a while can optionally be kicked.
+If `enableSpeedUpTime=true`, the server speeds up game time once at least 50% of online players are sleeping and returns to the previous game speed after the sleep window ends.
+Sleep start and speed reset messages can also be forwarded to Discord with `discordSleepEventChannelId`.
+
 ## Contributor Workflow
 
 - Review `AGENTS.md`, `PLANS.md`, and the role prompts in `agent-prompts/` before making structural changes.

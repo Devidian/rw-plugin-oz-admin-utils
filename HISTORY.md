@@ -4,9 +4,17 @@
 
 ## [unreleased]
 
+## [0.4.4] - 2026-03-19 | Sleep time acceleration and release workflow polish
+
 - docs: standardize agent prompts, PR checklist, and runtime smoke-test guidance
 - build: add API verification helper and stricter CI/release validation flow
 - build: package only `README.md` and `HISTORY.md` into release artifacts
+
+- feat: add optional sleep time acceleration when at least 50% of online players are sleeping
+- feat: add optional Discord notifications for sleep speed-up and reset events
+- change: disable kicking idle players during sleep by default in `settings.default.properties`
+
+## [0.4.3] - 2026-02-10 | Mount ownership and sleep idle fixes
 
 - feat: added option to disable mount ownership
 - feat: added option to force mount ownership only in areas
