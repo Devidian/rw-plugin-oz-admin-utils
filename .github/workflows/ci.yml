@@ -160,7 +160,7 @@ jobs:
           VERSION="${{ steps.meta.outputs.version }}"
 
           awk -v newver="$VERSION" '
-            /<artifactId>rw-plugin-oz-land-claim<\/artifactId>/ { print; in_project=1; next }
+            /<artifactId>rw-plugin-oz-admin-utils<\/artifactId>/ { print; in_project=1; next }
             in_project == 1 && /<version>/ {
               sub(/<version>.*<\/version>/, "<version>" newver "</version>")
               in_project=0
