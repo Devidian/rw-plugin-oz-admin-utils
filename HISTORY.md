@@ -4,6 +4,8 @@
 
 ## [unreleased]
 
+- build: align bundled PluginAPI jar and Maven dependency version
+
 ## [0.4.4] - 2026-03-19 | Sleep time acceleration and release workflow polish
 
 - docs: standardize agent prompts, PR checklist, and runtime smoke-test guidance
