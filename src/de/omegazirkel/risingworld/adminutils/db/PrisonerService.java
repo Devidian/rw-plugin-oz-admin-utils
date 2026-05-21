@@ -46,7 +46,51 @@ public class PrisonerService {
         return prisoner;
     }
 
+    public Prisoner incarcerate(Prisoner prisoner) {
+        Prisoner existing = store.get(new PrisonerKey(prisoner.playerDbId));
+        if (existing != null) {
+            deindex(existing);
+        }
+
+        store.put(new PrisonerKey(prisoner.playerDbId), prisoner);
+        index(prisoner);
+        return prisoner;
+    }
+
     public void markDirty(Prisoner prisoner) {
+        store.markDirty(prisoner);
+    }
+
+    public void pardon(Prisoner prisoner, String reason, long releasedAt) {
+        deindex(prisoner);
+        prisoner.status = "RELEASED";
+        prisoner.releasedAt = releasedAt;
+        prisoner.releaseReason = reason;
+        prisoner.restorePending = true;
+        prisoner.updatedAt = releasedAt;
+        index(prisoner);
+        store.markDirty(prisoner);
+    }
+
+    public void markReleasePending(Prisoner prisoner, String reason, long releasedAt) {
+        deindex(prisoner);
+        prisoner.status = "RELEASED";
+        prisoner.releasedAt = releasedAt;
+        prisoner.releaseReason = reason;
+        prisoner.restorePending = true;
+        prisoner.sentenceServedMs = Math.max(prisoner.sentenceServedMs, prisoner.sentenceTotalMs);
+        prisoner.updatedAt = releasedAt;
+        index(prisoner);
+        store.markDirty(prisoner);
+    }
+
+    public void markRestoreComplete(Prisoner prisoner, long restoredAt) {
+        deindex(prisoner);
+        prisoner.status = "RELEASED";
+        prisoner.restorePending = false;
+        prisoner.inventoryBlob = null;
+        prisoner.updatedAt = restoredAt;
+        index(prisoner);
         store.markDirty(prisoner);
     }
 

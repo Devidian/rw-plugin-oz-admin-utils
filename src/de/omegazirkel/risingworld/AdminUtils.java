@@ -2,10 +2,19 @@ package de.omegazirkel.risingworld;
 
 import java.nio.file.Path;
 import java.sql.Connection;
+import java.sql.SQLException;
 
 import de.omegazirkel.risingworld.adminutils.DiscordConnect;
+import de.omegazirkel.risingworld.adminutils.PermissionFileUtil;
 import de.omegazirkel.risingworld.adminutils.PluginGUI;
+import de.omegazirkel.risingworld.adminutils.PrisonIncarcerationService;
+import de.omegazirkel.risingworld.adminutils.PrisonReleaseService;
 import de.omegazirkel.risingworld.adminutils.PluginSettings;
+import de.omegazirkel.risingworld.adminutils.db.PrisonService;
+import de.omegazirkel.risingworld.adminutils.db.PrisonStore;
+import de.omegazirkel.risingworld.adminutils.db.PrisonerService;
+import de.omegazirkel.risingworld.adminutils.db.PrisonerStore;
+import de.omegazirkel.risingworld.adminutils.ui.AdminUtilsPlayerPluginData;
 import de.omegazirkel.risingworld.adminutils.ui.AdminUtilsPlayerPluginSettings;
 import de.omegazirkel.risingworld.tools.AreaUtils;
 import de.omegazirkel.risingworld.tools.Colors;
@@ -14,6 +23,7 @@ import de.omegazirkel.risingworld.tools.I18n;
 import de.omegazirkel.risingworld.tools.OZLogger;
 import de.omegazirkel.risingworld.tools.PlayerSettings;
 import de.omegazirkel.risingworld.tools.db.SQLiteConnectionFactory;
+import de.omegazirkel.risingworld.tools.settings.PlayerPluginAdminSettings;
 import de.omegazirkel.risingworld.tools.ui.AssetManager;
 import de.omegazirkel.risingworld.tools.ui.MenuItem;
 import de.omegazirkel.risingworld.tools.ui.PlayerPluginSettingsOverlay;
@@ -56,6 +66,8 @@ import net.risingworld.api.utils.Vector3f;
 
 public class AdminUtils extends Plugin implements Listener, FileChangeListener {
 	static final String pluginCMD = "au";
+	public static final String PRISONER_AREA_PERMISSION_FILE = "ozau-prisoner.json";
+	public static final String PRISONER_AREA_PERMISSION = "ozau-prisoner";
 	static final Colors c = Colors.getInstance();
 	private static I18n t = null;
 	private static PluginSettings s = null;
@@ -63,6 +75,12 @@ public class AdminUtils extends Plugin implements Listener, FileChangeListener {
 	public static String name;
 	public static Connection sqliteCon;
 	public static PlayerSettings ps;
+	private static PrisonStore prisonStore;
+	private static PrisonerStore prisonerStore;
+	private static PrisonService prisonService;
+	private static PrisonerService prisonerService;
+	private static PrisonIncarcerationService prisonIncarcerationService;
+	private static PrisonReleaseService prisonReleaseService;
 	private static boolean isInSpeedmode = false;
 	private static float normalGameSpeed = 2.5f;
 
@@ -72,6 +90,22 @@ public class AdminUtils extends Plugin implements Listener, FileChangeListener {
 
 	public static OZLogger eventLogger() {
 		return logger();
+	}
+
+	public static PrisonService prisonService() {
+		return prisonService;
+	}
+
+	public static PrisonerService prisonerService() {
+		return prisonerService;
+	}
+
+	public static PrisonIncarcerationService prisonIncarcerationService() {
+		return prisonIncarcerationService;
+	}
+
+	public static PrisonReleaseService prisonReleaseService() {
+		return prisonReleaseService;
 	}
 
 	private final I18n t() {
@@ -85,8 +119,10 @@ public class AdminUtils extends Plugin implements Listener, FileChangeListener {
 		t = I18n.getInstance(this);
 		registerEventListener(this);
 		s.initSettings();
+		ensureDefaultPermissionFiles();
 		sqliteCon = SQLiteConnectionFactory.open(this);
 		ps = new PlayerSettings(sqliteCon);
+		initPrisonPersistence();
 		gui = PluginGUI.getInstance(this);
 		// Load Plugin Menu into Main Plugin Menu
 		PluginMenuManager
@@ -100,18 +136,51 @@ public class AdminUtils extends Plugin implements Listener, FileChangeListener {
 		// connect plugins
 		DiscordConnect.init(this);
 		// register plugin settings
-		PlayerPluginSettingsOverlay.registerPlayerPluginSettings(new AdminUtilsPlayerPluginSettings());
+		PlayerPluginSettingsOverlay
+				.registerPlayerPluginSettings(new AdminUtilsPlayerPluginSettings(getDescription("version")));
+		PlayerPluginSettingsOverlay.registerPlayerPluginData(new AdminUtilsPlayerPluginData(getDescription("version")));
+		PlayerPluginSettingsOverlay.registerPlayerPluginAdminSettings(
+				new PlayerPluginAdminSettings(name, getDescription("version"), () -> s.adminSettingsEntries(),
+						s::initSettings));
 		logger().info("✅ " + this.getName() + " Plugin is enabled version:" + this.getDescription("version"));
 	}
 
 	@Override
 	public void onDisable() {
+		if (prisonerStore != null)
+			prisonerStore.shutdown();
+		if (prisonStore != null)
+			prisonStore.shutdown();
 	}
 
 	@Override
 	public void onSettingsChanged(Path settingsPath) {
 		s.initSettings(settingsPath.toString());
 		logger().setLevel(s.logLevel);
+	}
+
+	public void ensureDefaultPermissionFiles() {
+		PermissionFileUtil fileUtil = new PermissionFileUtil(this);
+		if (fileUtil.copyPermissionFile(PRISONER_AREA_PERMISSION_FILE, false)) {
+			Server.sendInputCommand("reloadpermissions");
+			logger().info("Permission files reloaded.");
+		} else {
+			logger().warn("No permission files were copied, skipping reload.");
+		}
+	}
+
+	private void initPrisonPersistence() {
+		try {
+			prisonStore = new PrisonStore(sqliteCon);
+			prisonerStore = new PrisonerStore(sqliteCon);
+			prisonService = new PrisonService(prisonStore);
+			prisonerService = new PrisonerService(prisonerStore);
+			prisonIncarcerationService = new PrisonIncarcerationService(prisonService, prisonerService);
+			prisonReleaseService = new PrisonReleaseService(prisonService, prisonerService);
+		} catch (SQLException ex) {
+			logger().error("Failed to initialize prison persistence: " + ex.getMessage());
+			ex.printStackTrace();
+		}
 	}
 
 	@EventMethod
@@ -258,7 +327,8 @@ public class AdminUtils extends Plugin implements Listener, FileChangeListener {
 		Player[] allPlayers = Server.getAllPlayers();
 		if (fromState == State.Sleeping) {
 			translateKey = "TC_PLAYER_STATE_AWAKE";
-			// must be executed delayed because event is not persisted until all handlers are done
+			// must be executed delayed because event is not persisted until all handlers
+			// are done
 			this.executeDelayed(1, () -> {
 				if (getSleepingPlayerCount() == 0)
 					returnToNormalTimeSpeed();
@@ -266,7 +336,8 @@ public class AdminUtils extends Plugin implements Listener, FileChangeListener {
 		}
 		if (toState == State.Sleeping) {
 			translateKey = "TC_PLAYER_STATE_SLEEPING";
-			// must be executed delayed because event is not persisted until all handlers are done
+			// must be executed delayed because event is not persisted until all handlers
+			// are done
 			this.executeDelayed(1, () -> speedUpTime());
 		}
 		for (Player p : allPlayers) {
@@ -382,6 +453,10 @@ public class AdminUtils extends Plugin implements Listener, FileChangeListener {
 			playerTheftKicked++;
 			ps.setInt(player.getDbID(), "oz.adminutils.theftkick", playerTheftKicked);
 			if (playerTheftKicked >= 3) {
+				if (tryPrisonTheftBanReplacement(player, mount, playerTheftKicked)) {
+					return;
+				}
+
 				int durationSeconds = 600; // 10 Minutes
 
 				switch (playerTheftKicked) {
@@ -419,6 +494,10 @@ public class AdminUtils extends Plugin implements Listener, FileChangeListener {
 			} else {
 				// the thief has some more tries next login ... reset theft counter
 				mount.setAttribute("theftCounter", 0);
+				if (tryPrisonTheftKickReplacement(player, mount)) {
+					return;
+				}
+
 				player.kick(t().get("TC_THEFT_KICK", player));
 				DiscordConnect.sendDiscordTheftReport(t().get("TC_THEFT_KICKED", DiscordConnect.botLang())
 						.replace("PH_PLAYER_NAME", player.getName())
@@ -432,6 +511,54 @@ public class AdminUtils extends Plugin implements Listener, FileChangeListener {
 			}
 
 		}
+	}
+
+	private boolean tryPrisonTheftKickReplacement(Player player, Npc mount) {
+		long sentenceMs = Math.max(1, s.prisonTheftKickSentenceGameMinutes) * 60_000L;
+		return tryPrisonTheftReplacement(player, mount, sentenceMs, false, "MOUNT_THEFT_KICK",
+				"TC_THEFT_PRISONED_KICK");
+	}
+
+	private boolean tryPrisonTheftBanReplacement(Player player, Npc mount, int playerTheftKicked) {
+		long sentenceMs = Math.max(1, s.prisonTheftBanSentenceRealMinutes(playerTheftKicked)) * 60_000L;
+		return tryPrisonTheftReplacement(player, mount, sentenceMs, true, "MOUNT_THEFT_BAN_" + playerTheftKicked,
+				"TC_THEFT_PRISONED_BAN");
+	}
+
+	private boolean tryPrisonTheftReplacement(Player player, Npc mount, long sentenceMs, boolean realtime,
+			String reason, String messageKey) {
+		if (!s.enablePrison || prisonIncarcerationService == null) {
+			return false;
+		}
+
+		PrisonIncarcerationService.IncarcerationResult result = prisonIncarcerationService
+				.incarcerate(player, sentenceMs, realtime, reason);
+		if (!result.success()) {
+			if (result.status == PrisonIncarcerationService.Status.NO_PRISON_AVAILABLE
+					|| result.status == PrisonIncarcerationService.Status.PRISON_AREA_MISSING) {
+				logger().warn("Prison theft punishment fallback for " + player.getName() + ": " + result.status);
+				return false;
+			}
+			if (result.status == PrisonIncarcerationService.Status.ALREADY_INCARCERATED) {
+				logger().warn("Prison theft punishment skipped for already incarcerated player " + player.getName());
+				return true;
+			}
+			logger().warn("Prison theft punishment failed for " + player.getName() + ": " + result.status);
+			return false;
+		}
+
+		String prisonName = result.prison == null ? "-" : result.prison.name;
+		DiscordConnect.sendDiscordTheftReport(t().get(messageKey, DiscordConnect.botLang())
+				.replace("PH_PLAYER_NAME", player.getName())
+				.replace("PH_MOUNT_NAME", mount.getName())
+				.replace("PH_PRISON_NAME", prisonName));
+		for (Player p : Server.getAllPlayers()) {
+			p.sendTextMessage(t().get(messageKey, p)
+					.replace("PH_PLAYER_NAME", player.getName())
+					.replace("PH_MOUNT_NAME", mount.getName())
+					.replace("PH_PRISON_NAME", prisonName));
+		}
+		return true;
 	}
 
 	@EventMethod
@@ -612,6 +739,9 @@ public class AdminUtils extends Plugin implements Listener, FileChangeListener {
 							.replace("PH_PLAYER", player.getName()),
 					s.discordPlayerStatusChannelId);
 
+		if (prisonReleaseService != null) {
+			this.executeDelayed(1, () -> prisonReleaseService.releaseIfDue(player));
+		}
 	}
 
 	@EventMethod
@@ -677,6 +807,8 @@ public class AdminUtils extends Plugin implements Listener, FileChangeListener {
 	public void onNpcDeath(NpcDeathEvent event) {
 		// Cause.KilledByPlayer);
 		Npc npc = event.getNpc();
+		if (npc == null)
+			return;
 		String name = npc.getName();
 		String npcClass = npc.getDefinition().name;
 		Vector3f pos = event.getDeathPosition();

@@ -12,6 +12,9 @@ import org.apache.logging.log4j.Level;
 
 import de.omegazirkel.risingworld.AdminUtils;
 import de.omegazirkel.risingworld.tools.OZLogger;
+import de.omegazirkel.risingworld.tools.settings.AdminSettingsEntry;
+import de.omegazirkel.risingworld.tools.settings.AdminSettingsType;
+import de.omegazirkel.risingworld.tools.settings.SettingsFileEditor;
 
 public class PluginSettings {
 	private static PluginSettings instance = null;
@@ -24,7 +27,7 @@ public class PluginSettings {
 
 	// Settings
 	public String logLevel = Level.DEBUG.name();
-	public boolean reloadOnChange = false;
+	public boolean reloadOnChange = true;
 	public boolean enableWelcomeMessage = false;
 
 	// Mount ownership
@@ -32,6 +35,17 @@ public class PluginSettings {
 	public boolean forceAreaOwnership = false;
 	public boolean punishMountTheft = false;
 	public boolean logTheftAttempt = true;
+
+	// Prison feature
+	public boolean enablePrison = false;
+	public int prisonTheftKickSentenceGameMinutes = 10;
+	public int prisonTheftBan3SentenceRealMinutes = 10;
+	public int prisonTheftBan4SentenceRealMinutes = 30;
+	public int prisonTheftBan5SentenceRealMinutes = 60;
+	public int prisonTheftBan6SentenceRealMinutes = 1440;
+	public int prisonTheftBan7SentenceRealMinutes = 10080;
+	public int prisonTheftBan8SentenceRealMinutes = 525600;
+	public int prisonTheftBan9SentenceRealMinutes = 5256000;
 
 	// Sleeping feature
 	public boolean enableSleepAnnouncement = false;
@@ -128,7 +142,7 @@ public class PluginSettings {
 			}
 			// fill global values
 			logLevel = settings.getProperty("logLevel", "ALL");
-			reloadOnChange = settings.getProperty("reloadOnChange", "false").contentEquals("true");
+			reloadOnChange = settings.getProperty("reloadOnChange", "true").contentEquals("true");
 
 			// motd settings
 			enableWelcomeMessage = settings.getProperty("enableWelcomeMessage", "false").contentEquals("true");
@@ -138,6 +152,26 @@ public class PluginSettings {
 			forceAreaOwnership = settings.getProperty("forceAreaOwnership", "false").contentEquals("true");
 			punishMountTheft = settings.getProperty("punishMountTheft", "false").contentEquals("true");
 			logTheftAttempt = settings.getProperty("logTheftAttempt", "true").contentEquals("true");
+
+			// prison feature
+			enablePrison = settings.getProperty("enablePrison", "false").contentEquals("true");
+			prisonTheftKickSentenceGameMinutes = Integer
+					.parseInt(settings.getProperty("prisonTheftKickSentenceGameMinutes", "10"));
+			prisonTheftBan3SentenceRealMinutes = Integer
+					.parseInt(settings.getProperty("prisonTheftBan3SentenceRealMinutes", "10"));
+			prisonTheftBan4SentenceRealMinutes = Integer
+					.parseInt(settings.getProperty("prisonTheftBan4SentenceRealMinutes", "30"));
+			prisonTheftBan5SentenceRealMinutes = Integer
+					.parseInt(settings.getProperty("prisonTheftBan5SentenceRealMinutes", "60"));
+			prisonTheftBan6SentenceRealMinutes = Integer
+					.parseInt(settings.getProperty("prisonTheftBan6SentenceRealMinutes", "1440"));
+			prisonTheftBan7SentenceRealMinutes = Integer
+					.parseInt(settings.getProperty("prisonTheftBan7SentenceRealMinutes", "10080"));
+			prisonTheftBan8SentenceRealMinutes = Integer
+					.parseInt(settings.getProperty("prisonTheftBan8SentenceRealMinutes", "525600"));
+			prisonTheftBan9SentenceRealMinutes = Integer
+					.parseInt(settings.getProperty("prisonTheftBan9SentenceRealMinutes", "5256000"));
+
 			enableSleepAnnouncement = settings.getProperty("enableSleepAnnouncement", "false").contentEquals("true");
 			enableSleepKickAFKPlayer = settings.getProperty("enableSleepKickAFKPlayer", "false").contentEquals("true");
 			afkPlayerSleepTimeoutSeconds = Integer
@@ -212,5 +246,82 @@ public class PluginSettings {
 			logger().error("NumberFormatException on initSettings: " + ex.getMessage());
 			ex.printStackTrace();
 		}
+	}
+
+	public java.util.List<AdminSettingsEntry> adminSettingsEntries() {
+		return java.util.List.of(
+				entry("logLevel", "Log level", "Controls AdminUtils logging verbosity.", logLevel, "ALL",
+						AdminSettingsType.STRING),
+				entry("reloadOnChange", "Reload on change",
+						"Documents that AdminUtils settings reload when settings.properties changes.", reloadOnChange,
+						"true", AdminSettingsType.BOOLEAN),
+				entry("enableWelcomeMessage", "Welcome message", "Shows a short AdminUtils message when a player joins.",
+						enableWelcomeMessage, "false", AdminSettingsType.BOOLEAN),
+				entry("enableMountOwnership", "Mount ownership", "Enables mount ownership protection.",
+						enableMountOwnership, "true", AdminSettingsType.BOOLEAN),
+				entry("punishMountTheft", "Punish mount theft", "Punishes players who try to steal mounts.",
+						punishMountTheft, "true", AdminSettingsType.BOOLEAN),
+				entry("enablePrison", "Prison feature",
+						"Enables prison behavior when at least one prison zone exists.", enablePrison, "false",
+						AdminSettingsType.BOOLEAN),
+				entry("prisonTheftKickSentenceGameMinutes", "Prison kick sentence",
+						"Game-time minutes for theft punishments that would currently kick a player.",
+						prisonTheftKickSentenceGameMinutes, "10", AdminSettingsType.INTEGER),
+				entry("prisonTheftBan3SentenceRealMinutes", "Prison ban 3 sentence",
+						"Real-time minutes for the first theft punishment that would currently ban a player.",
+						prisonTheftBan3SentenceRealMinutes, "10", AdminSettingsType.INTEGER),
+				entry("prisonTheftBan4SentenceRealMinutes", "Prison ban 4 sentence",
+						"Real-time minutes for the second theft punishment that would currently ban a player.",
+						prisonTheftBan4SentenceRealMinutes, "30", AdminSettingsType.INTEGER),
+				entry("prisonTheftBan5SentenceRealMinutes", "Prison ban 5 sentence",
+						"Real-time minutes for the third theft punishment that would currently ban a player.",
+						prisonTheftBan5SentenceRealMinutes, "60", AdminSettingsType.INTEGER),
+				entry("prisonTheftBan6SentenceRealMinutes", "Prison ban 6 sentence",
+						"Real-time minutes for the fourth theft punishment that would currently ban a player.",
+						prisonTheftBan6SentenceRealMinutes, "1440", AdminSettingsType.INTEGER),
+				entry("prisonTheftBan7SentenceRealMinutes", "Prison ban 7 sentence",
+						"Real-time minutes for the fifth theft punishment that would currently ban a player.",
+						prisonTheftBan7SentenceRealMinutes, "10080", AdminSettingsType.INTEGER),
+				entry("prisonTheftBan8SentenceRealMinutes", "Prison ban 8 sentence",
+						"Real-time minutes for the sixth theft punishment that would currently ban a player.",
+						prisonTheftBan8SentenceRealMinutes, "525600", AdminSettingsType.INTEGER),
+				entry("prisonTheftBan9SentenceRealMinutes", "Prison ban 9 sentence",
+						"Real-time minutes for the seventh theft punishment that would currently ban a player.",
+						prisonTheftBan9SentenceRealMinutes, "5256000", AdminSettingsType.INTEGER),
+				entry("enableSleepAnnouncement", "Sleep announcements", "Sends sleep announcements to players.",
+						enableSleepAnnouncement, "false", AdminSettingsType.BOOLEAN),
+				entry("enableSleepKickAFKPlayer", "Sleep AFK kick", "Kicks AFK sleeping players when enabled.",
+						enableSleepKickAFKPlayer, "false", AdminSettingsType.BOOLEAN),
+				entry("afkPlayerSleepTimeoutSeconds", "Sleep AFK timeout", "Seconds before AFK sleepers are kicked.",
+						afkPlayerSleepTimeoutSeconds, "180", AdminSettingsType.INTEGER));
+	}
+
+	public int prisonTheftBanSentenceRealMinutes(int theftKickCount) {
+		return switch (theftKickCount) {
+			case 4 -> prisonTheftBan4SentenceRealMinutes;
+			case 5 -> prisonTheftBan5SentenceRealMinutes;
+			case 6 -> prisonTheftBan6SentenceRealMinutes;
+			case 7 -> prisonTheftBan7SentenceRealMinutes;
+			case 8 -> prisonTheftBan8SentenceRealMinutes;
+			case 9 -> prisonTheftBan9SentenceRealMinutes;
+			default -> prisonTheftBan3SentenceRealMinutes;
+		};
+	}
+
+	private AdminSettingsEntry entry(String key, String label, String description, Object value, String defaultValue,
+			AdminSettingsType type) {
+		return new AdminSettingsEntry(
+				key,
+				label,
+				description,
+				String.valueOf(value),
+				defaultValue,
+				type,
+				false,
+				newValue -> SettingsFileEditor.writeValue(settingsPath(), key, newValue));
+	}
+
+	private Path settingsPath() {
+		return Paths.get((plugin.getPath() != null ? plugin.getPath() : ".") + "/settings.properties");
 	}
 }

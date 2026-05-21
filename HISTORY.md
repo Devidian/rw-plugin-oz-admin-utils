@@ -4,7 +4,20 @@
 
 ## [unreleased]
 
+- fix: restore colored one-line plugin welcome message
 - build: align bundled PluginAPI jar and Maven dependency version
+- feat: add additive prison prisoner persistence fields for future release, inventory restore, and audit workflows
+- feat: add disabled-by-default prison settings and configurable theft sentence durations
+- feat: add Admin Utils prisoner area permission template initialization
+- feat: add admin radial prison zone management entry point
+- feat: add radial prison creation, name sync, and spawn setup
+- feat: add prison detail inmate table with pardon action
+- feat: add prison incarceration service with nearest-prison selection, spawn capture, permission assignment, inventory serialization, and teleport
+- feat: add prison release service with spawn/inventory restore, permission cleanup, and offline realtime sentence completion on login
+- feat: route mount theft kick/ban escalation into prison when enabled, with existing punishment fallback if no prison is available
+- docs: add prison setup, migration, and runtime validation guidance
+- change: replace Admin Utils player settings placeholder with localized settings guidance
+- change: document prison Package 1 persistence audit and migration scope
 
 ## [0.4.4] - 2026-03-19 | Sleep time acceleration and release workflow polish
 
