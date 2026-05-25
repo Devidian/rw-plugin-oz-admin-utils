@@ -5,6 +5,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 import de.omegazirkel.risingworld.adminutils.DiscordConnect;
+import de.omegazirkel.risingworld.adminutils.AdminUtilsPluginInfoStatusProvider;
 import de.omegazirkel.risingworld.adminutils.PermissionFileUtil;
 import de.omegazirkel.risingworld.adminutils.PluginGUI;
 import de.omegazirkel.risingworld.adminutils.PrisonIncarcerationService;
@@ -27,6 +28,7 @@ import de.omegazirkel.risingworld.tools.settings.PlayerPluginAdminSettings;
 import de.omegazirkel.risingworld.tools.ui.AssetManager;
 import de.omegazirkel.risingworld.tools.ui.MenuItem;
 import de.omegazirkel.risingworld.tools.ui.PlayerPluginSettingsOverlay;
+import de.omegazirkel.risingworld.tools.ui.PluginInfoStatusProviders;
 import de.omegazirkel.risingworld.tools.ui.PluginMenuManager;
 import net.risingworld.api.Plugin;
 import net.risingworld.api.Server;
@@ -142,11 +144,16 @@ public class AdminUtils extends Plugin implements Listener, FileChangeListener {
 		PlayerPluginSettingsOverlay.registerPlayerPluginAdminSettings(
 				new PlayerPluginAdminSettings(name, getDescription("version"), () -> s.adminSettingsEntries(),
 						s::initSettings));
+		PluginInfoStatusProviders
+				.registerProvider(new AdminUtilsPluginInfoStatusProvider(this, getDescription("version")));
 		logger().info("✅ " + this.getName() + " Plugin is enabled version:" + this.getDescription("version"));
 	}
 
 	@Override
 	public void onDisable() {
+		if (name != null) {
+			PluginInfoStatusProviders.unregisterProvider(name);
+		}
 		if (prisonerStore != null)
 			prisonerStore.shutdown();
 		if (prisonStore != null)
@@ -201,13 +208,7 @@ public class AdminUtils extends Plugin implements Listener, FileChangeListener {
 			String option = cmdParts[1];
 			switch (option) {
 				case "status":
-					String statusMessage = t.get("TC_CMD_STATUS", lang)
-							.replace("PH_VERSION", c.okay + this.getDescription("version") + c.endTag)
-							.replace("PH_LANGUAGE",
-									c.info + player.getLanguage() + " / " + player.getSystemLanguage() + c.endTag)
-							.replace("PH_USEDLANG", c.okay + t.getLanguageUsed(lang) + c.endTag)
-							.replace("PH_LANG_AVAILABLE", c.warning + t.getLanguageAvailable() + c.endTag);
-					player.sendTextMessage(c.okay + this.getName() + ":> " + c.text + statusMessage);
+					PluginInfoStatusProviders.show(player, name);
 					break;
 				case "help":
 					String helpMessage = t.get("TC_CMD_HELP", player).replaceAll("PH_PLUGIN_CMD", pluginCMD);

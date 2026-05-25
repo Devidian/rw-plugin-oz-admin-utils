@@ -36,6 +36,11 @@ Players that are idle for a while can optionally be kicked.
 If `enableSpeedUpTime=true`, the server speeds up game time once at least 50% of online players are sleeping and returns to the previous game speed after the sleep window ends.
 Sleep start and speed reset messages can also be forwarded to Discord with `discordSleepEventChannelId`.
 
+## Commands
+
+- `/au`: open the Admin Utils menu.
+- `/au status`: open the shared Tools Info/Status panel.
+
 ## Contributor Workflow
 
 - Review `AGENTS.md`, `PLANS.md`, `.codex/agents.toml`, and `.codex/skills/` before making structural changes.

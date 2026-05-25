@@ -4,6 +4,8 @@
 
 ## [unreleased]
 
+- feat: add shared Tools Info/Status panel content for Admin Utils and route `/au status` to it
+- feat: complete grouped admin settings metadata and i18n labels for Admin Utils settings
 - fix: restore colored one-line plugin welcome message
 - build: align bundled PluginAPI jar and Maven dependency version
 - feat: add additive prison prisoner persistence fields for future release, inventory restore, and audit workflows
