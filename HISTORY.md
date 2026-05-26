@@ -4,7 +4,10 @@
 
 ## [unreleased]
 
+## [0.4.5] - 2026-05-26 | Player settings text wrapping
+
 - fix: keep Admin Utils PlayerSettings guidance cards within the shared Tools settings width
+- fix: increase Admin Utils PlayerSettings guidance card height so long localized text remains visible
 - change: use the dedicated prison shared-indicator icon for prison-zone signals
 - change: widen Admin Utils player settings guidance cards and remove redundant prison-zone radial info buttons
 - fix: route theft prison replacement before the old theft kill path and stabilize players during prison transfer

@@ -36,9 +36,9 @@ public class AdminUtilsPlayerPluginSettings extends PlayerPluginSettings {
             private OZUIElement infoCard(Player uiPlayer, String labelKey) {
                 OZUIElement element = defaultSettingsContainer();
                 element.style.width.set(95, Unit.Percent);
-                element.style.height.set(74, Unit.Pixel);
+                element.style.height.set(118, Unit.Pixel);
                 UILabel label = defaultSettingsLabel(t().get(labelKey, uiPlayer));
-                label.style.height.set(50, Unit.Pixel);
+                label.style.height.set(96, Unit.Pixel);
                 element.addChild(label);
                 return element;
             }
