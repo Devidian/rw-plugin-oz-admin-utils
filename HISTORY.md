@@ -4,6 +4,13 @@
 
 ## [unreleased]
 
+- fix: keep Admin Utils PlayerSettings guidance cards within the shared Tools settings width
+- change: use the dedicated prison shared-indicator icon for prison-zone signals
+- change: widen Admin Utils player settings guidance cards and remove redundant prison-zone radial info buttons
+- fix: route theft prison replacement before the old theft kill path and stabilize players during prison transfer
+- fix: return active prisoners to the prison spawn on spawn to block normal bed-spawn bypasses
+- feat: add shared Tools prison-zone indicator with `showPrisonZoneIndicator`
+- feat: add Admin Utils radial Info/Status menu action with the shared Tools info icon
 - feat: add shared Tools Info/Status panel content for Admin Utils and route `/au status` to it
 - feat: complete grouped admin settings metadata and i18n labels for Admin Utils settings
 - fix: restore colored one-line plugin welcome message

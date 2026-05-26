@@ -6,6 +6,8 @@ import de.omegazirkel.risingworld.tools.ui.BasePlayerPluginSettingsPanel;
 import de.omegazirkel.risingworld.tools.ui.OZUIElement;
 import de.omegazirkel.risingworld.tools.ui.PlayerPluginSettings;
 import net.risingworld.api.objects.Player;
+import net.risingworld.api.ui.UILabel;
+import net.risingworld.api.ui.style.Unit;
 
 public class AdminUtilsPlayerPluginSettings extends PlayerPluginSettings {
 
@@ -33,7 +35,11 @@ public class AdminUtilsPlayerPluginSettings extends PlayerPluginSettings {
 
             private OZUIElement infoCard(Player uiPlayer, String labelKey) {
                 OZUIElement element = defaultSettingsContainer();
-                element.addChild(defaultSettingsLabel(t().get(labelKey, uiPlayer)));
+                element.style.width.set(95, Unit.Percent);
+                element.style.height.set(74, Unit.Pixel);
+                UILabel label = defaultSettingsLabel(t().get(labelKey, uiPlayer));
+                label.style.height.set(50, Unit.Pixel);
+                element.addChild(label);
                 return element;
             }
         };

@@ -1,5 +1,6 @@
 # Roadmaps
 
+- [Roadmap Plan 03 Prison And Zone Indicator](roadmap-plan-03-prison-and-zone-indicator.md)
 - [Roadmap Plan 02 Plugin Standardization](roadmap-plan-02-plugin-standardization.md)
 - [Prison Completion](prison-completion.md)
 

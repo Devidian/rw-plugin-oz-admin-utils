@@ -24,6 +24,9 @@ Admin Utils can manage prison zones for moderation workflows.
 - Use `Manage zone` / `Zone verwalten` to create a prison record for the current area.
 - Set the prison spawn to the admin's current position and keep the area enabled.
 - Prisoners receive the bundled `ozau-prisoner` area permission, are teleported to the prison spawn, and their inventory is stored for release.
+- The transfer stabilizes the player before moving them so prison replacement does not reuse the old theft kill path.
+- Active prisoners are returned to the prison spawn on spawn, preventing normal bed spawn from bypassing imprisonment.
+- `showPrisonZoneIndicator=true` shows the shared Tools indicator while players stand inside an enabled prison zone.
 - Pardon and release restore the saved spawn position and serialized inventory. Offline real-time sentences are restored on next login.
 
 Prison data is stored in the existing SQLite database. Migrations are additive: existing `prisons` and `prisoners` tables are kept, and missing prisoner restore/audit columns are added automatically.
@@ -39,7 +42,7 @@ Sleep start and speed reset messages can also be forwarded to Discord with `disc
 ## Commands
 
 - `/au`: open the Admin Utils menu.
-- `/au status`: open the shared Tools Info/Status panel.
+- `/au status` or `/au info`: open the shared Tools Info/Status panel.
 
 ## Contributor Workflow
 

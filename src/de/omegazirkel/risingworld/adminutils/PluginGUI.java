@@ -8,9 +8,10 @@ import de.omegazirkel.risingworld.adminutils.db.entities.Prison;
 import de.omegazirkel.risingworld.adminutils.ui.PrisonDetailOverlay;
 import de.omegazirkel.risingworld.tools.I18n;
 import de.omegazirkel.risingworld.tools.ui.CursorManager;
-import de.omegazirkel.risingworld.tools.ui.AssetManager;
 import de.omegazirkel.risingworld.tools.ui.MenuItem;
+import de.omegazirkel.risingworld.tools.ui.PluginInfoStatusProviders;
 import de.omegazirkel.risingworld.tools.ui.PluginMenuManager;
+import de.omegazirkel.risingworld.tools.ui.AssetManager;
 import net.risingworld.api.callbacks.Callback;
 import net.risingworld.api.objects.Area;
 import net.risingworld.api.Plugin;
@@ -34,8 +35,8 @@ public class PluginGUI {
                 "icon-ki-release",
                 "icon-ki-manage-zone",
                 "icon-ki-manage-prison",
+                "icon-ki-indicator-prison",
                 "icon-ki-create",
-                "icon-ki-info",
                 "oz-admin-utils-logo"
         };
 
@@ -58,6 +59,7 @@ public class PluginGUI {
         if (uiPlayer.isAdmin()) {
             menuItems.add(menuItemManagePrisonZone(uiPlayer));
         }
+        menuItems.add(PluginInfoStatusProviders.menuItem(t().get("TC_MENU_INFO_STATUS", uiPlayer), AdminUtils.name));
         menuItems.add(MenuItem.closeMenu(uiPlayer));
         PluginMenuManager.showMenu(uiPlayer, menuItems);
     }
@@ -80,22 +82,12 @@ public class PluginGUI {
         }
 
         if (currentArea == null) {
-            menuItems.add(infoItem(
-                    t().get("TC_MENU_PRISON_ZONE_NO_AREA", uiPlayer),
-                    t().get("TC_PRISON_ZONE_NO_AREA", uiPlayer),
-                    onBack));
+            uiPlayer.sendTextMessage(t().get("TC_PRISON_ZONE_NO_AREA", uiPlayer));
+            onBack.onCall(uiPlayer);
+            return;
         } else {
             Prison prison = AdminUtils.prisonService() == null ? null
                     : AdminUtils.prisonService().get(currentArea.getID());
-            menuItems.add(infoItem(
-                    t().get(prison == null ? "TC_MENU_PRISON_ZONE_NOT_CONFIGURED" : "TC_MENU_PRISON_ZONE_CONFIGURED",
-                            uiPlayer),
-                    prisonStatusMessage(uiPlayer, currentArea, prison),
-                    onBack));
-            menuItems.add(infoItem(
-                    t().get("TC_MENU_PRISON_ZONE_NEXT_STEPS", uiPlayer),
-                    t().get("TC_PRISON_ZONE_NEXT_STEPS", uiPlayer),
-                    onBack));
             if (prison == null) {
                 menuItems.add(menuItemCreatePrison(uiPlayer, currentArea, onBack));
             } else {
@@ -108,13 +100,6 @@ public class PluginGUI {
         menuItems.add(MenuItem.closeMenu(uiPlayer));
         menuItems.add(MenuItem.backMenu(uiPlayer, onBack));
         PluginMenuManager.showMenu(uiPlayer, menuItems);
-    }
-
-    private MenuItem infoItem(String label, String message, Callback<Player> onBack) {
-        return new MenuItem(AssetManager.getIcon("icon-ki-info"), label, p -> {
-            p.sendTextMessage(message);
-            openPrisonZoneMenu(p, onBack);
-        });
     }
 
     private MenuItem menuItemCreatePrison(Player uiPlayer, Area area, Callback<Player> onBack) {
@@ -193,15 +178,6 @@ public class PluginGUI {
                             .replace("PH_AREA_ID", String.valueOf(area.getID())));
                     openPrisonZoneMenu(p, onBack);
                 });
-    }
-
-    private String prisonStatusMessage(Player player, Area area, Prison prison) {
-        String key = prison == null ? "TC_PRISON_ZONE_NOT_CONFIGURED" : "TC_PRISON_ZONE_CONFIGURED";
-        return t().get(key, player)
-                .replace("PH_AREA_NAME", prison == null ? prisonName(area) : prison.name)
-                .replace("PH_AREA_ID", String.valueOf(area.getID()))
-                .replace("PH_PRISON_COUNT", AdminUtils.prisonService() == null ? "0"
-                        : String.valueOf(AdminUtils.prisonService().getAll().size()));
     }
 
     private String prisonName(Area area) {

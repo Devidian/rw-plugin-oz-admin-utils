@@ -15,8 +15,11 @@ import de.omegazirkel.risingworld.adminutils.db.PrisonService;
 import de.omegazirkel.risingworld.adminutils.db.PrisonStore;
 import de.omegazirkel.risingworld.adminutils.db.PrisonerService;
 import de.omegazirkel.risingworld.adminutils.db.PrisonerStore;
+import de.omegazirkel.risingworld.adminutils.db.entities.Prison;
+import de.omegazirkel.risingworld.adminutils.db.entities.Prisoner;
 import de.omegazirkel.risingworld.adminutils.ui.AdminUtilsPlayerPluginData;
 import de.omegazirkel.risingworld.adminutils.ui.AdminUtilsPlayerPluginSettings;
+import de.omegazirkel.risingworld.adminutils.ui.PrisonZoneIndicatorProvider;
 import de.omegazirkel.risingworld.tools.AreaUtils;
 import de.omegazirkel.risingworld.tools.Colors;
 import de.omegazirkel.risingworld.tools.FileChangeListener;
@@ -30,6 +33,7 @@ import de.omegazirkel.risingworld.tools.ui.MenuItem;
 import de.omegazirkel.risingworld.tools.ui.PlayerPluginSettingsOverlay;
 import de.omegazirkel.risingworld.tools.ui.PluginInfoStatusProviders;
 import de.omegazirkel.risingworld.tools.ui.PluginMenuManager;
+import de.omegazirkel.risingworld.tools.ui.SharedIndicators;
 import net.risingworld.api.Plugin;
 import net.risingworld.api.Server;
 import net.risingworld.api.definitions.Npcs;
@@ -62,6 +66,8 @@ import net.risingworld.api.objects.Npc;
 import net.risingworld.api.objects.Player;
 import net.risingworld.api.objects.Player.State;
 import net.risingworld.api.objects.Time.Unit;
+import net.risingworld.api.utils.Quaternion;
+import net.risingworld.api.utils.SpawnPointType;
 import net.risingworld.api.utils.Vector3i;
 import net.risingworld.api.utils.Utils.ChunkUtils;
 import net.risingworld.api.utils.Vector3f;
@@ -146,6 +152,7 @@ public class AdminUtils extends Plugin implements Listener, FileChangeListener {
 						s::initSettings));
 		PluginInfoStatusProviders
 				.registerProvider(new AdminUtilsPluginInfoStatusProvider(this, getDescription("version")));
+		SharedIndicators.registerProvider(name, new PrisonZoneIndicatorProvider());
 		logger().info("✅ " + this.getName() + " Plugin is enabled version:" + this.getDescription("version"));
 	}
 
@@ -153,6 +160,7 @@ public class AdminUtils extends Plugin implements Listener, FileChangeListener {
 	public void onDisable() {
 		if (name != null) {
 			PluginInfoStatusProviders.unregisterProvider(name);
+			SharedIndicators.unregisterProvider(name);
 		}
 		if (prisonerStore != null)
 			prisonerStore.shutdown();
@@ -207,6 +215,7 @@ public class AdminUtils extends Plugin implements Listener, FileChangeListener {
 			}
 			String option = cmdParts[1];
 			switch (option) {
+				case "info":
 				case "status":
 					PluginInfoStatusProviders.show(player, name);
 					break;
@@ -236,6 +245,39 @@ public class AdminUtils extends Plugin implements Listener, FileChangeListener {
 					.replace("PH_PLUGIN_CMD", pluginCMD)
 					.replace("PH_PLUGIN_VERSION", getDescription("version")));
 		}
+		this.executeDelayed(1, () -> handlePrisonerSpawn(player));
+	}
+
+	private void handlePrisonerSpawn(Player player) {
+		if (player == null || prisonReleaseService == null) {
+			return;
+		}
+		if (prisonReleaseService.releaseIfDue(player).success()) {
+			return;
+		}
+		enforceActivePrisonSpawn(player);
+	}
+
+	private void enforceActivePrisonSpawn(Player player) {
+		if (!s.enablePrison || prisonService == null || prisonerService == null) {
+			return;
+		}
+		Prisoner prisoner = prisonerService.get(player.getDbID());
+		if (prisoner == null || prisoner.restorePending
+				|| !PrisonIncarcerationService.STATUS_INCARCERATED.equalsIgnoreCase(prisoner.status)) {
+			return;
+		}
+		Prison prison = prisonService.get(prisoner.prisonAreaId);
+		if (prison == null || prison.spawnPosition == null) {
+			return;
+		}
+		Area prisonArea = Server.getArea(prison.areaId);
+		if (prisonArea != null) {
+			prisonArea.setPlayerPermission(player, PRISONER_AREA_PERMISSION);
+		}
+		Vector3f prisonSpawn = new Vector3f(prison.spawnPosition.x, prison.spawnPosition.y, prison.spawnPosition.z);
+		player.setSpawnPoint(SpawnPointType.Primary, prisonSpawn, Quaternion.IDENTITY, prison.name);
+		player.setPosition(prisonSpawn);
 	}
 
 	@EventMethod
@@ -438,18 +480,6 @@ public class AdminUtils extends Plugin implements Listener, FileChangeListener {
 		if (playerTheftAttempt > 3)
 			player.addDamage(5 * playerTheftAttempt);
 
-		if (playerTheftAttempt > 5) {
-			player.kill();
-			DiscordConnect.sendDiscordTheftReport(t().get("TC_THEFT_KILL", DiscordConnect.botLang())
-					.replace("PH_PLAYER_NAME", player.getName())
-					.replace("PH_MOUNT_NAME", mount.getName()));
-			// loop all player
-			for (Player p : Server.getAllPlayers()) {
-				p.sendTextMessage(t().get("TC_THEFT_KILL", p)
-						.replace("PH_PLAYER_NAME", player.getName())
-						.replace("PH_MOUNT_NAME", mount.getName()));
-			}
-		}
 		if (playerTheftAttempt > 6) {
 			playerTheftKicked++;
 			ps.setInt(player.getDbID(), "oz.adminutils.theftkick", playerTheftKicked);
@@ -510,7 +540,20 @@ public class AdminUtils extends Plugin implements Listener, FileChangeListener {
 				}
 
 			}
+			return;
 
+		}
+		if (playerTheftAttempt > 5) {
+			player.kill();
+			DiscordConnect.sendDiscordTheftReport(t().get("TC_THEFT_KILL", DiscordConnect.botLang())
+					.replace("PH_PLAYER_NAME", player.getName())
+					.replace("PH_MOUNT_NAME", mount.getName()));
+			// loop all player
+			for (Player p : Server.getAllPlayers()) {
+				p.sendTextMessage(t().get("TC_THEFT_KILL", p)
+						.replace("PH_PLAYER_NAME", player.getName())
+						.replace("PH_MOUNT_NAME", mount.getName()));
+			}
 		}
 	}
 

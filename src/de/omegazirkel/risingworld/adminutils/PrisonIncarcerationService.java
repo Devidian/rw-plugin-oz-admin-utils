@@ -85,8 +85,10 @@ public class PrisonIncarcerationService {
         prisonerService.incarcerate(prisoner);
         prisonArea.setPlayerPermission(player, AdminUtils.PRISONER_AREA_PERMISSION);
         Vector3f prisonSpawn = copy(prison.spawnPosition);
+        stabilizePlayerForTransfer(player);
         player.setSpawnPoint(SpawnPointType.Primary, prisonSpawn, Quaternion.IDENTITY, prison.name);
         player.setPosition(prisonSpawn);
+        stabilizePlayerForTransfer(player);
         clearInventory(player);
 
         prison.currentInmates = Math.max(0, prison.currentInmates) + 1;
@@ -135,6 +137,12 @@ public class PrisonIncarcerationService {
         }
         inventory.clear();
         inventory.syncWithClient();
+    }
+
+    private static void stabilizePlayerForTransfer(Player player) {
+        player.setBleeding(false);
+        player.setBrokenBones(false);
+        player.setHealth(Math.max(1, player.getMaxHealth()));
     }
 
     private static Vector3f copy(Vector3f vector) {

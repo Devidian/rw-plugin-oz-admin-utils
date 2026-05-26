@@ -38,6 +38,7 @@ public class PluginSettings {
 
 	// Prison feature
 	public boolean enablePrison = false;
+	public boolean showPrisonZoneIndicator = true;
 	public int prisonTheftKickSentenceGameMinutes = 10;
 	public int prisonTheftBan3SentenceRealMinutes = 10;
 	public int prisonTheftBan4SentenceRealMinutes = 30;
@@ -155,6 +156,7 @@ public class PluginSettings {
 
 			// prison feature
 			enablePrison = settings.getProperty("enablePrison", "false").contentEquals("true");
+			showPrisonZoneIndicator = settings.getProperty("showPrisonZoneIndicator", "true").contentEquals("true");
 			prisonTheftKickSentenceGameMinutes = Integer
 					.parseInt(settings.getProperty("prisonTheftKickSentenceGameMinutes", "10"));
 			prisonTheftBan3SentenceRealMinutes = Integer
@@ -270,6 +272,9 @@ public class PluginSettings {
 				entry("enablePrison", "Prison feature",
 						"Enables prison behavior when at least one prison zone exists.", enablePrison, "false",
 						AdminSettingsType.BOOLEAN),
+				entry("showPrisonZoneIndicator", "Prison zone indicator",
+						"Shows a shared Tools indicator while players stand inside an enabled prison zone.",
+						showPrisonZoneIndicator, "true", AdminSettingsType.BOOLEAN),
 				entry("prisonTheftKickSentenceGameMinutes", "Prison kick sentence",
 						"Game-time minutes for theft punishments that would currently kick a player.",
 						prisonTheftKickSentenceGameMinutes, "10", AdminSettingsType.INTEGER),

@@ -25,6 +25,7 @@ public class AdminUtilsPluginInfoStatusProvider implements PluginInfoStatusProvi
     public String getInfo(Player player) {
         return t().get("TC_ADMIN_UTILS_INFO_PANEL_INFO", player)
                 .replace("PH_PLUGIN_NAME", pluginName)
+                .replace("PH_VERSION", version)
                 .replace("PH_PLUGIN_CMD", "au");
     }
 
@@ -35,7 +36,6 @@ public class AdminUtilsPluginInfoStatusProvider implements PluginInfoStatusProvi
         int inmateCount = AdminUtils.prisonerService() == null ? 0
                 : AdminUtils.prisonerService().getByStatus("INCARCERATED").size();
         return t().get("TC_ADMIN_UTILS_INFO_PANEL_STATUS", player)
-                .replace("PH_VERSION", version)
                 .replace("PH_MOUNT_OWNERSHIP", String.valueOf(settings.enableMountOwnership))
                 .replace("PH_THEFT_PUNISHMENT", String.valueOf(settings.punishMountTheft))
                 .replace("PH_PRISON_ENABLED", String.valueOf(settings.enablePrison))
@@ -43,10 +43,7 @@ public class AdminUtilsPluginInfoStatusProvider implements PluginInfoStatusProvi
                 .replace("PH_INMATE_COUNT", String.valueOf(inmateCount))
                 .replace("PH_SLEEP_ANNOUNCEMENT", String.valueOf(settings.enableSleepAnnouncement))
                 .replace("PH_SPEED_UP_TIME", String.valueOf(settings.enableSpeedUpTime))
-                .replace("PH_EVENT_LOGGING", String.valueOf(eventLoggingEnabled(settings)))
-                .replace("PH_LOG_LEVEL", settings.logLevel)
-                .replace("PH_RELOAD_ON_CHANGE", String.valueOf(settings.reloadOnChange))
-                .replace("PH_WELCOME_MESSAGE", String.valueOf(settings.enableWelcomeMessage));
+                .replace("PH_EVENT_LOGGING", String.valueOf(eventLoggingEnabled(settings)));
     }
 
     private I18n t() {
