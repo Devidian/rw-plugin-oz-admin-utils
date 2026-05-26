@@ -4,7 +4,7 @@
 
 ## [unreleased]
 
-## [0.4.5] - 2026-05-26 | Player settings text wrapping
+## [0.5.0] - 2026-05-26 | Player settings text wrapping
 
 - fix: keep Admin Utils PlayerSettings guidance cards within the shared Tools settings width
 - fix: increase Admin Utils PlayerSettings guidance card height so long localized text remains visible
