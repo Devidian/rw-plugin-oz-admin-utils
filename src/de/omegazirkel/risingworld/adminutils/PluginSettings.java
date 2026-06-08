@@ -29,6 +29,8 @@ public class PluginSettings {
 	public String logLevel = Level.DEBUG.name();
 	public boolean reloadOnChange = true;
 	public boolean enableWelcomeMessage = false;
+	public boolean newPlayerInfoEnabled = false;
+	public String newPlayerInfoText = "";
 
 	// Mount ownership
 	public boolean enableMountOwnership = true;
@@ -147,6 +149,8 @@ public class PluginSettings {
 
 			// motd settings
 			enableWelcomeMessage = settings.getProperty("enableWelcomeMessage", "false").contentEquals("true");
+			newPlayerInfoEnabled = settings.getProperty("newPlayerInfo.enabled", "false").contentEquals("true");
+			newPlayerInfoText = decodeSettingText(settings.getProperty("newPlayerInfo.text", ""));
 
 			// mount ownership
 			enableMountOwnership = settings.getProperty("enableMountOwnership", "true").contentEquals("true");
@@ -260,6 +264,12 @@ public class PluginSettings {
 						"true", AdminSettingsType.BOOLEAN),
 				entry("enableWelcomeMessage", "Welcome message", "Shows a short AdminUtils message when a player joins.",
 						enableWelcomeMessage, "false", AdminSettingsType.BOOLEAN),
+				entry("newPlayerInfo.enabled", "New player info",
+						"Shows the configured info panel to players until they opt out.", newPlayerInfoEnabled,
+						"false", AdminSettingsType.BOOLEAN),
+				entry("newPlayerInfo.text", "New player info text",
+						"Text shown in the optional new-player information panel.", newPlayerInfoText, "",
+						AdminSettingsType.TEXT),
 				AdminSettingsEntry.group("mounts", "Mount ownership", "Mount ownership protection and theft punishment."),
 				entry("enableMountOwnership", "Mount ownership", "Enables mount ownership protection.",
 						enableMountOwnership, "true", AdminSettingsType.BOOLEAN),
@@ -419,5 +429,9 @@ public class PluginSettings {
 
 	private Path settingsPath() {
 		return Paths.get((plugin.getPath() != null ? plugin.getPath() : ".") + "/settings.properties");
+	}
+
+	private String decodeSettingText(String value) {
+		return value == null ? "" : value.replace("\\n", "\n").trim();
 	}
 }

@@ -19,6 +19,7 @@ import de.omegazirkel.risingworld.adminutils.db.entities.Prison;
 import de.omegazirkel.risingworld.adminutils.db.entities.Prisoner;
 import de.omegazirkel.risingworld.adminutils.ui.AdminUtilsPlayerPluginData;
 import de.omegazirkel.risingworld.adminutils.ui.AdminUtilsPlayerPluginSettings;
+import de.omegazirkel.risingworld.adminutils.ui.NewPlayerInfoOverlay;
 import de.omegazirkel.risingworld.adminutils.ui.PrisonZoneIndicatorProvider;
 import de.omegazirkel.risingworld.tools.AreaUtils;
 import de.omegazirkel.risingworld.tools.Colors;
@@ -33,6 +34,7 @@ import de.omegazirkel.risingworld.tools.ui.MenuItem;
 import de.omegazirkel.risingworld.tools.ui.PlayerPluginSettingsOverlay;
 import de.omegazirkel.risingworld.tools.ui.PluginInfoStatusProviders;
 import de.omegazirkel.risingworld.tools.ui.PluginMenuManager;
+import de.omegazirkel.risingworld.tools.ui.PluginShortcutVisibility;
 import de.omegazirkel.risingworld.tools.ui.SharedIndicators;
 import net.risingworld.api.Plugin;
 import net.risingworld.api.Server;
@@ -135,9 +137,10 @@ public class AdminUtils extends Plugin implements Listener, FileChangeListener {
 		// Load Plugin Menu into Main Plugin Menu
 		PluginMenuManager
 				.registerPluginMenu(
-						new MenuItem(AssetManager.getIcon("oz-admin-utils-logo"), "Admin Utils", (Player p) -> {
+						new MenuItem(name, AssetManager.getIcon("oz-admin-utils-logo"), "Admin Utils", (Player p) -> {
 							gui.openMainMenu(p);
 						}));
+		PluginShortcutVisibility.register(name, AdminUtilsPlayerPluginSettings::shortcutVisible);
 		normalGameSpeed = Server.getGameTimeSpeed();
 		if (normalGameSpeed == 0)
 			normalGameSpeed = 2.5f;
@@ -159,6 +162,7 @@ public class AdminUtils extends Plugin implements Listener, FileChangeListener {
 	@Override
 	public void onDisable() {
 		if (name != null) {
+			PluginShortcutVisibility.unregister(name);
 			PluginInfoStatusProviders.unregisterProvider(name);
 			SharedIndicators.unregisterProvider(name);
 		}
@@ -166,6 +170,13 @@ public class AdminUtils extends Plugin implements Listener, FileChangeListener {
 			prisonerStore.shutdown();
 		if (prisonStore != null)
 			prisonStore.shutdown();
+		if (sqliteCon != null) {
+			try {
+				sqliteCon.close();
+			} catch (SQLException ex) {
+				logger().warn("Failed to close Admin Utils database connection: " + ex.getMessage());
+			}
+		}
 	}
 
 	@Override
@@ -245,7 +256,22 @@ public class AdminUtils extends Plugin implements Listener, FileChangeListener {
 					.replace("PH_PLUGIN_CMD", pluginCMD)
 					.replace("PH_PLUGIN_VERSION", getDescription("version")));
 		}
+		this.executeDelayed(1, () -> showNewPlayerInfo(player));
 		this.executeDelayed(1, () -> handlePrisonerSpawn(player));
+	}
+
+	private void showNewPlayerInfo(Player player) {
+		if (player == null || s == null || ps == null || !s.newPlayerInfoEnabled || s.newPlayerInfoText.isBlank()) {
+			return;
+		}
+		if (!AdminUtilsPlayerPluginSettings.newPlayerInfoVisible(player)
+				|| player.getAttribute(NewPlayerInfoOverlay.PLAYER_ATTRIBUTE) != null) {
+			return;
+		}
+		NewPlayerInfoOverlay overlay = new NewPlayerInfoOverlay(player, s.newPlayerInfoText);
+		player.setAttribute(NewPlayerInfoOverlay.PLAYER_ATTRIBUTE, overlay);
+		player.addUIElement(overlay);
+		de.omegazirkel.risingworld.tools.ui.CursorManager.show(player);
 	}
 
 	private void handlePrisonerSpawn(Player player) {
@@ -473,13 +499,6 @@ public class AdminUtils extends Plugin implements Listener, FileChangeListener {
 		if (playerTheftAttempt <= 6) // > 6 is kick
 			player.sendTextMessage(t().get("TC_THEFT_WARN_" + playerTheftAttempt.toString(), player));
 
-		if (playerTheftAttempt > 1)
-			player.setBleeding(true);
-		if (playerTheftAttempt > 2)
-			player.setBrokenBones(true);
-		if (playerTheftAttempt > 3)
-			player.addDamage(5 * playerTheftAttempt);
-
 		if (playerTheftAttempt > 6) {
 			playerTheftKicked++;
 			ps.setInt(player.getDbID(), "oz.adminutils.theftkick", playerTheftKicked);
@@ -543,6 +562,12 @@ public class AdminUtils extends Plugin implements Listener, FileChangeListener {
 			return;
 
 		}
+		if (playerTheftAttempt > 1)
+			player.setBleeding(true);
+		if (playerTheftAttempt > 2)
+			player.setBrokenBones(true);
+		if (playerTheftAttempt > 3)
+			player.addDamage(5 * playerTheftAttempt);
 		if (playerTheftAttempt > 5) {
 			player.kill();
 			DiscordConnect.sendDiscordTheftReport(t().get("TC_THEFT_KILL", DiscordConnect.botLang())
@@ -758,16 +783,28 @@ public class AdminUtils extends Plugin implements Listener, FileChangeListener {
 
 	@EventMethod
 	public void onPlayerDeath(PlayerDeathEvent event) {
+		if (!s.enablePlayerDeathLogging && s.discordPlayerDeathChannelId == 0) {
+			return;
+		}
 		Player player = event.getPlayer();
 		String message = t.get("TC_EVENT_PLAYER_DEATH", DiscordConnect.botLang())
 				.replace("PH_PLAYER", player.getName())
-				.replace("PH_CAUSE", event.getCause().toString())
+				.replace("PH_CAUSE", playerDeathCause(event))
 				.replace("PH_LOCATION", event.getDeathPosition().toString().replaceAll("[,()]", ""));
 
 		if (s.enablePlayerDeathLogging)
 			eventLogger().info(message);
 		if (s.discordPlayerDeathChannelId != 0)
 			DiscordConnect.sendDiscordMessage(message, s.discordPlayerDeathChannelId);
+	}
+
+	private String playerDeathCause(PlayerDeathEvent event) {
+		try {
+			return event.getCause().toString();
+		} catch (ArrayIndexOutOfBoundsException ex) {
+			logger().warn("Unsupported player death cause reported by the server; using Unknown: " + ex.getMessage());
+			return PlayerDeathEvent.Cause.Unknown.toString();
+		}
 	}
 
 	@EventMethod

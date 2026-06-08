@@ -5,11 +5,13 @@ import de.omegazirkel.risingworld.tools.I18n;
 import de.omegazirkel.risingworld.tools.ui.BasePlayerPluginSettingsPanel;
 import de.omegazirkel.risingworld.tools.ui.OZUIElement;
 import de.omegazirkel.risingworld.tools.ui.PlayerPluginSettings;
+import de.omegazirkel.risingworld.tools.ui.PluginShortcutVisibility;
 import net.risingworld.api.objects.Player;
 import net.risingworld.api.ui.UILabel;
 import net.risingworld.api.ui.style.Unit;
 
 public class AdminUtilsPlayerPluginSettings extends PlayerPluginSettings {
+    public static final String NEW_PLAYER_INFO_VISIBLE_KEY = "oz.adminutils.newPlayerInfo.visible";
 
     public AdminUtilsPlayerPluginSettings(String pluginVersion) {
         this.pluginLabel = AdminUtils.name;
@@ -27,10 +29,26 @@ public class AdminUtilsPlayerPluginSettings extends PlayerPluginSettings {
             @Override
             protected void redrawContent() {
                 flexWrapper.removeAllChilds();
-                flexWrapper.addChild(infoCard(uiPlayer, "TC_SETTINGS_PLAYER_EMPTY"));
+                flexWrapper.addChild(booleanSetting(uiPlayer, shortcutKey(), "TC_LABEL_ADMINUTILS_SHORTCUT"));
+                flexWrapper.addChild(booleanSetting(uiPlayer, NEW_PLAYER_INFO_VISIBLE_KEY,
+                        "TC_LABEL_NEW_PLAYER_INFO_VISIBLE"));
                 if (uiPlayer.isAdmin()) {
                     flexWrapper.addChild(infoCard(uiPlayer, "TC_SETTINGS_ADMIN_HINT"));
                 }
+            }
+
+            protected OZUIElement booleanSetting(Player uiPlayer, String key, String labelKey) {
+                OZUIElement element = defaultSettingsContainer();
+                element.addChild(defaultSettingsLabel(t().get(labelKey, uiPlayer)));
+                boolean visible = AdminUtils.ps == null
+                        || AdminUtils.ps.getBoolean(uiPlayer.getDbID(), key).orElse(true);
+                element.addChild(switchButtons(uiPlayer, visible, event -> {
+                    if (AdminUtils.ps != null) {
+                        AdminUtils.ps.setBoolean(uiPlayer.getDbID(), key, !visible);
+                    }
+                    redrawContent();
+                }));
+                return element;
             }
 
             private OZUIElement infoCard(Player uiPlayer, String labelKey) {
@@ -43,6 +61,26 @@ public class AdminUtilsPlayerPluginSettings extends PlayerPluginSettings {
                 return element;
             }
         };
+    }
+
+    public static boolean shortcutVisible(Player player) {
+        return AdminUtils.ps == null
+                || AdminUtils.ps.getBoolean(player.getDbID(), shortcutKey()).orElse(true);
+    }
+
+    public static boolean newPlayerInfoVisible(Player player) {
+        return AdminUtils.ps == null
+                || AdminUtils.ps.getBoolean(player.getDbID(), NEW_PLAYER_INFO_VISIBLE_KEY).orElse(true);
+    }
+
+    public static void setNewPlayerInfoVisible(Player player, boolean visible) {
+        if (AdminUtils.ps != null) {
+            AdminUtils.ps.setBoolean(player.getDbID(), NEW_PLAYER_INFO_VISIBLE_KEY, visible);
+        }
+    }
+
+    private static String shortcutKey() {
+        return PluginShortcutVisibility.playerSettingKey(AdminUtils.name);
     }
 
 }

@@ -4,6 +4,16 @@
 
 ## [unreleased]
 
+## [0.6.0] - 2026-06-08 | New-player information panel
+
+- fix: handle player death causes newer than the bundled PluginAPI without failing the event handler
+- fix: prevent theft prison replacements from applying lethal punishment before incarceration
+- fix: widen the prison detail pardon action button
+- feat: add optional admin-managed new-player info panel with persistent player opt-out
+- fix: edit new-player info text as multiline admin text with a larger character limit
+- feat: add Admin Utils player settings for info-panel re-enable and shortcut visibility
+- change: register Admin Utils with shared player-aware shortcut visibility and close SQLite on shutdown
+
 ## [0.5.0] - 2026-05-26 | Player settings text wrapping
 
 - fix: keep Admin Utils PlayerSettings guidance cards within the shared Tools settings width

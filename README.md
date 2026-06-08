@@ -6,6 +6,12 @@ Collection of utilities to help server admins to manage their servers (logging, 
 
 All features can be enabled or disabled in `settings.properties`
 
+### New-player info panel
+
+Admins can enable an optional login info panel with `newPlayerInfo.enabled=true` and configure the text with `newPlayerInfo.text`.
+Players can close it for the current login with `OK` or persistently hide it with `Do not show again` / `Nicht wieder anzeigen`.
+The player settings panel lets players re-enable the info panel and hide or show the Admin Utils shortcut in `/ozt` and the inventory shortcut overlay.
+
 ### Mount protection
 
 If you interact with a mount the first time, it will be named with [PLAYER_ID]::[NAME] and now its yours.

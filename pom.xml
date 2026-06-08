@@ -8,7 +8,7 @@
 
     <groupId>com.github.devidian</groupId>
     <artifactId>rw-plugin-oz-admin-utils</artifactId>
-    <version>0.5.0</version>
+    <version>0.6.0</version>
 
     <name>OZAdminUtils</name>
     <description>No description yet</description>
@@ -56,14 +56,14 @@
         <dependency>
             <groupId>com.github.devidian</groupId>
             <artifactId>rw-plugin-oz-discord-connect</artifactId>
-            <version>0.19.0</version>
+            <version>0.22.0</version>
             <scope>provided</scope>
             <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>com.github.devidian</groupId>
             <artifactId>rw-plugin-oz-tools</artifactId>
-            <version>0.20.0</version>
+            <version>0.21.0</version>
         </dependency>
 
         <!-- Rising World PluginAPI -->

@@ -172,7 +172,7 @@ public class PrisonDetailOverlay extends OZUIElement {
             });
             pardon.setPivot(Pivot.UpperLeft);
             pardon.setPosition(0, 8, true);
-            pardon.setSize(70, 24, false);
+            pardon.setSize(100, 24, false);
             pardon.setBorderEdgeRadius(3, false);
             actions.addChild(pardon);
         } else {
