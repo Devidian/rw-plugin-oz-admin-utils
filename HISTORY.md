@@ -2,7 +2,12 @@
 
 <https://www.conventionalcommits.org/en/v1.0.0/>
 
-## [unreleased]
+## [0.7.0] - 2026-06-13 | Raw map source capture
+
+- feat: replace command-driven plugin PNG generation with settings-controlled departed-chunk source capture
+- feat: add the V2 map source schema, deterministic blob/hash contract, dedicated SQLite lifecycle, and idempotent upsert
+- feat: add per-chunk map capture cooldown and debug timing logs for successful source updates
+- change: remove `/au mapgen` and all plugin-side PNG, metadata, and tile-pyramid generation
 
 ## [0.6.0] - 2026-06-08 | New-player information panel
 

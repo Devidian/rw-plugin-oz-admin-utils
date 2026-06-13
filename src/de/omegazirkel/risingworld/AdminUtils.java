@@ -11,6 +11,8 @@ import de.omegazirkel.risingworld.adminutils.PluginGUI;
 import de.omegazirkel.risingworld.adminutils.PrisonIncarcerationService;
 import de.omegazirkel.risingworld.adminutils.PrisonReleaseService;
 import de.omegazirkel.risingworld.adminutils.PluginSettings;
+import de.omegazirkel.risingworld.adminutils.mapsource.MapChunkSourceStore;
+import de.omegazirkel.risingworld.adminutils.mapsource.RisingWorldMapChunkCapture;
 import de.omegazirkel.risingworld.adminutils.db.PrisonService;
 import de.omegazirkel.risingworld.adminutils.db.PrisonStore;
 import de.omegazirkel.risingworld.adminutils.db.PrisonerService;
@@ -55,6 +57,7 @@ import net.risingworld.api.events.player.PlayerConnectEvent;
 import net.risingworld.api.events.player.PlayerDeathEvent;
 import net.risingworld.api.events.player.PlayerDisconnectEvent;
 import net.risingworld.api.events.player.PlayerHitNpcEvent;
+import net.risingworld.api.events.player.PlayerEnterChunkEvent;
 import net.risingworld.api.events.player.PlayerMountNpcEvent;
 import net.risingworld.api.events.player.PlayerNpcInteractionEvent;
 import net.risingworld.api.events.player.PlayerSpawnEvent;
@@ -91,6 +94,8 @@ public class AdminUtils extends Plugin implements Listener, FileChangeListener {
 	private static PrisonerService prisonerService;
 	private static PrisonIncarcerationService prisonIncarcerationService;
 	private static PrisonReleaseService prisonReleaseService;
+	private MapChunkSourceStore mapChunkSourceStore;
+	private RisingWorldMapChunkCapture mapChunkCapture;
 	private static boolean isInSpeedmode = false;
 	private static float normalGameSpeed = 2.5f;
 
@@ -130,6 +135,7 @@ public class AdminUtils extends Plugin implements Listener, FileChangeListener {
 		registerEventListener(this);
 		s.initSettings();
 		ensureDefaultPermissionFiles();
+		initMapChunkSourcePersistence();
 		sqliteCon = SQLiteConnectionFactory.open(this);
 		ps = new PlayerSettings(sqliteCon);
 		initPrisonPersistence();
@@ -170,6 +176,15 @@ public class AdminUtils extends Plugin implements Listener, FileChangeListener {
 			prisonerStore.shutdown();
 		if (prisonStore != null)
 			prisonStore.shutdown();
+		if (mapChunkCapture != null)
+			mapChunkCapture.shutdown();
+		if (mapChunkSourceStore != null) {
+			try {
+				mapChunkSourceStore.close();
+			} catch (SQLException ex) {
+				logger().warn("Failed to close map source database connection: " + ex.getMessage());
+			}
+		}
 		if (sqliteCon != null) {
 			try {
 				sqliteCon.close();
@@ -209,10 +224,29 @@ public class AdminUtils extends Plugin implements Listener, FileChangeListener {
 		}
 	}
 
+	private void initMapChunkSourcePersistence() {
+		Connection mapSourceConnection = null;
+		try {
+			mapSourceConnection = SQLiteConnectionFactory.open(this);
+			mapChunkSourceStore = new MapChunkSourceStore(mapSourceConnection);
+			mapChunkCapture = new RisingWorldMapChunkCapture(this, mapChunkSourceStore);
+		} catch (SQLException ex) {
+			if (mapSourceConnection != null) {
+				try {
+					mapSourceConnection.close();
+				} catch (SQLException closeEx) {
+					logger().warn("Failed to close unusable map source database connection: " + closeEx.getMessage());
+				}
+			}
+			logger().error("Failed to initialize map source persistence: " + ex.getMessage());
+			ex.printStackTrace();
+		}
+	}
+
 	@EventMethod
 	public void onPlayerCommand(PlayerCommandEvent event) {
 		Player player = event.getPlayer();
-		String lang = player.getSystemLanguage();
+		// String lang = player.getSystemLanguage();
 		String commandLine = event.getCommand();
 
 		String[] cmdParts = commandLine.split(" ", 2);
@@ -258,6 +292,24 @@ public class AdminUtils extends Plugin implements Listener, FileChangeListener {
 		}
 		this.executeDelayed(1, () -> showNewPlayerInfo(player));
 		this.executeDelayed(1, () -> handlePrisonerSpawn(player));
+	}
+
+	@EventMethod
+	public void onPlayerEnterChunk(PlayerEnterChunkEvent event) {
+		Player player = event.getPlayer();
+		if (event.isCancelled() || mapChunkCapture == null || !eligibleForMapCapture(player)) {
+			return;
+		}
+		mapChunkCapture.request(
+				player,
+				event.getOldChunkCoordinates(),
+				event.getNewChunkCoordinates(),
+				s.mapGenChunkCooldownSeconds * 1000L,
+				() -> eligibleForMapCapture(player));
+	}
+
+	private boolean eligibleForMapCapture(Player player) {
+		return s.enableMapGen && player != null && (!s.onlyAdminMapGen || player.isAdmin());
 	}
 
 	private void showNewPlayerInfo(Player player) {

@@ -2,6 +2,10 @@
 
 Active implementation tasks live here.
 
+## Current Tasks
+
+- [Admin Mapping Tile Generation](admin-mapping-feature.md)
+
 Use one markdown file per task. Each task must include objective, ownership, dependencies, risks, validation strategy, affected repositories/plugins, rollback considerations, and a markdown checkbox checklist.
 
 ## Template

@@ -50,6 +50,20 @@ Sleep start and speed reset messages can also be forwarded to Discord with `disc
 - `/au`: open the Admin Utils menu.
 - `/au status` or `/au info`: open the shared Tools Info/Status panel.
 
+## Map source capture
+
+Map source capture is disabled by default with `enableMapGen=false`. When
+enabled, Admin Utils records raw height and texture data for the chunk an
+eligible player leaves. `onlyAdminMapGen=true` restricts capture triggers to
+admins. `mapGenChunkCooldownSeconds=30` prevents the same chunk from being
+captured repeatedly when players move back and forth across one boundary.
+These settings are available through the Admin Utils admin settings UI.
+
+Source records are stored in the world-scoped Admin Utils SQLite database for
+an external backend renderer. Admin Utils does not generate PNG map tiles or a
+tile pyramid. A successful database insert/update writes the debug-level log
+`chunk <x> <z> updated in <ms>ms`.
+
 ## Contributor Workflow
 
 - Review `AGENTS.md`, `PLANS.md`, `.codex/agents.toml`, and `.codex/skills/` before making structural changes.

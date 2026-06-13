@@ -32,6 +32,11 @@ public class PluginSettings {
 	public boolean newPlayerInfoEnabled = false;
 	public String newPlayerInfoText = "";
 
+	// Map source capture
+	public boolean enableMapGen = false;
+	public boolean onlyAdminMapGen = true;
+	public int mapGenChunkCooldownSeconds = 30;
+
 	// Mount ownership
 	public boolean enableMountOwnership = true;
 	public boolean forceAreaOwnership = false;
@@ -152,6 +157,12 @@ public class PluginSettings {
 			newPlayerInfoEnabled = settings.getProperty("newPlayerInfo.enabled", "false").contentEquals("true");
 			newPlayerInfoText = decodeSettingText(settings.getProperty("newPlayerInfo.text", ""));
 
+			// map source capture
+			enableMapGen = settings.getProperty("enableMapGen", "false").contentEquals("true");
+			onlyAdminMapGen = settings.getProperty("onlyAdminMapGen", "true").contentEquals("true");
+			mapGenChunkCooldownSeconds = Math.max(0,
+					Integer.parseInt(settings.getProperty("mapGenChunkCooldownSeconds", "30")));
+
 			// mount ownership
 			enableMountOwnership = settings.getProperty("enableMountOwnership", "true").contentEquals("true");
 			forceAreaOwnership = settings.getProperty("forceAreaOwnership", "false").contentEquals("true");
@@ -270,6 +281,17 @@ public class PluginSettings {
 				entry("newPlayerInfo.text", "New player info text",
 						"Text shown in the optional new-player information panel.", newPlayerInfoText, "",
 						AdminSettingsType.TEXT),
+				AdminSettingsEntry.group("mapSource", "Map source capture",
+						"Automatic raw chunk capture for backend map rendering."),
+				entry("enableMapGen", "Map source capture",
+						"Captures raw surface data when eligible players leave chunks.", enableMapGen, "false",
+						AdminSettingsType.BOOLEAN),
+				entry("onlyAdminMapGen", "Admin-only map capture",
+						"Restricts map source capture triggers to admin players.", onlyAdminMapGen, "true",
+						AdminSettingsType.BOOLEAN),
+				entry("mapGenChunkCooldownSeconds", "Map chunk cooldown",
+						"Minimum seconds before the same chunk can trigger another capture.",
+						mapGenChunkCooldownSeconds, "30", AdminSettingsType.INTEGER),
 				AdminSettingsEntry.group("mounts", "Mount ownership", "Mount ownership protection and theft punishment."),
 				entry("enableMountOwnership", "Mount ownership", "Enables mount ownership protection.",
 						enableMountOwnership, "true", AdminSettingsType.BOOLEAN),
