@@ -35,14 +35,14 @@ public final class RisingWorldMapChunkCapture {
                 error -> AdminUtils.logger().warn("Map source capture failed: " + message(error)));
     }
 
-    public boolean request(Player player, Vector3i oldChunk, Vector3i newChunk, long cooldownMs,
+    public boolean request(Player player, Vector3i oldChunk, Vector3i newChunk, int radius, long cooldownMs,
             BooleanSupplier eligible) {
         if (oldChunk == null || newChunk == null || sameChunk(oldChunk, newChunk)) {
             return false;
         }
         int expectedX = newChunk.x;
         int expectedZ = newChunk.z;
-        return coordinator.request(oldChunk.x, oldChunk.z, cooldownMs, () -> {
+        return coordinator.request(oldChunk.x, oldChunk.z, radius, cooldownMs, () -> {
             if (!eligible.getAsBoolean() || !player.isConnected() || !player.isSpawned()) {
                 return false;
             }

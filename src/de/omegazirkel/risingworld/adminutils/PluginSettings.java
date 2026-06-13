@@ -35,7 +35,8 @@ public class PluginSettings {
 	// Map source capture
 	public boolean enableMapGen = false;
 	public boolean onlyAdminMapGen = true;
-	public int mapGenChunkCooldownSeconds = 30;
+	public int mapGenChunkScanRadius = 0;
+	public int mapGenChunkCooldownSeconds = 60;
 
 	// Mount ownership
 	public boolean enableMountOwnership = true;
@@ -160,8 +161,10 @@ public class PluginSettings {
 			// map source capture
 			enableMapGen = settings.getProperty("enableMapGen", "false").contentEquals("true");
 			onlyAdminMapGen = settings.getProperty("onlyAdminMapGen", "true").contentEquals("true");
+			mapGenChunkScanRadius = clampMapGenChunkScanRadius(
+					Integer.parseInt(settings.getProperty("mapGenChunkScanRadius", "0")));
 			mapGenChunkCooldownSeconds = Math.max(0,
-					Integer.parseInt(settings.getProperty("mapGenChunkCooldownSeconds", "30")));
+					Integer.parseInt(settings.getProperty("mapGenChunkCooldownSeconds", "60")));
 
 			// mount ownership
 			enableMountOwnership = settings.getProperty("enableMountOwnership", "true").contentEquals("true");
@@ -289,9 +292,12 @@ public class PluginSettings {
 				entry("onlyAdminMapGen", "Admin-only map capture",
 						"Restricts map source capture triggers to admin players.", onlyAdminMapGen, "true",
 						AdminSettingsType.BOOLEAN),
+				entry("mapGenChunkScanRadius", "Map chunk scan radius",
+						"Captures a square radius of chunks around the departed chunk; allowed range is 0 to 5.",
+						mapGenChunkScanRadius, "0", AdminSettingsType.INTEGER),
 				entry("mapGenChunkCooldownSeconds", "Map chunk cooldown",
 						"Minimum seconds before the same chunk can trigger another capture.",
-						mapGenChunkCooldownSeconds, "30", AdminSettingsType.INTEGER),
+						mapGenChunkCooldownSeconds, "60", AdminSettingsType.INTEGER),
 				AdminSettingsEntry.group("mounts", "Mount ownership", "Mount ownership protection and theft punishment."),
 				entry("enableMountOwnership", "Mount ownership", "Enables mount ownership protection.",
 						enableMountOwnership, "true", AdminSettingsType.BOOLEAN),
@@ -422,6 +428,10 @@ public class PluginSettings {
 				entry("discordPlayerTeleportChannelId", "Player teleport channel",
 						"Discord channel id for player teleport events.", discordPlayerTeleportChannelId, "0",
 						AdminSettingsType.STRING));
+	}
+
+	static int clampMapGenChunkScanRadius(int radius) {
+		return Math.max(0, Math.min(5, radius));
 	}
 
 	public int prisonTheftBanSentenceRealMinutes(int theftKickCount) {

@@ -51,13 +51,16 @@ Add to `settings.default.properties` and the existing settings UI:
 ```properties
 enableMapGen=false
 onlyAdminMapGen=true
-mapGenChunkCooldownSeconds=30
+mapGenChunkScanRadius=0
+mapGenChunkCooldownSeconds=60
 ```
 
 - `enableMapGen=false` disables listeners/capture work and writes no records.
 - `onlyAdminMapGen=true` permits capture triggers only from admins.
 - `onlyAdminMapGen=false` permits all players to trigger capture while
   `enableMapGen=true`.
+- `mapGenChunkScanRadius=0` captures only the departed chunk. Values up to `5`
+  capture a filled square centered on it, producing `(2r + 1)^2` candidates.
 - `mapGenChunkCooldownSeconds` prevents repeated capture of the same chunk
   during rapid boundary hopping; `0` disables the cooldown.
 - Setting changes must take effect through the plugin's established settings
@@ -66,10 +69,12 @@ mapGenChunkCooldownSeconds=30
 ## Capture Behavior
 - Trigger from PluginAPI `0.9.2` `PlayerEnterChunkEvent` when an eligible
   player crosses from one chunk into another.
-- Capture only the departed chunk, never the entered chunk.
+- Use the departed chunk, never the entered chunk, as the scan center.
 - Ignore movement within the same chunk.
-- Schedule capture one plugin tick later and confirm that the player reached
-  the event's new chunk before capturing the old chunk.
+- Schedule one transition check one plugin tick later and confirm that the
+  player reached the event's new chunk before releasing the radius scan.
+- Queue accepted chunks center-first in complete square-ring order and capture
+  at most one chunk per plugin tick.
 - Coalesce or serialize concurrent requests for the same world/chunk.
 - Reject another accepted request for the same chunk until its configured
   cooldown expires, across all triggering players.
@@ -125,6 +130,7 @@ Do not remove shared helpers used by unrelated Admin Utils functionality.
 - [x] Add eligible-player chunk-transition tracking.
 - [x] Add bounded departed-chunk capture and same-chunk request coalescing.
 - [x] Add configurable per-chunk cooldown and successful-update debug timing.
+- [x] Add configurable square scan radius and tick-distributed scan queue.
 - [x] Add idempotent SQLite upsert with unchanged-hash suppression.
 - [x] Remove all V1 command, rendering, metadata, pyramid, filesystem, message,
   test, and documentation artifacts.
@@ -180,7 +186,8 @@ Utils must not resume owning or generating them.
 ## Current Implementation State
 - V2 packages 1 and 2 are implemented: settings/admin UI, source schema/store,
   deterministic encoding/hash, delayed `PlayerEnterChunkEvent` departed-chunk
-  capture, per-chunk coalescing, worker-side upsert, and clean shutdown.
+  centered radius capture, per-chunk coalescing, tick-distributed scan queue,
+  worker-side upsert, and clean shutdown.
 - V1 `/au mapgen`, plugin-side PNG rendering, metadata, pyramid generation,
   related messages, tests, and documentation are removed.
 - Automated source-contract, SQLite, and coordinator tests pass. Runtime smoke

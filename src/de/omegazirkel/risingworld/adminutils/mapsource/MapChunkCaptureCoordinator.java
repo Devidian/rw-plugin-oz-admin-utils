@@ -1,8 +1,12 @@
 package de.omegazirkel.risingworld.adminutils.mapsource;
 
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
@@ -13,6 +17,7 @@ import java.util.function.LongSupplier;
 
 public final class MapChunkCaptureCoordinator {
     private static final int MAX_COOLDOWN_ENTRIES = 16384;
+    private static final int MAX_SCAN_RADIUS = 5;
     private final Scheduler scheduler;
     private final ExecutorService worker;
     private final ChunkSource source;
@@ -21,12 +26,14 @@ public final class MapChunkCaptureCoordinator {
     private final Consumer<Exception> failureHandler;
     private final LongSupplier clock;
     private final Set<ChunkKey> pending = ConcurrentHashMap.newKeySet();
+    private final Queue<QueuedChunk> scanQueue = new ArrayDeque<>();
     private final Map<ChunkKey, Long> lastAcceptedAt = new LinkedHashMap<>(128, 0.75f, true) {
         @Override
         protected boolean removeEldestEntry(Map.Entry<ChunkKey, Long> eldest) {
             return size() > MAX_COOLDOWN_ENTRIES;
         }
     };
+    private boolean scanScheduled;
     private volatile boolean shutdown;
 
     public MapChunkCaptureCoordinator(Scheduler scheduler, ExecutorService worker, ChunkSource source, ChunkSink sink,
@@ -45,26 +52,38 @@ public final class MapChunkCaptureCoordinator {
         this.clock = Objects.requireNonNull(clock, "clock");
     }
 
-    public synchronized boolean request(int chunkX, int chunkZ, long cooldownMs, BooleanSupplier stillEligible) {
-        Objects.requireNonNull(stillEligible, "stillEligible");
+    public synchronized boolean request(int chunkX, int chunkZ, int radius, long cooldownMs,
+            BooleanSupplier validTransition) {
+        Objects.requireNonNull(validTransition, "validTransition");
+        if (radius < 0 || radius > MAX_SCAN_RADIUS) {
+            throw new IllegalArgumentException("radius must be between 0 and " + MAX_SCAN_RADIUS);
+        }
         if (cooldownMs < 0) {
             throw new IllegalArgumentException("cooldownMs must not be negative");
         }
-        ChunkKey key = new ChunkKey(chunkX, chunkZ);
-        long requestedAtMs = clock.getAsLong();
-        Long previousRequest = lastAcceptedAt.get(key);
-        if (shutdown || pending.contains(key)
-                || previousRequest != null && requestedAtMs - previousRequest < cooldownMs) {
+        if (shutdown) {
             return false;
         }
-        pending.add(key);
-        lastAcceptedAt.put(key, requestedAtMs);
+        long requestedAtMs = clock.getAsLong();
+        List<QueuedChunk> accepted = new ArrayList<>();
+        for (ChunkKey key : scanCoordinates(chunkX, chunkZ, radius)) {
+            Long previousRequest = lastAcceptedAt.get(key);
+            if (pending.contains(key)
+                    || previousRequest != null && requestedAtMs - previousRequest < cooldownMs) {
+                continue;
+            }
+            pending.add(key);
+            lastAcceptedAt.put(key, requestedAtMs);
+            accepted.add(new QueuedChunk(key, requestedAtMs));
+        }
+        if (accepted.isEmpty()) {
+            return false;
+        }
         try {
-            scheduler.schedule(() -> capture(key, requestedAtMs, stillEligible));
+            scheduler.schedule(() -> releaseScan(List.copyOf(accepted), validTransition));
             return true;
         } catch (RuntimeException ex) {
-            pending.remove(key);
-            lastAcceptedAt.remove(key);
+            rollback(accepted);
             throw ex;
         }
     }
@@ -73,10 +92,18 @@ public final class MapChunkCaptureCoordinator {
         return pending.size();
     }
 
+    int queuedCount() {
+        synchronized (this) {
+            return scanQueue.size();
+        }
+    }
+
     public void shutdown() {
         shutdown = true;
         pending.clear();
         synchronized (this) {
+            scanQueue.clear();
+            scanScheduled = false;
             lastAcceptedAt.clear();
         }
         worker.shutdownNow();
@@ -87,17 +114,54 @@ public final class MapChunkCaptureCoordinator {
         }
     }
 
-    private void capture(ChunkKey key, long requestedAtMs, BooleanSupplier stillEligible) {
-        if (shutdown || !stillEligible.getAsBoolean()) {
-            pending.remove(key);
+    private void releaseScan(List<QueuedChunk> accepted, BooleanSupplier validTransition) {
+        boolean valid;
+        try {
+            valid = !shutdown && validTransition.getAsBoolean();
+        } catch (RuntimeException ex) {
+            rollback(accepted);
+            failureHandler.accept(ex);
             return;
         }
+        if (!valid) {
+            rollback(accepted);
+            return;
+        }
+        synchronized (this) {
+            if (shutdown) {
+                rollback(accepted);
+                return;
+            }
+            scanQueue.addAll(accepted);
+            scheduleNextScan();
+        }
+    }
+
+    private void scanNext() {
+        QueuedChunk queued;
+        synchronized (this) {
+            if (shutdown) {
+                scanScheduled = false;
+                return;
+            }
+            queued = scanQueue.poll();
+            if (queued == null) {
+                scanScheduled = false;
+                return;
+            }
+        }
+        ChunkKey key = queued.key();
         try {
             MapChunkSurfaceData surface = source.capture(key.chunkX(), key.chunkZ());
-            worker.execute(() -> persist(key, requestedAtMs, surface));
+            worker.execute(() -> persist(key, queued.requestedAtMs(), surface));
         } catch (Exception ex) {
             pending.remove(key);
             failureHandler.accept(ex);
+        } finally {
+            synchronized (this) {
+                scanScheduled = false;
+                scheduleNextScan();
+            }
         }
     }
 
@@ -115,6 +179,57 @@ public final class MapChunkCaptureCoordinator {
     }
 
     private record ChunkKey(int chunkX, int chunkZ) {
+    }
+
+    private record QueuedChunk(ChunkKey key, long requestedAtMs) {
+    }
+
+    static List<ChunkKey> scanCoordinates(int centerX, int centerZ, int radius) {
+        List<ChunkKey> chunks = new ArrayList<>((radius * 2 + 1) * (radius * 2 + 1));
+        chunks.add(new ChunkKey(centerX, centerZ));
+        for (int ring = 1; ring <= radius; ring++) {
+            int minX = centerX - ring;
+            int maxX = centerX + ring;
+            int minZ = centerZ - ring;
+            int maxZ = centerZ + ring;
+            for (int x = minX; x <= maxX; x++) {
+                chunks.add(new ChunkKey(x, minZ));
+            }
+            for (int z = minZ + 1; z <= maxZ; z++) {
+                chunks.add(new ChunkKey(maxX, z));
+            }
+            for (int x = maxX - 1; x >= minX; x--) {
+                chunks.add(new ChunkKey(x, maxZ));
+            }
+            for (int z = maxZ - 1; z > minZ; z--) {
+                chunks.add(new ChunkKey(minX, z));
+            }
+        }
+        return List.copyOf(chunks);
+    }
+
+    private void scheduleNextScan() {
+        if (!shutdown && !scanScheduled && !scanQueue.isEmpty()) {
+            scanScheduled = true;
+            try {
+                scheduler.schedule(this::scanNext);
+            } catch (RuntimeException ex) {
+                scanScheduled = false;
+                QueuedChunk queued;
+                while ((queued = scanQueue.poll()) != null) {
+                    pending.remove(queued.key());
+                    lastAcceptedAt.remove(queued.key());
+                }
+                failureHandler.accept(ex);
+            }
+        }
+    }
+
+    private synchronized void rollback(List<QueuedChunk> accepted) {
+        for (QueuedChunk queued : accepted) {
+            pending.remove(queued.key());
+            lastAcceptedAt.remove(queued.key());
+        }
     }
 
     @FunctionalInterface

@@ -55,8 +55,13 @@ Sleep start and speed reset messages can also be forwarded to Discord with `disc
 Map source capture is disabled by default with `enableMapGen=false`. When
 enabled, Admin Utils records raw height and texture data for the chunk an
 eligible player leaves. `onlyAdminMapGen=true` restricts capture triggers to
-admins. `mapGenChunkCooldownSeconds=30` prevents the same chunk from being
+admins. `mapGenChunkCooldownSeconds=60` prevents the same chunk from being
 captured repeatedly when players move back and forth across one boundary.
+`mapGenChunkScanRadius=0` preserves departed-chunk-only capture. Values up to
+the maximum `5` capture a filled square centered on the departed chunk, with
+`(2r + 1)^2` candidate chunks. Accepted chunks are scanned center-first in
+ring order at no more than one chunk per plugin tick; cooldown and pending
+checks still apply independently to every chunk.
 These settings are available through the Admin Utils admin settings UI.
 
 Source records are stored in the world-scoped Admin Utils SQLite database for

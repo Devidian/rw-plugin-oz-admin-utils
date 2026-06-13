@@ -304,6 +304,7 @@ public class AdminUtils extends Plugin implements Listener, FileChangeListener {
 				player,
 				event.getOldChunkCoordinates(),
 				event.getNewChunkCoordinates(),
+				s.mapGenChunkScanRadius,
 				s.mapGenChunkCooldownSeconds * 1000L,
 				() -> eligibleForMapCapture(player));
 	}
