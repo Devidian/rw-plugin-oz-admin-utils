@@ -2,12 +2,16 @@
 
 <https://www.conventionalcommits.org/en/v1.0.0/>
 
+## [0.8.0] - 2026-06-13 | Map chunk scan radius
+
+- feat: add configurable square map chunk scan radius with center-first tick-distributed capture
+- change: increase the default per-chunk map capture cooldown from 30 to 60 seconds
+
 ## [0.7.0] - 2026-06-13 | Raw map source capture
 
 - feat: replace command-driven plugin PNG generation with settings-controlled departed-chunk source capture
 - feat: add the V2 map source schema, deterministic blob/hash contract, dedicated SQLite lifecycle, and idempotent upsert
 - feat: add per-chunk map capture cooldown and debug timing logs for successful source updates
-- feat: add configurable square map chunk scan radius with center-first tick-distributed capture
 - change: remove `/au mapgen` and all plugin-side PNG, metadata, and tile-pyramid generation
 
 ## [0.6.0] - 2026-06-08 | New-player information panel
