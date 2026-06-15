@@ -2,6 +2,10 @@
 
 <https://www.conventionalcommits.org/en/v1.0.0/>
 
+## [0.8.1] - 2026-06-14 | Worker diagnostics
+
+- feat: log map source persistence worker lifecycle through Tools diagnostics
+
 ## [0.8.0] - 2026-06-13 | Map chunk scan radius
 
 - feat: add configurable square map chunk scan radius with center-first tick-distributed capture

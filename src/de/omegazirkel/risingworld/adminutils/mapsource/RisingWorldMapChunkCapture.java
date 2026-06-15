@@ -5,6 +5,7 @@ import java.util.concurrent.Executors;
 import java.util.function.BooleanSupplier;
 
 import de.omegazirkel.risingworld.AdminUtils;
+import de.omegazirkel.risingworld.tools.DiagnosticThreadFactory;
 import net.risingworld.api.World;
 import net.risingworld.api.objects.Player;
 import net.risingworld.api.objects.world.Chunk;
@@ -16,11 +17,9 @@ public final class RisingWorldMapChunkCapture {
     private final MapChunkCaptureCoordinator coordinator;
 
     public RisingWorldMapChunkCapture(AdminUtils plugin, MapChunkSourceStore store) {
-        ExecutorService worker = Executors.newSingleThreadExecutor(task -> {
-            Thread thread = new Thread(task, "OZAdminUtils-MapSource");
-            thread.setDaemon(true);
-            return thread;
-        });
+        ExecutorService worker = Executors.newSingleThreadExecutor(new DiagnosticThreadFactory(
+                "OZAdminUtils", "map source persistence", "OZAdminUtils-MapSource", true,
+                AdminUtils.logger()::debug));
         coordinator = new MapChunkCaptureCoordinator(
                 task -> plugin.executeDelayed(DELAY_SECONDS, task),
                 worker,
