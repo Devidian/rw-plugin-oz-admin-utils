@@ -13,4 +13,14 @@ public class PluginSettingsTest {
         assertEquals(5, PluginSettings.clampMapGenChunkScanRadius(5));
         assertEquals(5, PluginSettings.clampMapGenChunkScanRadius(6));
     }
+
+    @Test
+    public void newPlayerInfoPanelSizeIsClampedToScreenSafeRange() {
+        assertEquals(20, PluginSettings.clampNewPlayerInfoWidthPercent(10));
+        assertEquals(42, PluginSettings.clampNewPlayerInfoWidthPercent(42));
+        assertEquals(95, PluginSettings.clampNewPlayerInfoWidthPercent(100));
+        assertEquals(24, PluginSettings.clampNewPlayerInfoHeightPercent(10));
+        assertEquals(36, PluginSettings.clampNewPlayerInfoHeightPercent(36));
+        assertEquals(95, PluginSettings.clampNewPlayerInfoHeightPercent(100));
+    }
 }

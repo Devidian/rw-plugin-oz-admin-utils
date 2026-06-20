@@ -9,6 +9,8 @@ All features can be enabled or disabled in `settings.properties`
 ### New-player info panel
 
 Admins can enable an optional login info panel with `newPlayerInfo.enabled=true` and configure the text with `newPlayerInfo.text`.
+Long text is shown in a vertical scroll view. The centered panel size can be adjusted with
+`newPlayerInfo.widthPercent` (20-95, default 42) and `newPlayerInfo.heightPercent` (24-95, default 36).
 Players can close it for the current login with `OK` or persistently hide it with `Do not show again` / `Nicht wieder anzeigen`.
 The player settings panel lets players re-enable the info panel and hide or show the Admin Utils shortcut in `/ozt` and the inventory shortcut overlay.
 

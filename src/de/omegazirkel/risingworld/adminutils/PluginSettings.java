@@ -31,6 +31,8 @@ public class PluginSettings {
 	public boolean enableWelcomeMessage = false;
 	public boolean newPlayerInfoEnabled = false;
 	public String newPlayerInfoText = "";
+	public int newPlayerInfoWidthPercent = 42;
+	public int newPlayerInfoHeightPercent = 36;
 
 	// Map source capture
 	public boolean enableMapGen = false;
@@ -157,6 +159,10 @@ public class PluginSettings {
 			enableWelcomeMessage = settings.getProperty("enableWelcomeMessage", "false").contentEquals("true");
 			newPlayerInfoEnabled = settings.getProperty("newPlayerInfo.enabled", "false").contentEquals("true");
 			newPlayerInfoText = decodeSettingText(settings.getProperty("newPlayerInfo.text", ""));
+			newPlayerInfoWidthPercent = clampNewPlayerInfoWidthPercent(
+					Integer.parseInt(settings.getProperty("newPlayerInfo.widthPercent", "42")));
+			newPlayerInfoHeightPercent = clampNewPlayerInfoHeightPercent(
+					Integer.parseInt(settings.getProperty("newPlayerInfo.heightPercent", "36")));
 
 			// map source capture
 			enableMapGen = settings.getProperty("enableMapGen", "false").contentEquals("true");
@@ -284,6 +290,12 @@ public class PluginSettings {
 				entry("newPlayerInfo.text", "New player info text",
 						"Text shown in the optional new-player information panel.", newPlayerInfoText, "",
 						AdminSettingsType.TEXT),
+				entry("newPlayerInfo.widthPercent", "New player info width",
+						"Panel width as percentage of the screen; allowed range is 20 to 95.",
+						newPlayerInfoWidthPercent, "42", AdminSettingsType.INTEGER),
+				entry("newPlayerInfo.heightPercent", "New player info height",
+						"Panel height as percentage of the screen; allowed range is 24 to 95.",
+						newPlayerInfoHeightPercent, "36", AdminSettingsType.INTEGER),
 				AdminSettingsEntry.group("mapSource", "Map source capture",
 						"Automatic raw chunk capture for backend map rendering."),
 				entry("enableMapGen", "Map source capture",
@@ -432,6 +444,14 @@ public class PluginSettings {
 
 	static int clampMapGenChunkScanRadius(int radius) {
 		return Math.max(0, Math.min(5, radius));
+	}
+
+	static int clampNewPlayerInfoWidthPercent(int widthPercent) {
+		return Math.max(20, Math.min(95, widthPercent));
+	}
+
+	static int clampNewPlayerInfoHeightPercent(int heightPercent) {
+		return Math.max(24, Math.min(95, heightPercent));
 	}
 
 	public int prisonTheftBanSentenceRealMinutes(int theftKickCount) {

@@ -321,7 +321,11 @@ public class AdminUtils extends Plugin implements Listener, FileChangeListener {
 				|| player.getAttribute(NewPlayerInfoOverlay.PLAYER_ATTRIBUTE) != null) {
 			return;
 		}
-		NewPlayerInfoOverlay overlay = new NewPlayerInfoOverlay(player, s.newPlayerInfoText);
+		NewPlayerInfoOverlay overlay = new NewPlayerInfoOverlay(
+				player,
+				s.newPlayerInfoText,
+				s.newPlayerInfoWidthPercent,
+				s.newPlayerInfoHeightPercent);
 		player.setAttribute(NewPlayerInfoOverlay.PLAYER_ATTRIBUTE, overlay);
 		player.addUIElement(overlay);
 		de.omegazirkel.risingworld.tools.ui.CursorManager.show(player);

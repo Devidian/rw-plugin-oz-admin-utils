@@ -2,6 +2,11 @@
 
 <https://www.conventionalcommits.org/en/v1.0.0/>
 
+## [0.8.2] - 2026-06-21 | Player info panel sizing
+
+- fix: keep long new-player information text inside a vertically scrollable panel
+- feat: add admin-configurable centered panel width and height percentages
+
 ## [0.8.1] - 2026-06-14 | Worker diagnostics
 
 - feat: log map source persistence worker lifecycle through Tools diagnostics

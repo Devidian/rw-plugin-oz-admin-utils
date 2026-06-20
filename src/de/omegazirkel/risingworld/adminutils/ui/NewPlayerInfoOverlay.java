@@ -9,6 +9,8 @@ import de.omegazirkel.risingworld.tools.ui.OZUIElement;
 import net.risingworld.api.objects.Player;
 import net.risingworld.api.ui.UIElement;
 import net.risingworld.api.ui.UILabel;
+import net.risingworld.api.ui.UIScrollView;
+import net.risingworld.api.ui.UIScrollView.ScrollViewMode;
 import net.risingworld.api.ui.style.Align;
 import net.risingworld.api.ui.style.DisplayStyle;
 import net.risingworld.api.ui.style.FlexDirection;
@@ -25,7 +27,7 @@ public class NewPlayerInfoOverlay extends OZUIElement {
         return I18n.getInstance(AdminUtils.name);
     }
 
-    public NewPlayerInfoOverlay(Player player, String messageText) {
+    public NewPlayerInfoOverlay(Player player, String messageText, int widthPercent, int heightPercent) {
         setPivot(Pivot.UpperLeft);
         setPosition(0, 0, true);
         setSize(100, 100, true);
@@ -35,7 +37,7 @@ public class NewPlayerInfoOverlay extends OZUIElement {
         UIElement panel = new UIElement();
         panel.setPivot(Pivot.MiddleCenter);
         panel.setPosition(50, 50, true);
-        panel.setSize(42, 36, true);
+        panel.setSize(widthPercent, heightPercent, true);
         panel.setBackgroundColor(0, 0, 0, 0.9f);
         panel.setBorder(2);
         panel.setBorderColor(0.95f, 0.75f, 0.25f, 0.62f);
@@ -51,14 +53,22 @@ public class NewPlayerInfoOverlay extends OZUIElement {
         title.setTextAlign(TextAnchor.MiddleCenter);
         panel.addChild(title);
 
+        UIScrollView messageScroll = new UIScrollView(ScrollViewMode.Vertical);
+        messageScroll.setPivot(Pivot.UpperLeft);
+        messageScroll.setPosition(7, 23, true);
+        messageScroll.setSize(86, 46, true);
+        messageScroll.setMouseWheelScrollSize(28);
+        panel.addChild(messageScroll);
+
         UILabel message = new UILabel(messageText);
         message.setPivot(Pivot.UpperLeft);
-        message.setPosition(7, 23, true);
-        message.setSize(86, 46, true);
+        message.setPosition(0, 0, false);
+        message.style.width.set(96, Unit.Percent);
+        message.style.height.set(estimateMessageHeight(messageText, widthPercent), Unit.Pixel);
         message.setFontSize(14);
         message.setTextAlign(TextAnchor.UpperLeft);
         message.setTextWrap(true);
-        panel.addChild(message);
+        messageScroll.addChild(message);
 
         UIElement footer = new UIElement();
         footer.setPivot(Pivot.LowerCenter);
@@ -76,6 +86,15 @@ public class NewPlayerInfoOverlay extends OZUIElement {
             AdminUtilsPlayerPluginSettings.setNewPlayerInfoVisible(event.getPlayer(), false);
             close(event.getPlayer());
         }), 58));
+    }
+
+    static int estimateMessageHeight(String messageText, int widthPercent) {
+        int charactersPerLine = Math.max(16, widthPercent);
+        int lineCount = 0;
+        for (String line : messageText.split("\\R", -1)) {
+            lineCount += Math.max(1, (line.length() + charactersPerLine - 1) / charactersPerLine);
+        }
+        return Math.max(120, lineCount * 22);
     }
 
     private UIElement button(BaseButton button, int widthPercent) {
