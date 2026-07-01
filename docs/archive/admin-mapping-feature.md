@@ -1,5 +1,10 @@
 # Admin Mapping Raw Chunk Capture V2
 
+## Closure
+
+Archived June 18, 2026 after automated validation, development runtime smoke,
+and a multi-day main-server run without observed problems.
+
 ## Objective
 Replace command-driven PNG map generation with settings-controlled capture of
 raw surface data for the chunk an eligible player leaves.
@@ -136,7 +141,7 @@ Do not remove shared helpers used by unrelated Admin Utils functionality.
   test, and documentation artifacts.
 - [x] Update README and HISTORY for the V2 behavior and source contract.
 - [x] Run automated tests and package build.
-- [ ] Run runtime smoke.
+- [x] Run runtime smoke.
 
 ## Validation Strategy
 - [x] Defaults disable capture and restrict enabled capture to admins.

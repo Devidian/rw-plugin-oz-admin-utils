@@ -1,6 +1,11 @@
 package de.omegazirkel.risingworld.adminutils;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import org.junit.Test;
 
@@ -22,5 +27,34 @@ public class PluginSettingsTest {
         assertEquals(24, PluginSettings.clampNewPlayerInfoHeightPercent(10));
         assertEquals(36, PluginSettings.clampNewPlayerInfoHeightPercent(36));
         assertEquals(95, PluginSettings.clampNewPlayerInfoHeightPercent(100));
+    }
+
+    @Test
+    public void routeExposureFlagsLoadFromSettings() throws Exception {
+        Path settings = Files.createTempFile("oz-admin-utils-settings-", ".properties");
+        Files.writeString(settings, String.join("\n",
+                "exposeMapData=false",
+                "exposePluginList=false",
+                "exposePlayerData=false",
+                "exposeServerConfig=false",
+                "exposeWorldAreas=false"));
+
+        PluginSettings pluginSettings = PluginSettings.getInstance();
+        pluginSettings.initSettings(settings.toString());
+
+        assertFalse(pluginSettings.exposeMapData);
+        assertFalse(pluginSettings.exposePluginList);
+        assertFalse(pluginSettings.exposePlayerData);
+        assertFalse(pluginSettings.exposeServerConfig);
+        assertFalse(pluginSettings.exposeWorldAreas);
+
+        Files.writeString(settings, "");
+        pluginSettings.initSettings(settings.toString());
+
+        assertTrue(pluginSettings.exposeMapData);
+        assertTrue(pluginSettings.exposePluginList);
+        assertTrue(pluginSettings.exposePlayerData);
+        assertTrue(pluginSettings.exposeServerConfig);
+        assertTrue(pluginSettings.exposeWorldAreas);
     }
 }

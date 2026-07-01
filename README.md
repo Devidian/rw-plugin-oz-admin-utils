@@ -71,6 +71,15 @@ an external backend renderer. Admin Utils does not generate PNG map tiles or a
 tile pyramid. A successful database insert/update writes the debug-level log
 `chunk <x> <z> updated in <ms>ms`.
 
+Admin Utils also contains route-ready export DTOs/services for future native
+plugin routes. Prepared exports cover map source chunks with `lastChange`
+cursor filtering, runtime plugin metadata, runtime player snapshots, masked
+server configuration, and world area geometry. Route exposure flags are
+available in `settings.properties`: `exposeMapData`, `exposePluginList`,
+`exposePlayerData`, `exposeServerConfig`, and `exposeWorldAreas`.
+World area geometry is intentionally owned by Admin Utils because it comes from
+the Rising World world database rather than from LandClaim plugin persistence.
+
 ## Contributor Workflow
 
 - Review `AGENTS.md`, `PLANS.md`, `.codex/agents.toml`, and `.codex/skills/` before making structural changes.

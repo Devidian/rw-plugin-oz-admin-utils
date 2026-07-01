@@ -2,6 +2,13 @@
 
 <https://www.conventionalcommits.org/en/v1.0.0/>
 
+## [Unreleased]
+
+- feat: add route-ready Admin Utils map export DTOs/services with `lastChange` filtering
+- feat: add route-ready Admin Utils plugin-list, player-data, server-config, and world-area export services
+- feat: add future native route exposure flags for map data, plugin list, player data, server config, and world areas
+- docs: record Admin Utils ownership of future world-area geometry exports
+
 ## [0.8.2] - 2026-06-21 | Player info panel sizing
 
 - fix: keep long new-player information text inside a vertically scrollable panel

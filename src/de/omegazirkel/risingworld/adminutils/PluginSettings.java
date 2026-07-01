@@ -40,6 +40,13 @@ public class PluginSettings {
 	public int mapGenChunkScanRadius = 0;
 	public int mapGenChunkCooldownSeconds = 60;
 
+	// Future native route exposure
+	public boolean exposeMapData = true;
+	public boolean exposePluginList = true;
+	public boolean exposePlayerData = true;
+	public boolean exposeServerConfig = true;
+	public boolean exposeWorldAreas = true;
+
 	// Mount ownership
 	public boolean enableMountOwnership = true;
 	public boolean forceAreaOwnership = false;
@@ -171,6 +178,11 @@ public class PluginSettings {
 					Integer.parseInt(settings.getProperty("mapGenChunkScanRadius", "0")));
 			mapGenChunkCooldownSeconds = Math.max(0,
 					Integer.parseInt(settings.getProperty("mapGenChunkCooldownSeconds", "60")));
+			exposeMapData = settings.getProperty("exposeMapData", "true").contentEquals("true");
+			exposePluginList = settings.getProperty("exposePluginList", "true").contentEquals("true");
+			exposePlayerData = settings.getProperty("exposePlayerData", "true").contentEquals("true");
+			exposeServerConfig = settings.getProperty("exposeServerConfig", "true").contentEquals("true");
+			exposeWorldAreas = settings.getProperty("exposeWorldAreas", "true").contentEquals("true");
 
 			// mount ownership
 			enableMountOwnership = settings.getProperty("enableMountOwnership", "true").contentEquals("true");
@@ -259,7 +271,7 @@ public class PluginSettings {
 			discordPlayerTeleportChannelId = Long
 					.parseLong(settings.getProperty("discordPlayerTeleportChannelId", "0"));
 
-			logger().info(plugin.getName() + " Plugin settings loaded");
+			logger().info((plugin == null ? "OZAdminUtils" : plugin.getName()) + " Plugin settings loaded");
 			logger().info("Sending welcome message on login is: " + String.valueOf(enableWelcomeMessage));
 			logger().info("enableSleepAnnouncement is: " + enableSleepAnnouncement);
 			logger().info("Loglevel is set to " + logLevel);
@@ -310,6 +322,23 @@ public class PluginSettings {
 				entry("mapGenChunkCooldownSeconds", "Map chunk cooldown",
 						"Minimum seconds before the same chunk can trigger another capture.",
 						mapGenChunkCooldownSeconds, "60", AdminSettingsType.INTEGER),
+				AdminSettingsEntry.group("exportRoutes", "Export routes",
+						"Future native route exposure flags for external manager services."),
+				entry("exposeMapData", "Expose map data",
+						"Enables the future Admin Utils map-data export route.", exposeMapData, "true",
+						AdminSettingsType.BOOLEAN),
+				entry("exposePluginList", "Expose plugin list",
+						"Enables the future Admin Utils plugin-list export route.", exposePluginList, "true",
+						AdminSettingsType.BOOLEAN),
+				entry("exposePlayerData", "Expose player data",
+						"Enables the future Admin Utils player-data export route.", exposePlayerData, "true",
+						AdminSettingsType.BOOLEAN),
+				entry("exposeServerConfig", "Expose server config",
+						"Enables the future Admin Utils server-config export route.", exposeServerConfig, "true",
+						AdminSettingsType.BOOLEAN),
+				entry("exposeWorldAreas", "Expose world areas",
+						"Enables the future Admin Utils world-area geometry export route.", exposeWorldAreas, "true",
+						AdminSettingsType.BOOLEAN),
 				AdminSettingsEntry.group("mounts", "Mount ownership", "Mount ownership protection and theft punishment."),
 				entry("enableMountOwnership", "Mount ownership", "Enables mount ownership protection.",
 						enableMountOwnership, "true", AdminSettingsType.BOOLEAN),
