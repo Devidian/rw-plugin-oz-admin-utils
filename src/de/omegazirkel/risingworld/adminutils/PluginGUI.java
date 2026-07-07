@@ -66,7 +66,7 @@ public class PluginGUI {
 
     private MenuItem menuItemManagePrisonZone(Player uiPlayer) {
         return new MenuItem(
-                AssetManager.getIcon("icon-ki-manage-zone"),
+                "icon-ki-manage-zone",
                 t().get("TC_MENU_PRISON_ZONE_MANAGE", uiPlayer),
                 p -> openPrisonZoneMenu(p, this::openMainMenu));
     }
@@ -104,7 +104,7 @@ public class PluginGUI {
 
     private MenuItem menuItemCreatePrison(Player uiPlayer, Area area, Callback<Player> onBack) {
         return new MenuItem(
-                AssetManager.getIcon("icon-ki-create"),
+                "icon-ki-create",
                 t().get("TC_MENU_PRISON_ZONE_CREATE", uiPlayer),
                 p -> {
                     if (AdminUtils.prisonService() == null) {
@@ -135,7 +135,7 @@ public class PluginGUI {
 
     private MenuItem menuItemOpenPrisonDetails(Player uiPlayer, Prison prison, Callback<Player> onBack) {
         return new MenuItem(
-                AssetManager.getIcon("icon-ki-manage-prison"),
+                "icon-ki-manage-prison",
                 t().get("TC_MENU_PRISON_ZONE_DETAILS", uiPlayer),
                 p -> {
                     UIElement existing = (UIElement) p.getAttribute(PrisonDetailOverlay.ATTRIBUTE_KEY);
@@ -153,7 +153,7 @@ public class PluginGUI {
 
     private MenuItem menuItemUpdatePrisonSpawn(Player uiPlayer, Area area, Prison prison, Callback<Player> onBack) {
         return new MenuItem(
-                AssetManager.getIcon("icon-ki-set-spawn"),
+                "icon-ki-set-spawn",
                 t().get("TC_MENU_PRISON_ZONE_SET_SPAWN", uiPlayer),
                 p -> {
                     Vector3f position = p.getPosition();
@@ -168,7 +168,7 @@ public class PluginGUI {
 
     private MenuItem menuItemSyncPrisonName(Player uiPlayer, Area area, Prison prison, Callback<Player> onBack) {
         return new MenuItem(
-                AssetManager.getIcon("icon-ki-name-sync"),
+                "icon-ki-name-sync",
                 t().get("TC_MENU_PRISON_ZONE_SYNC_NAME", uiPlayer),
                 p -> {
                     prison.name = prisonName(area);
