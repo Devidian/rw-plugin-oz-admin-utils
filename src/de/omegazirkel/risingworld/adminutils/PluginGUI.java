@@ -30,14 +30,14 @@ public class PluginGUI {
     public static PluginGUI getInstance(Plugin p) {
 
         String[] iconListStrings = {
-                "icon-ki-set-spawn",
-                "icon-ki-name-sync",
-                "icon-ki-release",
-                "icon-ki-manage-zone",
-                "icon-ki-manage-prison",
-                "icon-ki-indicator-prison",
-                "icon-ki-create",
-                "oz-admin-utils-logo"
+                "zone-prison-set-spawn",
+                "zone-name-sync",
+                "zone-prison-release",
+                "zone-manage",
+                "zone-prison-manage",
+                "zone-prison-indicator",
+                "zone-prison-create",
+                "oz-admin-utils"
         };
 
         for (String icon : iconListStrings) {
@@ -66,7 +66,7 @@ public class PluginGUI {
 
     private MenuItem menuItemManagePrisonZone(Player uiPlayer) {
         return new MenuItem(
-                "icon-ki-manage-zone",
+                "zone-manage",
                 t().get("TC_MENU_PRISON_ZONE_MANAGE", uiPlayer),
                 p -> openPrisonZoneMenu(p, this::openMainMenu));
     }
@@ -104,7 +104,7 @@ public class PluginGUI {
 
     private MenuItem menuItemCreatePrison(Player uiPlayer, Area area, Callback<Player> onBack) {
         return new MenuItem(
-                "icon-ki-create",
+                "zone-prison-create",
                 t().get("TC_MENU_PRISON_ZONE_CREATE", uiPlayer),
                 p -> {
                     if (AdminUtils.prisonService() == null) {
@@ -135,7 +135,7 @@ public class PluginGUI {
 
     private MenuItem menuItemOpenPrisonDetails(Player uiPlayer, Prison prison, Callback<Player> onBack) {
         return new MenuItem(
-                "icon-ki-manage-prison",
+                "zone-prison-manage",
                 t().get("TC_MENU_PRISON_ZONE_DETAILS", uiPlayer),
                 p -> {
                     UIElement existing = (UIElement) p.getAttribute(PrisonDetailOverlay.ATTRIBUTE_KEY);
@@ -153,7 +153,7 @@ public class PluginGUI {
 
     private MenuItem menuItemUpdatePrisonSpawn(Player uiPlayer, Area area, Prison prison, Callback<Player> onBack) {
         return new MenuItem(
-                "icon-ki-set-spawn",
+                "zone-prison-set-spawn",
                 t().get("TC_MENU_PRISON_ZONE_SET_SPAWN", uiPlayer),
                 p -> {
                     Vector3f position = p.getPosition();
@@ -168,7 +168,7 @@ public class PluginGUI {
 
     private MenuItem menuItemSyncPrisonName(Player uiPlayer, Area area, Prison prison, Callback<Player> onBack) {
         return new MenuItem(
-                "icon-ki-name-sync",
+                "zone-name-sync",
                 t().get("TC_MENU_PRISON_ZONE_SYNC_NAME", uiPlayer),
                 p -> {
                     prison.name = prisonName(area);

@@ -42,6 +42,6 @@ Keep indicator registration separate from prison state changes. If prison transf
 - Phase 1 complete: the theft punishment path killed the player at theft attempt 6+ before the later kick/ban replacement could route the punishment into prison.
 - Phase 2 complete: theft prison replacement now runs before the old kill path for kick/ban-level punishments, prison transfer clears injuries and restores health before/after moving, and active prisoners are forced back to the prison spawn after spawning.
 - Phase 3 complete: `showPrisonZoneIndicator=true` controls the shared prison-zone indicator.
-- Phase 4 complete: Admin Utils registers a Tools shared indicator provider that shows `icon-ki-manage-prison` while a player is inside an enabled prison area.
-- Phase 5 complete: the Admin Utils radial menu includes an Info/Status action using the shared Tools `icon-ki-info-status` asset, and `/au info` routes to the same panel as `/au status`.
+- Phase 4 complete: Admin Utils registers a Tools shared indicator provider that shows `zone-prison-manage` while a player is inside an enabled prison area.
+- Phase 5 complete: the Admin Utils radial menu includes an Info/Status action using the shared Tools `info-status` asset, and `/au info` routes to the same panel as `/au status`.
 - Phase 6 complete: README/HISTORY were updated and validation passed with `mvn -B test` and `mvn -B -DskipTests package`.

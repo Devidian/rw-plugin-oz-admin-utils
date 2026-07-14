@@ -2,8 +2,10 @@
 
 <https://www.conventionalcommits.org/en/v1.0.0/>
 
-## [Unreleased]
+## [0.8.4] - 2026-07-14 | Icon set and admin UI polish
 
+- change: reuse the shared OZTools info-status icon and remove the obsolete Admin Utils info asset
+- change: rename Admin Utils icon keys to their final semantic names
 - feat: add route-ready Admin Utils map export DTOs/services with `lastChange` filtering
 - feat: add route-ready Admin Utils plugin-list, player-data, server-config, and world-area export services
 - feat: add future native route exposure flags for map data, plugin list, player data, server config, and world areas

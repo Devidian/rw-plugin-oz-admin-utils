@@ -143,7 +143,7 @@ public class AdminUtils extends Plugin implements Listener, FileChangeListener {
 		// Load Plugin Menu into Main Plugin Menu
 		PluginMenuManager
 				.registerPluginMenu(
-						new MenuItem(name, "oz-admin-utils-logo", "Admin Utils", (Player p) -> {
+						new MenuItem(name, "oz-admin-utils", "Admin Utils", (Player p) -> {
 							gui.openMainMenu(p);
 						}));
 		PluginShortcutVisibility.register(name, AdminUtilsPlayerPluginSettings::shortcutVisible);

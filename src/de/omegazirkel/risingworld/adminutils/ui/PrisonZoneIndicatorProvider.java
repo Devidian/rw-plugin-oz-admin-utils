@@ -26,6 +26,6 @@ public class PrisonZoneIndicatorProvider implements SharedIndicatorProvider {
 
     @Override
     public String getIcon(Player player) {
-        return "icon-ki-indicator-prison";
+        return "zone-prison-indicator";
     }
 }
