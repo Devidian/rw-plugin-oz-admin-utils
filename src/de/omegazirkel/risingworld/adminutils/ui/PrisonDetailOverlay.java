@@ -1,6 +1,7 @@
 package de.omegazirkel.risingworld.adminutils.ui;
 
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 
 import de.omegazirkel.risingworld.AdminUtils;
@@ -9,6 +10,7 @@ import de.omegazirkel.risingworld.adminutils.db.entities.Prison;
 import de.omegazirkel.risingworld.adminutils.db.entities.Prisoner;
 import de.omegazirkel.risingworld.tools.I18n;
 import de.omegazirkel.risingworld.tools.ui.AdvancedButtonFactory;
+import de.omegazirkel.risingworld.tools.ui.BasePluginOverlayWithTabs;
 import de.omegazirkel.risingworld.tools.ui.CursorManager;
 import de.omegazirkel.risingworld.tools.ui.AdvancedButton;
 import de.omegazirkel.risingworld.tools.ui.OZUIElement;
@@ -19,106 +21,67 @@ import net.risingworld.api.Server;
 import net.risingworld.api.callbacks.Callback;
 import net.risingworld.api.objects.Player;
 import net.risingworld.api.ui.UILabel;
-import net.risingworld.api.ui.style.Font;
 import net.risingworld.api.ui.style.Pivot;
-import net.risingworld.api.ui.style.Position;
 import net.risingworld.api.ui.style.TextAnchor;
-import net.risingworld.api.ui.style.Unit;
 
-public class PrisonDetailOverlay extends OZUIElement {
+public class PrisonDetailOverlay extends BasePluginOverlayWithTabs {
 
     public static final String ATTRIBUTE_KEY = "oz.adminutils.prison-detail-overlay";
 
-    private static final float PANEL_WIDTH_PERCENT = 82f;
-    private static final float PANEL_HEIGHT_PIXELS = 520f;
     private static final float TABLE_SCROLL_BODY_HEIGHT = 330f;
 
+    private enum DetailTab { CURRENT, OTHER }
+
     private final Player player;
-    private final Prison prison;
-    private final Callback<Player> onClose;
-    private OZUIElement panel;
-    private OZUIElement body;
+    private Prison prison;
+    private DetailTab activeDetailTab = DetailTab.CURRENT;
 
     public PrisonDetailOverlay(Player player, Prison prison, Callback<Player> onClose) {
+        super(player, onClose);
         this.player = player;
         this.prison = prison;
-        this.onClose = onClose;
-        setClickable(false);
-        setPivot(Pivot.UpperLeft);
-        setSize(100, 100, true);
-        setBackgroundColor(0, 0, 0, 0.42f);
         rebuild();
     }
 
-    private static I18n t() {
+    @Override
+    protected I18n t() {
         return I18n.getInstance(AdminUtils.name);
     }
 
-    private void rebuild() {
-        removeAllChilds();
-        panel = new OZUIElement();
-        panel.setPivot(Pivot.MiddleCenter);
-        panel.setPosition(50f, 50f, true);
-        panel.style.width.set(PANEL_WIDTH_PERCENT, Unit.Percent);
-        panel.style.height.set(PANEL_HEIGHT_PIXELS, Unit.Pixel);
-        panel.setBackgroundColor(0, 0, 0, 0.86f);
-        panel.setBorderColor(0.95f, 0.75f, 0.25f, 0.6f);
-        panel.setBorder(1);
-        panel.setBorderEdgeRadius(6, false);
-        addChild(panel);
-
-        setupHeader();
-        setupBody();
-        setupFooter();
+    @Override
+    protected String titleText() {
+        return t().get("TC_UI_PRISON_DETAIL_TITLE", player).replace("PH_PRISON_NAME", prison.name);
     }
 
-    private void setupHeader() {
-        UILabel title = new UILabel(t().get("TC_UI_PRISON_DETAIL_TITLE", player)
-                .replace("PH_PRISON_NAME", prison.name));
-        title.setPivot(Pivot.UpperLeft);
-        title.setPosition(24, 18, false);
-        title.setFont(Font.DefaultBold);
-        title.setFontSize(24);
-        panel.addChild(title);
-
-        UILabel subtitle = new UILabel(t().get("TC_UI_PRISON_DETAIL_SUBTITLE", player)
-                .replace("PH_AREA_ID", String.valueOf(prison.areaId)));
-        subtitle.setPivot(Pivot.UpperLeft);
-        subtitle.setPosition(24, 52, false);
-        subtitle.setFont(Font.Default);
-        subtitle.setFontSize(12);
-        panel.addChild(subtitle);
-
-        OZUIElement closeButton = new OZUIElement();
-        closeButton.setPivot(Pivot.UpperRight);
-        closeButton.style.position.set(Position.Absolute);
-        closeButton.style.right.set(0, Unit.Pixel);
-        closeButton.style.top.set(20, Unit.Pixel);
-        closeButton.setSize(34, 34, false);
-        closeButton.setBorder(1);
-        closeButton.setBorderColor(0.95f, 0.75f, 0.25f, 0.54f);
-        closeButton.setBorderEdgeRadius(4, false);
-        closeButton.setBackgroundColor(0.12f, 0.10f, 0.08f, 0.9f);
-        closeButton.setHoverBackgroundColor(0x611F1AF2);
-        closeButton.setClickable(true);
-        closeButton.setClickAction(event -> close());
-        UILabel closeLabel = centeredLabel("X", 18, true);
-        closeButton.addChild(closeLabel);
-        panel.addChild(closeButton);
+    @Override
+    protected String descriptionText() {
+        return t().get("TC_UI_PRISON_DETAIL_SUBTITLE", player).replace("PH_AREA_ID", String.valueOf(prison.areaId));
     }
 
-    private void setupBody() {
-        body = new OZUIElement();
-        body.setPivot(Pivot.UpperLeft);
-        body.setPosition(24, 92, false);
-        body.style.width.set(96, Unit.Percent);
-        body.style.height.set(384, Unit.Pixel);
-        body.setBackgroundColor(0.08f, 0.08f, 0.08f, 0.55f);
-        body.setBorder(1);
-        body.setBorderColor(0.95f, 0.75f, 0.25f, 0.48f);
-        body.setBorderEdgeRadius(4, false);
-        panel.addChild(body);
+    @Override
+    protected String legendText() {
+        return t().get("TC_UI_PRISON_DETAIL_FOOTER", player);
+    }
 
+    @Override
+    protected void setupTabs() {
+        setupTabContainer();
+        addTab(t().get("TC_UI_PRISON_DETAIL_TAB_CURRENT", player), 180, activeDetailTab == DetailTab.CURRENT, true, () -> {
+            activeDetailTab = DetailTab.CURRENT;
+            rebuild();
+        });
+        addTab(t().get("TC_UI_PRISON_DETAIL_TAB_OTHER", player), 180, activeDetailTab == DetailTab.OTHER, true, () -> {
+            activeDetailTab = DetailTab.OTHER;
+            rebuild();
+        });
+        if (activeDetailTab == DetailTab.CURRENT) {
+            setupPrisonerTable();
+        } else {
+            setupOtherPrisonsTable();
+        }
+    }
+
+    private void setupPrisonerTable() {
         TableScrollView table = new TableScrollView(
                 Arrays.asList(
                         t().get("TC_UI_PRISON_DETAIL_TH_PLAYER", player),
@@ -139,6 +102,103 @@ public class PrisonDetailOverlay extends OZUIElement {
             }
         }
         body.addChild(table);
+    }
+
+    private void setupOtherPrisonsTable() {
+        TableScrollView table = new TableScrollView(
+                Arrays.asList(
+                        t().get("TC_UI_PRISON_DETAIL_TH_ZONE", player),
+                        t().get("TC_UI_PRISON_DETAIL_TH_PRISONERS", player),
+                        t().get("TC_UI_PRISON_DETAIL_TH_ACTIONS", player)),
+                Arrays.asList(50f, 20f, 30f));
+        table.setScrollBodyHeight(TABLE_SCROLL_BODY_HEIGHT);
+        List<Prison> prisons = AdminUtils.prisonService() == null ? List.of() : AdminUtils.prisonService().getAll();
+        prisons.stream().sorted(Comparator.comparingLong(value -> value.areaId)).forEach(candidate -> table.addRow(prisonRow(candidate)));
+        if (prisons.isEmpty()) {
+            table.addRow(textOnlyRow(t().get("TC_UI_PRISON_DETAIL_EMPTY", player), 100f));
+        }
+        body.addChild(table);
+    }
+
+    private TableRow prisonRow(Prison candidate) {
+        PrisonerService service = AdminUtils.prisonerService();
+        int prisoners = service == null ? 0 : service.getByPrison(candidate.areaId).size();
+        OZUIElement actions = new OZUIElement();
+        actions.setSize(100, 100, true);
+        AdvancedButton select = AdvancedButtonFactory.defaultButton(t().get("TC_UI_PRISON_DETAIL_OPEN", player), event -> {
+            prison = candidate;
+            activeDetailTab = DetailTab.CURRENT;
+            rebuild();
+        });
+        select.setPivot(Pivot.UpperLeft);
+        select.setPosition(0, 4, false);
+        select.setSize(78, 26, false);
+        actions.addChild(select);
+        if (prisoners == 0) {
+            AdvancedButton dissolve = AdvancedButtonFactory.danger(t().get("TC_MENU_PRISON_ZONE_DISSOLVE", player), event -> showDissolveConfirmation(candidate));
+            dissolve.setPivot(Pivot.UpperLeft);
+            dissolve.setPosition(86, 4, false);
+            dissolve.setSize(150, 26, false);
+            actions.addChild(dissolve);
+        }
+        return new TableRow(Arrays.asList(
+                labelCell(candidate.name + " (#" + candidate.areaId + ")", 50f),
+                labelCell(String.valueOf(prisoners), 20f),
+                new TableCell(actions, 30f)));
+    }
+
+    public void showDissolveConfirmation(Prison candidate) {
+        OZUIElement dialog = new OZUIElement();
+        dialog.setPivot(Pivot.MiddleCenter);
+        dialog.setPosition(50, 50, true);
+        dialog.setSize(480, 190, false);
+        dialog.setBackgroundColor(0x10100EF8);
+        dialog.setBorder(1);
+        dialog.setBorderColor(0xD7AE55FF);
+        panel.addChild(dialog);
+
+        UILabel title = new UILabel(t().get("TC_UI_PRISON_DISSOLVE_CONFIRM_TITLE", player));
+        title.setPivot(Pivot.UpperLeft);
+        title.setPosition(20, 18, false);
+        title.setSize(440, 28, false);
+        title.setFontSize(18);
+        dialog.addChild(title);
+
+        UILabel message = new UILabel(t().get("TC_UI_PRISON_DISSOLVE_CONFIRM_MESSAGE", player)
+                .replace("PH_AREA_NAME", candidate.name));
+        message.setPivot(Pivot.UpperLeft);
+        message.setPosition(20, 54, false);
+        message.setSize(440, 64, false);
+        message.setFontSize(13);
+        message.setTextWrap(true);
+        dialog.addChild(message);
+
+        AdvancedButton cancel = AdvancedButtonFactory.cancel(t().get("TC_UI_CANCEL", player), event -> panel.removeChild(dialog));
+        cancel.setPivot(Pivot.UpperLeft);
+        cancel.setPosition(24, 142, false);
+        cancel.setSize(150, 32, false);
+        dialog.addChild(cancel);
+        AdvancedButton confirm = AdvancedButtonFactory.danger(t().get("TC_MENU_PRISON_ZONE_DISSOLVE", player), event -> {
+            panel.removeChild(dialog);
+            dissolve(candidate);
+        });
+        confirm.setPivot(Pivot.UpperRight);
+        confirm.setPosition(456, 142, false);
+        confirm.setSize(180, 32, false);
+        dialog.addChild(confirm);
+    }
+
+    private void dissolve(Prison candidate) {
+        PrisonerService prisonerService = AdminUtils.prisonerService();
+        if (prisonerService != null && !prisonerService.getByPrison(candidate.areaId).isEmpty()) {
+            player.sendTextMessage(t().get("TC_PRISON_ZONE_DISSOLVE_BLOCKED", player).replace("PH_AREA_NAME", candidate.name));
+            rebuild();
+            return;
+        }
+        if (AdminUtils.prisonService() != null && AdminUtils.prisonService().remove(candidate.areaId)) {
+            player.sendTextMessage(t().get("TC_PRISON_ZONE_DISSOLVED", player).replace("PH_AREA_NAME", candidate.name));
+        }
+        rebuild();
     }
 
     private TableRow prisonerRow(Prisoner prisoner) {
@@ -171,8 +231,8 @@ public class PrisonDetailOverlay extends OZUIElement {
                 pardon(prisoner);
             });
             pardon.setPivot(Pivot.UpperLeft);
-            pardon.setPosition(0, 8, true);
-            pardon.setSize(100, 24, false);
+            pardon.setPosition(0, 4, false);
+            pardon.setSize(132, 26, false);
             pardon.setBorderEdgeRadius(3, false);
             actions.addChild(pardon);
         } else {
@@ -228,29 +288,9 @@ public class PrisonDetailOverlay extends OZUIElement {
         return t().get("TC_UI_PRISON_DETAIL_MINUTES", player).replace("PH_MINUTES", String.valueOf(minutes));
     }
 
-    private UILabel centeredLabel(String text, float fontSize, boolean bold) {
-        UILabel label = new UILabel(text);
-        label.setPivot(Pivot.MiddleCenter);
-        label.setPosition(50, 50, true);
-        label.setSize(100, 100, true);
-        label.setFont(bold ? Font.DefaultBold : Font.Default);
-        label.setFontSize(fontSize);
-        label.setTextAlign(TextAnchor.MiddleCenter);
-        return label;
-    }
-
-    private void setupFooter() {
-        UILabel legend = new UILabel(t().get("TC_UI_PRISON_DETAIL_FOOTER", player));
-        legend.setPivot(Pivot.LowerLeft);
-        legend.setPosition(24, PANEL_HEIGHT_PIXELS - 18, false);
-        legend.setFontSize(12);
-        panel.addChild(legend);
-    }
-
-    private void close() {
-        player.removeUIElement(this);
-        CursorManager.hide(player);
+    @Override
+    protected void close() {
         player.deleteAttribute(ATTRIBUTE_KEY);
-        onClose.onCall(player);
+        super.close();
     }
 }

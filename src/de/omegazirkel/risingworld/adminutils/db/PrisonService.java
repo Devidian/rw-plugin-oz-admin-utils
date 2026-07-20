@@ -39,6 +39,15 @@ public class PrisonService {
         store.markDirty(prison);
     }
 
+    /** Removes only the zone configuration. Callers must first ensure that no
+     * prisoner still references the zone. */
+    public boolean remove(long areaId) {
+        Prison prison = byAreaId.remove(areaId);
+        if (prison == null) return false;
+        store.remove(new PrisonKey(areaId));
+        return true;
+    }
+
     public void rebuildIndexes() {
         byAreaId.clear();
         store.clear();

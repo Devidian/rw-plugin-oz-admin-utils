@@ -2,6 +2,12 @@
 
 <https://www.conventionalcommits.org/en/v1.0.0/>
 
+## [0.8.8] - 2026-07-20 | Prison-zone administration
+
+- feat: manage the current and other prison zones from one tabbed overlay
+- feat: restore prison dissolution with mandatory confirmation in both the overlay and radial menu
+- fix: keep prison tables and action labels within their available space
+
 ## [0.8.7] - 2026-07-20 | Advanced button controls
 
 - change: use the shared OZ Tools button controls in administration overlays

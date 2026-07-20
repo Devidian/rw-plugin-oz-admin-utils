@@ -94,6 +94,7 @@ public class PluginGUI {
                 menuItems.add(menuItemOpenPrisonDetails(uiPlayer, prison, onBack));
                 menuItems.add(menuItemUpdatePrisonSpawn(uiPlayer, currentArea, prison, onBack));
                 menuItems.add(menuItemSyncPrisonName(uiPlayer, currentArea, prison, onBack));
+                menuItems.add(menuItemDissolvePrison(uiPlayer, currentArea, prison, onBack));
             }
         }
 
@@ -178,6 +179,31 @@ public class PluginGUI {
                             .replace("PH_AREA_ID", String.valueOf(area.getID())));
                     openPrisonZoneMenu(p, onBack);
                 });
+    }
+
+    private MenuItem menuItemDissolvePrison(Player uiPlayer, Area area, Prison prison, Callback<Player> onBack) {
+        return new MenuItem("zone-prison-release", t().get("TC_MENU_PRISON_ZONE_DISSOLVE", uiPlayer), p -> {
+            if (AdminUtils.prisonService() == null || AdminUtils.prisonerService() == null) {
+                p.sendTextMessage(t().get("TC_PRISON_ZONE_SERVICE_UNAVAILABLE", p));
+            } else if (!AdminUtils.prisonerService().getByPrison(prison.areaId).isEmpty()) {
+                p.sendTextMessage(t().get("TC_PRISON_ZONE_DISSOLVE_BLOCKED", p)
+                        .replace("PH_AREA_NAME", prisonName(area)));
+            } else {
+                UIElement existing = (UIElement) p.getAttribute(PrisonDetailOverlay.ATTRIBUTE_KEY);
+                if (existing != null) {
+                    p.removeUIElement(existing);
+                    CursorManager.hide(p);
+                }
+                PrisonDetailOverlay overlay = new PrisonDetailOverlay(p, prison, onBack);
+                p.addUIElement(overlay, UITarget.HUD);
+                CursorManager.show(p);
+                p.setAttribute(PrisonDetailOverlay.ATTRIBUTE_KEY, overlay);
+                p.hideRadialMenu(false);
+                overlay.showDissolveConfirmation(prison);
+                return;
+            }
+            openPrisonZoneMenu(p, onBack);
+        });
     }
 
     private String prisonName(Area area) {
