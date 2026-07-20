@@ -2,6 +2,10 @@
 
 <https://www.conventionalcommits.org/en/v1.0.0/>
 
+## [0.8.7] - 2026-07-20 | Advanced button controls
+
+- change: use the shared OZ Tools button controls in administration overlays
+
 ## [0.8.6] - 2026-07-20 | Discord channel settings
 
 - change: theft reports use their configured Discord channel ID directly

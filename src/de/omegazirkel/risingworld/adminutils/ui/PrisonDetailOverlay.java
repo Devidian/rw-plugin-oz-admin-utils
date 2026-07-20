@@ -8,9 +8,9 @@ import de.omegazirkel.risingworld.adminutils.db.PrisonerService;
 import de.omegazirkel.risingworld.adminutils.db.entities.Prison;
 import de.omegazirkel.risingworld.adminutils.db.entities.Prisoner;
 import de.omegazirkel.risingworld.tools.I18n;
-import de.omegazirkel.risingworld.tools.ui.ButtonFactory;
+import de.omegazirkel.risingworld.tools.ui.AdvancedButtonFactory;
 import de.omegazirkel.risingworld.tools.ui.CursorManager;
-import de.omegazirkel.risingworld.tools.ui.DangerButton;
+import de.omegazirkel.risingworld.tools.ui.AdvancedButton;
 import de.omegazirkel.risingworld.tools.ui.OZUIElement;
 import de.omegazirkel.risingworld.tools.ui.table.TableCell;
 import de.omegazirkel.risingworld.tools.ui.table.TableRow;
@@ -167,7 +167,7 @@ public class PrisonDetailOverlay extends OZUIElement {
         OZUIElement actions = new OZUIElement();
         actions.setSize(100, 100, true);
         if (!"RELEASED".equalsIgnoreCase(prisoner.status)) {
-            DangerButton pardon = ButtonFactory.danger(t().get("TC_UI_PRISON_DETAIL_PARDON", player), event -> {
+            AdvancedButton pardon = AdvancedButtonFactory.danger(t().get("TC_UI_PRISON_DETAIL_PARDON", player), event -> {
                 pardon(prisoner);
             });
             pardon.setPivot(Pivot.UpperLeft);

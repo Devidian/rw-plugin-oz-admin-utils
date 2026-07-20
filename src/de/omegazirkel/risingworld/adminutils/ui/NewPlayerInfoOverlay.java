@@ -2,8 +2,8 @@ package de.omegazirkel.risingworld.adminutils.ui;
 
 import de.omegazirkel.risingworld.AdminUtils;
 import de.omegazirkel.risingworld.tools.I18n;
-import de.omegazirkel.risingworld.tools.ui.BaseButton;
-import de.omegazirkel.risingworld.tools.ui.ButtonFactory;
+import de.omegazirkel.risingworld.tools.ui.AdvancedButton;
+import de.omegazirkel.risingworld.tools.ui.AdvancedButtonFactory;
 import de.omegazirkel.risingworld.tools.ui.CursorManager;
 import de.omegazirkel.risingworld.tools.ui.OZUIElement;
 import net.risingworld.api.objects.Player;
@@ -80,9 +80,9 @@ public class NewPlayerInfoOverlay extends OZUIElement {
         footer.style.alignItems.set(Align.Center);
         panel.addChild(footer);
 
-        footer.addChild(button(ButtonFactory.ok(t().get("TC_NEW_PLAYER_INFO_OK", player), event -> close(event.getPlayer())),
+        footer.addChild(button(AdvancedButtonFactory.ok(t().get("TC_NEW_PLAYER_INFO_OK", player), event -> close(event.getPlayer())),
                 34));
-        footer.addChild(button(ButtonFactory.cancel(t().get("TC_NEW_PLAYER_INFO_DONT_SHOW", player), event -> {
+        footer.addChild(button(AdvancedButtonFactory.cancel(t().get("TC_NEW_PLAYER_INFO_DONT_SHOW", player), event -> {
             AdminUtilsPlayerPluginSettings.setNewPlayerInfoVisible(event.getPlayer(), false);
             close(event.getPlayer());
         }), 58));
@@ -97,7 +97,7 @@ public class NewPlayerInfoOverlay extends OZUIElement {
         return Math.max(120, lineCount * 22);
     }
 
-    private UIElement button(BaseButton button, int widthPercent) {
+    private UIElement button(AdvancedButton button, int widthPercent) {
         button.setPivot(Pivot.UpperLeft);
         button.style.display.set(DisplayStyle.Flex);
         button.style.justifyContent.set(Justify.Center);
