@@ -2,6 +2,10 @@
 
 <https://www.conventionalcommits.org/en/v1.0.0/>
 
+## [0.8.5] - 2026-07-20 | Update metadata
+
+- change: publish the canonical GitHub release source for OZ Tools update management
+
 ## [0.8.4] - 2026-07-14 | Icon set and admin UI polish
 
 - change: reuse the shared OZTools info-status icon and remove the obsolete Admin Utils info asset
