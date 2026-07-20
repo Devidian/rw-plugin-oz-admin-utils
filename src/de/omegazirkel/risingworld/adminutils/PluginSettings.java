@@ -76,7 +76,6 @@ public class PluginSettings {
 	public long discordSleepEventChannelId = 0;
 
 	// Discord Settings
-	public boolean enableDiscordTheftReport = false;
 	public long discordTheftReportChannelId = 0;
 
 	// player death
@@ -221,7 +220,6 @@ public class PluginSettings {
 			discordSleepEventChannelId = Long.parseLong(settings.getProperty("discordSleepEventChannelId", "0"));
 
 			// discord settings
-			enableDiscordTheftReport = settings.getProperty("enableDiscordTheftReport", "false").contentEquals("true");
 			discordTheftReportChannelId = Long.parseLong(settings.getProperty("discordTheftReportChannelId", "0"));
 
 			// player death
@@ -400,9 +398,6 @@ public class PluginSettings {
 						discordSleepEventChannelId, "0", AdminSettingsType.STRING),
 				AdminSettingsEntry.group("eventLogging", "Event logging",
 						"Operational event logging switches and Discord targets."),
-				entry("enableDiscordTheftReport", "Discord theft report",
-						"Enables Discord theft reports.", enableDiscordTheftReport, "true",
-						AdminSettingsType.BOOLEAN),
 				entry("discordTheftReportChannelId", "Theft report channel",
 						"Discord channel id for theft reports; 0 disables channel-specific routing.",
 						discordTheftReportChannelId, "0", AdminSettingsType.STRING),

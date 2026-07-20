@@ -66,8 +66,7 @@ public class DiscordConnect {
     }
 
     public static void sendDiscordTheftReport(String message) {
-        if (s.enableDiscordTheftReport)
-            sendDiscordMessage(message, s.discordTheftReportChannelId);
+        sendDiscordMessage(message, s.discordTheftReportChannelId);
     }
 
 }
