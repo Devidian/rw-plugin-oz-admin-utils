@@ -284,7 +284,7 @@ public class AdminUtils extends Plugin implements Listener, FileChangeListener {
 
 		if (s.enableWelcomeMessage) {
 			// Player player = event.getPlayer();
-			String lang = player.getSystemLanguage();
+			String lang = de.omegazirkel.risingworld.OZTools.getPlayerLanguage(player);
 			player.sendTextMessage(t.get("TC_MSG_PLUGIN_WELCOME", lang)
 					.replace("PH_PLUGIN_NAME", getDescription("name"))
 					.replace("PH_PLUGIN_CMD", pluginCMD)
