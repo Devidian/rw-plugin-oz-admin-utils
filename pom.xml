@@ -8,7 +8,7 @@
 
     <groupId>com.github.devidian</groupId>
     <artifactId>rw-plugin-oz-admin-utils</artifactId>
-    <version>0.8.8</version>
+    <version>0.8.9</version>
 
     <name>OZAdminUtils</name>
     <description>No description yet</description>
@@ -36,11 +36,6 @@
             <url>https://maven.pkg.github.com/Devidian/rw-plugin-oz-global-intercom</url>
         </repository> -->
 
-        <repository>
-            <id>github-oz-discord-connect</id>
-            <url>https://maven.pkg.github.com/Devidian/rw-plugin-oz-discord-connect</url>
-        </repository>
-
     </repositories>
 
     <dependencies>
@@ -53,13 +48,6 @@
             <scope>provided</scope>
             <optional>true</optional>
         </dependency> -->
-        <dependency>
-            <groupId>com.github.devidian</groupId>
-            <artifactId>rw-plugin-oz-discord-connect</artifactId>
-            <version>0.22.0</version>
-            <scope>provided</scope>
-            <optional>true</optional>
-        </dependency>
         <dependency>
             <groupId>com.github.devidian</groupId>
             <artifactId>rw-plugin-oz-tools</artifactId>

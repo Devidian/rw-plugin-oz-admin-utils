@@ -2,6 +2,10 @@
 
 <https://www.conventionalcommits.org/en/v1.0.0/>
 
+## [0.8.9] - 2026-07-21 | Standalone Discord bridge
+
+- fix: remove the Discord Connect build dependency while preserving optional bridge behavior
+
 ## [0.8.8] - 2026-07-20 | Prison-zone administration
 
 - feat: manage the current and other prison zones from one tabbed overlay
