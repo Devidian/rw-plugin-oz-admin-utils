@@ -2,6 +2,10 @@
 
 <https://www.conventionalcommits.org/en/v1.0.0/>
 
+## Unreleased
+
+- refactor: use the synchronized optional Discord bridge for configured bot-language messages
+
 ## [0.8.9] - 2026-07-21 | Standalone Discord bridge
 
 - fix: remove the Discord Connect build dependency while preserving optional bridge behavior
