@@ -13,6 +13,8 @@ import de.omegazirkel.risingworld.adminutils.PrisonReleaseService;
 import de.omegazirkel.risingworld.adminutils.PluginSettings;
 import de.omegazirkel.risingworld.adminutils.mapsource.MapChunkSourceStore;
 import de.omegazirkel.risingworld.adminutils.mapsource.RisingWorldMapChunkCapture;
+import de.omegazirkel.risingworld.adminutils.live.LivePlayerPositionCapture;
+import de.omegazirkel.risingworld.adminutils.live.LivePlayerPositionStore;
 import de.omegazirkel.risingworld.adminutils.db.PrisonService;
 import de.omegazirkel.risingworld.adminutils.db.PrisonStore;
 import de.omegazirkel.risingworld.adminutils.db.PrisonerService;
@@ -93,6 +95,7 @@ class AdminUtilsRuntime extends Plugin {
 	private static PrisonReleaseService prisonReleaseService;
 	private MapChunkSourceStore mapChunkSourceStore;
 	private RisingWorldMapChunkCapture mapChunkCapture;
+	private LivePlayerPositionCapture livePlayerPositionCapture;
 	private static boolean isInSpeedmode = false;
 	private static float normalGameSpeed = 2.5f;
 
@@ -133,6 +136,7 @@ class AdminUtilsRuntime extends Plugin {
 		ensureDefaultPermissionFiles();
 		initMapChunkSourcePersistence();
 		sqliteCon = SQLiteConnectionFactory.open(this);
+		initLivePlayerPositionCapture();
 		ps = new PlayerSettings(sqliteCon);
 		initPrisonPersistence();
 		gui = PluginGUI.getInstance(this);
@@ -175,6 +179,8 @@ class AdminUtilsRuntime extends Plugin {
 			prisonStore.shutdown();
 		if (mapChunkCapture != null)
 			mapChunkCapture.shutdown();
+		if (livePlayerPositionCapture != null)
+			livePlayerPositionCapture.shutdown();
 		if (mapChunkSourceStore != null) {
 			try {
 				mapChunkSourceStore.close();
@@ -188,6 +194,19 @@ class AdminUtilsRuntime extends Plugin {
 			} catch (SQLException ex) {
 				logger().warn("Failed to close Admin Utils database connection: " + ex.getMessage());
 			}
+		}
+	}
+
+	private void initLivePlayerPositionCapture() {
+		try {
+			livePlayerPositionCapture = new LivePlayerPositionCapture(
+					(AdminUtils) this,
+					new LivePlayerPositionStore(sqliteCon),
+					() -> s.exposePlayerData,
+					() -> s.livePlayerPositionIntervalSeconds);
+			livePlayerPositionCapture.start();
+		} catch (SQLException ex) {
+			logger().warn("Failed to initialize live player position capture: " + ex.getMessage());
 		}
 	}
 

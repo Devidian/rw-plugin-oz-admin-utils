@@ -46,6 +46,7 @@ public class PluginSettings {
 	public boolean exposePlayerData = true;
 	public boolean exposeServerConfig = true;
 	public boolean exposeWorldAreas = true;
+	public int livePlayerPositionIntervalSeconds = 1;
 
 	// Mount ownership
 	public boolean enableMountOwnership = true;
@@ -182,6 +183,8 @@ public class PluginSettings {
 			exposePlayerData = settings.getProperty("exposePlayerData", "true").contentEquals("true");
 			exposeServerConfig = settings.getProperty("exposeServerConfig", "true").contentEquals("true");
 			exposeWorldAreas = settings.getProperty("exposeWorldAreas", "true").contentEquals("true");
+			livePlayerPositionIntervalSeconds = Math.max(1, Math.min(30,
+					Integer.parseInt(settings.getProperty("livePlayerPositionIntervalSeconds", "1"))));
 
 			// mount ownership
 			enableMountOwnership = settings.getProperty("enableMountOwnership", "true").contentEquals("true");
@@ -331,6 +334,9 @@ public class PluginSettings {
 				entry("exposePlayerData", "Expose player data",
 						"Enables the future Admin Utils player-data export route.", exposePlayerData, "true",
 						AdminSettingsType.BOOLEAN),
+				entry("livePlayerPositionIntervalSeconds", "Live position interval",
+						"Seconds between live map position samples; allowed range is 1 to 30.",
+						livePlayerPositionIntervalSeconds, "1", AdminSettingsType.INTEGER),
 				entry("exposeServerConfig", "Expose server config",
 						"Enables the future Admin Utils server-config export route.", exposeServerConfig, "true",
 						AdminSettingsType.BOOLEAN),

@@ -4,6 +4,11 @@
 
 ## Unreleased
 
+## [0.9.0] - 2026-08-04 | Live player map positions
+
+- feat: sample connected-player positions into a bounded world-scoped live map snapshot
+- feat: add configurable one-to-thirty-second live position sampling
+
 ## [0.8.11] - 2026-07-24 | Shared runtime bridges
 
 - refactor: use the synchronized optional Discord bridge for configured bot-language messages

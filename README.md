@@ -77,6 +77,11 @@ cursor filtering, runtime plugin metadata, runtime player snapshots, masked
 server configuration, and world area geometry. Route exposure flags are
 available in `settings.properties`: `exposeMapData`, `exposePluginList`,
 `exposePlayerData`, `exposeServerConfig`, and `exposeWorldAreas`.
+While `exposePlayerData=true`, Admin Utils also keeps a bounded runtime
+position snapshot in `live_player_positions_v1`. The default
+`livePlayerPositionIntervalSeconds=1` may be raised up to 30 seconds. Disabling
+player exposure clears the snapshot; the bridge then falls back to persisted
+`Player.db` coordinates.
 World area geometry is intentionally owned by Admin Utils because it comes from
 the Rising World world database rather than from LandClaim plugin persistence.
 
