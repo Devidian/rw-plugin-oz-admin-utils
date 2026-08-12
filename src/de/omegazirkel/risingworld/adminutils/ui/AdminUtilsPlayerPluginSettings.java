@@ -12,6 +12,7 @@ import net.risingworld.api.ui.style.Unit;
 
 public class AdminUtilsPlayerPluginSettings extends PlayerPluginSettings {
     public static final String NEW_PLAYER_INFO_VISIBLE_KEY = "oz.adminutils.newPlayerInfo.visible";
+    public static final String RELEASE_MOUNT_ON_OWN_PROPERTY_KEY = "oz.adminutils.mount.releaseOnOwnProperty";
 
     public AdminUtilsPlayerPluginSettings(String pluginVersion) {
         this.pluginLabel = AdminUtils.name;
@@ -32,16 +33,23 @@ public class AdminUtilsPlayerPluginSettings extends PlayerPluginSettings {
                 flexWrapper.addChild(booleanSetting(uiPlayer, shortcutKey(), "TC_LABEL_ADMINUTILS_SHORTCUT"));
                 flexWrapper.addChild(booleanSetting(uiPlayer, NEW_PLAYER_INFO_VISIBLE_KEY,
                         "TC_LABEL_NEW_PLAYER_INFO_VISIBLE"));
+                flexWrapper.addChild(booleanSetting(uiPlayer, RELEASE_MOUNT_ON_OWN_PROPERTY_KEY,
+                        "TC_LABEL_RELEASE_MOUNT_ON_OWN_PROPERTY", false));
                 if (uiPlayer.isAdmin()) {
                     flexWrapper.addChild(infoCard(uiPlayer, "TC_SETTINGS_ADMIN_HINT"));
                 }
             }
 
             protected OZUIElement booleanSetting(Player uiPlayer, String key, String labelKey) {
+                return booleanSetting(uiPlayer, key, labelKey, true);
+            }
+
+            protected OZUIElement booleanSetting(Player uiPlayer, String key, String labelKey, boolean defaultValue) {
                 OZUIElement element = defaultSettingsContainer();
                 element.addChild(defaultSettingsLabel(t().get(labelKey, uiPlayer)));
                 boolean visible = AdminUtils.ps == null
-                        || AdminUtils.ps.getBoolean(uiPlayer.getDbID(), key).orElse(true);
+                        ? defaultValue
+                        : AdminUtils.ps.getBoolean(uiPlayer.getDbID(), key).orElse(defaultValue);
                 element.addChild(switchButtons(uiPlayer, visible, event -> {
                     if (AdminUtils.ps != null) {
                         AdminUtils.ps.setBoolean(uiPlayer.getDbID(), key, !visible);
@@ -77,6 +85,11 @@ public class AdminUtilsPlayerPluginSettings extends PlayerPluginSettings {
         if (AdminUtils.ps != null) {
             AdminUtils.ps.setBoolean(player.getDbID(), NEW_PLAYER_INFO_VISIBLE_KEY, visible);
         }
+    }
+
+    public static boolean releasesMountOnOwnProperty(Player player) {
+        return AdminUtils.ps != null
+                && AdminUtils.ps.getBoolean(player.getDbID(), RELEASE_MOUNT_ON_OWN_PROPERTY_KEY).orElse(false);
     }
 
     private static String shortcutKey() {

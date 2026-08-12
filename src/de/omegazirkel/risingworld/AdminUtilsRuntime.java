@@ -803,7 +803,10 @@ class AdminUtilsRuntime extends Plugin {
 		Boolean isOwner = verifyPlayerMountInteraction(player, npc);
 
 		if (isOwner)
+		{
+			releaseMountWhenEligible(player, npc);
 			return;
+		}
 
 		if (s.logTheftAttempt) {
 			logger().warn(
@@ -815,6 +818,19 @@ class AdminUtilsRuntime extends Plugin {
 			punishMountTheft(player, npc);
 
 		event.setCancelled(true);
+	}
+
+	private void releaseMountWhenEligible(Player player, Npc mount) {
+		if (ownsCurrentProperty(player) && !AdminUtilsPlayerPluginSettings.releasesMountOnOwnProperty(player))
+			return;
+		mount.setName("");
+		player.sendTextMessage(t().get("TC_MOUNT_RELEASED", player));
+		logger().info("ℹ️ Player " + player.getName() + " released mount (id:" + mount.getGlobalID() + ")");
+	}
+
+	private boolean ownsCurrentProperty(Player player) {
+		return player.getCurrentArea() != null
+				&& (boolean) player.getPermissionValue("area_addplayer", true);
 	}
 
 	public void onNpcRemoveSaddleBagEvent(NpcRemoveSaddleBagEvent event) {

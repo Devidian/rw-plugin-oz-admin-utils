@@ -2,7 +2,9 @@
 
 <https://www.conventionalcommits.org/en/v1.0.0/>
 
-## Unreleased
+## [0.9.1] - 2026-08-12 | Mount release safeguards
+
+- feat: let mount owners release a mount by unsaddling it outside their own property, with an opt-in player setting for releasing it on their own property.
 
 ## [0.9.0] - 2026-08-04 | Live player map positions
 
