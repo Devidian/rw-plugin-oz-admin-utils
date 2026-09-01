@@ -23,7 +23,7 @@ public class AdminUtilsPluginInfoStatusProvider implements PluginInfoStatusProvi
 
     @Override
     public String getInfo(Player player) {
-        return t().get("TC_ADMIN_UTILS_INFO_PANEL_INFO", player)
+        return t().get("tc.admin.utils.info.panel.info", player)
                 .replace("PH_PLUGIN_NAME", pluginName)
                 .replace("PH_VERSION", version)
                 .replace("PH_PLUGIN_CMD", "au");
@@ -35,7 +35,7 @@ public class AdminUtilsPluginInfoStatusProvider implements PluginInfoStatusProvi
         int prisonCount = AdminUtils.prisonService() == null ? 0 : AdminUtils.prisonService().getAll().size();
         int inmateCount = AdminUtils.prisonerService() == null ? 0
                 : AdminUtils.prisonerService().getByStatus("INCARCERATED").size();
-        return t().get("TC_ADMIN_UTILS_INFO_PANEL_STATUS", player)
+        return t().get("tc.admin.utils.info.panel.status", player)
                 .replace("PH_MOUNT_OWNERSHIP", String.valueOf(settings.enableMountOwnership))
                 .replace("PH_THEFT_PUNISHMENT", String.valueOf(settings.punishMountTheft))
                 .replace("PH_PRISON_ENABLED", String.valueOf(settings.enablePrison))

@@ -1,0 +1,539 @@
+{
+  "tc": {
+    "admin": {
+      "utils": {
+        "info": {
+          "panel": {
+            "info": "\u003cb\u003ePH_PLUGIN_NAME\u003c/b\u003e\nVersion: PH_VERSION\nBefehl: /PH_PLUGIN_CMD\n\nAdmin Utils verwaltet operative Schutzfunktionen wie Mount-Schutz, Gefängnis-Moderation, Schlafabläufe und Event-Logging.",
+            "status": "\u003cb\u003eAdmin Utils Status\u003c/b\u003e\nMount-Besitz: PH_MOUNT_OWNERSHIP\nDiebstahlstrafe: PH_THEFT_PUNISHMENT\nGefängnis aktiv: PH_PRISON_ENABLED\nGefängnisse: PH_PRISON_COUNT\nInsassen: PH_INMATE_COUNT\nSchlafankündigungen: PH_SLEEP_ANNOUNCEMENT\nZeitraffer: PH_SPEED_UP_TIME\nEvent-Logging: PH_EVENT_LOGGING"
+          }
+        }
+      }
+    },
+    "animal": {
+      "protected": {
+        "interaction": "Du kannst mit diesem geschützten Tier nicht interagieren!"
+      }
+    },
+    "cmd": {
+      "help": "Hilfe:\nVerfügbare Chat-Kommandos:\n\u003ccolor\u003dred\u003e/PH_PLUGIN_CMD status\u003c/color\u003e oder \u003ccolor\u003dred\u003e/PH_PLUGIN_CMD info\u003c/color\u003e zeigt Plugin-Infos an\n\u003ccolor\u003dred\u003e/PH_PLUGIN_CMD open\u003c/color\u003e öffnet das Pluginmenü\n\u003ccolor\u003dred\u003e/PH_PLUGIN_CMD help\u003c/color\u003e zeigt diese Hilfe an\n\n\u003ccolor\u003dyellow\u003eTipp:\u003c/color\u003e Binde den Befehl \u003ccolor\u003dred\u003e/PH_PLUGIN_CMD open\u003c/color\u003e an eine Taste der Maus oder Tastatur.",
+      "status": "🔎 Plugin Status\n➡️ Plugin version: PH_VERSION\n➡️ Installierte Sprachen: PH_LANG_AVAILABLE\n➡️ Deine Sprache: PH_LANGUAGE\n➡️ Verwendete Sprache: PH_USEDLANG"
+    },
+    "err": {
+      "cmd": {
+        "unknown": "Unbekanntes Kommando tippe \u003ccolor\u003dred\u003e/PH_PLUGIN_CMD help\u003c/color\u003e für Hilfe."
+      }
+    },
+    "event": {
+      "kill": {
+        "animal": "Spieler PH_PLAYER tötete ein nicht feindliches Tier [PH_NPC_CLASS] (PH_NPC_NAME) bei `goto PH_LOCATION` (Karte: PH_MAP_COORDINATES)",
+        "mount": "Spieler PH_PLAYER tötete ein Reittier [PH_NPC_CLASS] (PH_NPC_NAME) bei `goto PH_LOCATION` (Karte: PH_MAP_COORDINATES)"
+      },
+      "object": {
+        "destroy": "Spieler PH_PLAYER zerstörte ein Objekt (PH_OBJECT_NAME) bei `goto PH_LOCATION` (Karte: PH_MAP_COORDINATES)",
+        "remove": "Spieler PH_PLAYER entfernte ein Objekt (PH_OBJECT_NAME) bei `goto PH_LOCATION` (Karte: PH_MAP_COORDINATES)"
+      },
+      "player": {
+        "connected": "PH_PLAYER ist nun online!",
+        "death": "Spieler PH_PLAYER starb bei `goto PH_LOCATION` (Grund: PH_CAUSE)",
+        "disconnected": "PH_PLAYER ist nun offline!",
+        "teleport": "Spieler PH_PLAYER teleportierte nach `goto PH_LOCATION`"
+      },
+      "season": {
+        "change": "Die Jahreszeit wechselt von PH_SEASON_FROM zu PH_SEASON_TO"
+      },
+      "weather": {
+        "change": "Das Wetter wechselt von PH_WEATHER_FROM zu PH_WEATHER_TO"
+      }
+    },
+    "idle": {
+      "kick": "Du wurdest gekickt, weil du zu lange inaktiv warst, während andere schlafen wollten!",
+      "warn": "Du bist seit PH_IDLE_TIME Sekunden inaktiv, während andere schlafen wollen, bitte werde aktiv oder du wirst gekickt!"
+    },
+    "label": {
+      "adminutils": {
+        "shortcut": "Admin-Utils-Shortcut in /ozt und Inventar anzeigen"
+      },
+      "new": {
+        "player": {
+          "info": {
+            "visible": "Admin-Utils-Infopanel beim Login anzeigen"
+          }
+        }
+      },
+      "release": {
+        "mount": {
+          "on": {
+            "own": {
+              "property": "Reittier auf eigenem Grundstück freigeben"
+            }
+          }
+        }
+      }
+    },
+    "menu": {
+      "info": {
+        "status": "Info / Status"
+      },
+      "prison": {
+        "zone": {
+          "create": "Hier Gefängnis erstellen",
+          "details": "Gefängnisdetails",
+          "dissolve": "Gefängnis auflösen",
+          "manage": "Zone verwalten",
+          "set": {
+            "spawn": "Gefängnis-Spawn hier setzen"
+          },
+          "sync": {
+            "name": "Gefängnisnamen synchronisieren"
+          }
+        }
+      }
+    },
+    "mount": {
+      "claimed": "Du hast dieses Reittier in Besitz genommen!",
+      "released": "Du hast dieses Reittier freigegeben."
+    },
+    "msg": {
+      "plugin": {
+        "welcome": "➡️ \u003ccolor\u003d#F00000\u003ePH_PLUGIN_NAME\u003c/color\u003e | \u003ccolor\u003d#F0F000\u003evPH_PLUGIN_VERSION\u003c/color\u003e | \u003ccolor\u003d#C0C0C0\u003e/PH_PLUGIN_CMD\u003c/color\u003e | geladen!"
+      }
+    },
+    "new": {
+      "player": {
+        "info": {
+          "dont": {
+            "show": "Nicht wieder anzeigen"
+          },
+          "ok": "OK",
+          "title": "Server-Information"
+        }
+      }
+    },
+    "player": {
+      "state": {
+        "awake": "PH_PLAYER_NAME ist aufgewacht.",
+        "idle": "PH_PLAYER_NAME ist seit PH_IDLE_TIME Sekunden inaktiv und wurde gekickt.",
+        "sleeping": "PH_PLAYER_NAME ist müde und hat sich hingelegt."
+      }
+    },
+    "prison": {
+      "detail": {
+        "pardoned": {
+          "$value": "PH_PLAYER_NAME wurde begnadigt. Wiederherstellung ist für den nächsten Login vorgemerkt.",
+          "restored": "PH_PLAYER_NAME wurde begnadigt und sofort wiederhergestellt."
+        },
+        "service": {
+          "unavailable": "Insassen-Persistenz ist nicht verfügbar."
+        }
+      },
+      "zone": {
+        "admin": {
+          "required": "Nur Admins können Gefängniszonen verwalten."
+        },
+        "created": "Gefängnis PH_AREA_NAME (#PH_AREA_ID) erstellt. Vorhandene Gefängnisse: PH_PRISON_COUNT.",
+        "dissolved": "Gefängnis für PH_AREA_NAME wurde aufgelöst.",
+        "dissolve": {
+          "blocked": "Gefängnis PH_AREA_NAME hat noch Insassen-Einträge und kann nicht aufgelöst werden."
+        },
+        "name": {
+          "synced": "Gefängnisname aus der aktuellen Zone aktualisiert: PH_AREA_NAME (#PH_AREA_ID)."
+        },
+        "no": {
+          "area": "Stelle dich in eine bestehende Zone, bevor du Gefängnis-Einstellungen verwaltest."
+        },
+        "service": {
+          "unavailable": "Gefängnis-Persistenz ist nicht verfügbar."
+        },
+        "spawn": {
+          "updated": "Gefängnis-Spawn für PH_AREA_NAME (#PH_AREA_ID) auf deine aktuelle Position gesetzt."
+        }
+      }
+    },
+    "season": {
+      "autumn": "Herbst",
+      "spring": "Frühling",
+      "summer": "Sommer",
+      "winter": "Winter"
+    },
+    "settings": {
+      "admin": {
+        "hint": "Admins können die Admin-Utils Server-Einstellungen im Admin-Settings-Tab ändern."
+      },
+      "player": {
+        "empty": "Admin Utils hat aktuell keine persönlichen Spieler-Einstellungen. Moderation, Gefängnis, Schlaf, Logging und Discord-Verhalten werden von Admins konfiguriert."
+      }
+    },
+    "setting": {
+      "afkplayersleeptimeoutseconds": {
+        "desc": "Sekunden, bevor AFK-Schläfer gekickt werden.",
+        "label": "AFK-Schlaf-Timeout"
+      },
+      "afkplayersleepwarnseconds": {
+        "desc": "Mindest-AFK-Sekunden, bevor ein schlafender Spieler vor dem Kick gewarnt wird.",
+        "label": "AFK-Schlaf-Warnung"
+      },
+      "discordanimaldeathbyplayerchannelid": {
+        "desc": "Discord-Kanal-ID für Tier-Tod-Ereignisse.",
+        "label": "Tier-Tod-Kanal"
+      },
+      "discordmountdeathbyplayerchannelid": {
+        "desc": "Discord-Kanal-ID für Mount-Tod-Ereignisse.",
+        "label": "Mount-Tod-Kanal"
+      },
+      "discordnpcdeathbynonplayerchannelid": {
+        "desc": "Discord-Kanal-ID für NPC-Tod-Ereignisse ohne Spielerbeteiligung.",
+        "label": "NPC-Tod ohne Spieler-Kanal"
+      },
+      "discordplayerdeathchannelid": {
+        "desc": "Discord-Kanal-ID für Spielertod-Ereignisse.",
+        "label": "Spielertod-Kanal"
+      },
+      "discordplayerdestroyobjectchannelid": {
+        "desc": "Discord-Kanal-ID für Objekt-Zerstören-Ereignisse.",
+        "label": "Zerstören-Kanal"
+      },
+      "discordplayerremoveobjectchannelid": {
+        "desc": "Discord-Kanal-ID für Objekt-Entfernen-Ereignisse.",
+        "label": "Entfernen-Kanal"
+      },
+      "discordplayerstatuschannelid": {
+        "desc": "Discord-Kanal-ID für Spielerstatus-Ereignisse.",
+        "label": "Spielerstatus-Kanal"
+      },
+      "discordplayerteleportchannelid": {
+        "desc": "Discord-Kanal-ID für Spielerteleport-Ereignisse.",
+        "label": "Spielerteleport-Kanal"
+      },
+      "discordseasonchangeeventchannelid": {
+        "desc": "Discord-Kanal-ID für Jahreszeitenwechsel-Ereignisse.",
+        "label": "Jahreszeitenwechsel-Kanal"
+      },
+      "discordsleepeventchannelid": {
+        "desc": "Discord-Kanal-ID für Schlafereignisse; 0 deaktiviert Discord-Schlafmeldungen.",
+        "label": "Discord-Schlafkanal"
+      },
+      "discordtheftreportchannelid": {
+        "desc": "Discord-Kanal-ID für Diebstahlmeldungen; 0 deaktiviert kanalspezifisches Routing.",
+        "label": "Diebstahlmeldekanal"
+      },
+      "discordweatherchangeeventchannelid": {
+        "desc": "Discord-Kanal-ID für Wetterwechsel-Ereignisse.",
+        "label": "Wetterwechsel-Kanal"
+      },
+      "enableallanimaldeathbyplayerlogging": {
+        "desc": "Protokolliert alle von Spielern verursachten Tier-Tode, einschließlich nicht aggressiver Tiere.",
+        "label": "Alle Tier-Tode protokollieren"
+      },
+      "enableanimaldeathbyplayerlogging": {
+        "desc": "Aktiviert Protokollierung für von Spielern verursachte Tier-Tode.",
+        "label": "Tier-Tod-Protokollierung"
+      },
+      "enablemapgen": {
+        "desc": "Erfasst rohe Oberflächendaten, wenn berechtigte Spieler Chunks verlassen.",
+        "label": "Kartendaten-Erfassung"
+      },
+      "enablemountdeathbyplayerlogging": {
+        "desc": "Aktiviert Protokollierung für von Spielern verursachte Mount-Tode.",
+        "label": "Mount-Tod-Protokollierung"
+      },
+      "enablemountownership": {
+        "desc": "Aktiviert den Schutz von Mount-Besitz.",
+        "label": "Mount-Besitz"
+      },
+      "enablenpcdeathbynonplayerlogging": {
+        "desc": "Aktiviert Protokollierung für NPC-Tode, die nicht von Spielern verursacht wurden.",
+        "label": "NPC-Tod ohne Spieler-Protokollierung"
+      },
+      "enableplayerdeathlogging": {
+        "desc": "Aktiviert die Protokollierung von Spielertod-Ereignissen.",
+        "label": "Spielertod-Protokollierung"
+      },
+      "enableplayerdestroyobjectlogging": {
+        "desc": "Aktiviert Protokollierung, wenn Spieler Objekte zerstören.",
+        "label": "Zerstören-Protokollierung"
+      },
+      "enableplayerremoveobjectlogging": {
+        "desc": "Aktiviert Protokollierung, wenn Spieler Objekte entfernen.",
+        "label": "Entfernen-Protokollierung"
+      },
+      "enableplayerstatuslogging": {
+        "desc": "Aktiviert die Protokollierung von Spielerbeitritten und -austritten.",
+        "label": "Spielerstatus-Protokollierung"
+      },
+      "enableplayerteleporteventlogging": {
+        "desc": "Aktiviert die Protokollierung von Spielerteleport-Ereignissen.",
+        "label": "Spielerteleport-Protokollierung"
+      },
+      "enableprison": {
+        "desc": "Aktiviert das Gefängnisverhalten, sobald mindestens eine Gefängniszone existiert.",
+        "label": "Gefängnisfunktion"
+      },
+      "enableseasonchangeeventlogging": {
+        "desc": "Aktiviert die Protokollierung von Jahreszeitenwechseln.",
+        "label": "Jahreszeitenwechsel-Protokollierung"
+      },
+      "enablesleepannouncement": {
+        "desc": "Sendet Schlafankündigungen an Spieler.",
+        "label": "Schlafankündigungen"
+      },
+      "enablesleepkickafkplayer": {
+        "desc": "Kickt AFK-schlafende Spieler, wenn aktiviert.",
+        "label": "AFK-Schläfer kicken"
+      },
+      "enablespeeduptime": {
+        "desc": "Beschleunigt die Spielzeit, wenn genug Spieler schlafen.",
+        "label": "Zeit beschleunigen"
+      },
+      "enableweatherchangeeventlogging": {
+        "desc": "Aktiviert die Protokollierung von Wetterwechseln.",
+        "label": "Wetterwechsel-Protokollierung"
+      },
+      "enablewelcomemessage": {
+        "desc": "Zeigt eine kurze AdminUtils-Nachricht, wenn ein Spieler beitritt.",
+        "label": "Willkommensnachricht"
+      },
+      "eventlogging": {
+        "desc": "Schalter für Ereignisprotokollierung und Discord-Ziele.",
+        "label": "Ereignisprotokollierung"
+      },
+      "exposemapdata": {
+        "desc": "Erlaubt Bridge-Layern Lesezugriff auf Kartendaten.",
+        "label": "Kartendaten bereitstellen"
+      },
+      "exposeplayerdata": {
+        "desc": "Erlaubt Bridge-Layern Lesezugriff auf Spielerdaten.",
+        "label": "Spielerdaten bereitstellen"
+      },
+      "exposepluginlist": {
+        "desc": "Erlaubt Bridge-Layern Lesezugriff auf die Pluginliste.",
+        "label": "Pluginliste bereitstellen"
+      },
+      "exposeserverconfig": {
+        "desc": "Erlaubt Bridge-Layern Lesezugriff auf die Serverkonfiguration.",
+        "label": "Serverkonfiguration bereitstellen"
+      },
+      "exposeworldareas": {
+        "desc": "Erlaubt Bridge-Layern Lesezugriff auf Weltbereiche.",
+        "label": "Weltbereiche bereitstellen"
+      },
+      "forceareaownership": {
+        "desc": "Erfordert die Gebietsberechtigung zum Hinzufügen von Spielern, bevor Mount-Besitz übernommen werden kann.",
+        "label": "Gebietsbesitz erzwingen"
+      },
+      "general": {
+        "desc": "Protokollierung, Reload und Willkommensverhalten.",
+        "label": "Allgemein"
+      },
+      "loglevel": {
+        "desc": "Steuert den Detailgrad der AdminUtils-Protokollierung.",
+        "label": "Log-Level"
+      },
+      "lowersleeptimehour": {
+        "desc": "Endstunde des konfigurierten Schlaffensters.",
+        "label": "Untere Schlafstunde"
+      },
+      "mapgenchunkcooldownseconds": {
+        "desc": "Mindestsekunden, bevor derselbe Chunk erneut eine Erfassung auslösen kann.",
+        "label": "Chunk-Cooldown"
+      },
+      "mapgenchunkscanradius": {
+        "desc": "Erfasst einen quadratischen Chunk-Radius um den verlassenen Chunk; erlaubter Bereich ist 0 bis 5.",
+        "label": "Chunk-Scanradius"
+      },
+      "mapsource": {
+        "desc": "Automatische Roh-Chunk-Erfassung für Backend-Kartenrendering.",
+        "label": "Kartendaten-Erfassung"
+      },
+      "mounts": {
+        "desc": "Mount-Besitzschutz und Bestrafung bei Diebstahl.",
+        "label": "Mount-Besitz"
+      },
+      "newplayerinfo": {
+        "enabled": {
+          "desc": "Zeigt das konfigurierte Infopanel, bis Spieler es abwählen.",
+          "label": "Neue-Spieler-Info"
+        },
+        "heightpercent": {
+          "desc": "Panelhöhe als Bildschirm-Prozentwert; erlaubter Bereich ist 24 bis 95.",
+          "label": "Neue-Spieler-Info Höhe"
+        },
+        "text": {
+          "desc": "Text im optionalen Neue-Spieler-Infopanel.",
+          "label": "Neue-Spieler-Infotext"
+        },
+        "widthpercent": {
+          "desc": "Panelbreite als Bildschirm-Prozentwert; erlaubter Bereich ist 20 bis 95.",
+          "label": "Neue-Spieler-Info Breite"
+        }
+      },
+      "onlyadminmapgen": {
+        "desc": "Beschränkt Auslöser der Kartendaten-Erfassung auf Admin-Spieler.",
+        "label": "Kartenerfassung nur durch Admins"
+      },
+      "prisontheftban3sentencerealminutes": {
+        "desc": "Echtzeit-Minuten für die erste Diebstahlstrafe, die einen Spieler sonst bannen würde.",
+        "label": "Gefängnisstrafe Ban-Stufe 3"
+      },
+      "prisontheftban4sentencerealminutes": {
+        "desc": "Echtzeit-Minuten für die zweite Diebstahlstrafe, die einen Spieler sonst bannen würde.",
+        "label": "Gefängnisstrafe Ban-Stufe 4"
+      },
+      "prisontheftban5sentencerealminutes": {
+        "desc": "Echtzeit-Minuten für die dritte Diebstahlstrafe, die einen Spieler sonst bannen würde.",
+        "label": "Gefängnisstrafe Ban-Stufe 5"
+      },
+      "prisontheftban6sentencerealminutes": {
+        "desc": "Echtzeit-Minuten für die vierte Diebstahlstrafe, die einen Spieler sonst bannen würde.",
+        "label": "Gefängnisstrafe Ban-Stufe 6"
+      },
+      "prisontheftban7sentencerealminutes": {
+        "desc": "Echtzeit-Minuten für die fünfte Diebstahlstrafe, die einen Spieler sonst bannen würde.",
+        "label": "Gefängnisstrafe Ban-Stufe 7"
+      },
+      "prisontheftban8sentencerealminutes": {
+        "desc": "Echtzeit-Minuten für die sechste Diebstahlstrafe, die einen Spieler sonst bannen würde.",
+        "label": "Gefängnisstrafe Ban-Stufe 8"
+      },
+      "prisontheftban9sentencerealminutes": {
+        "desc": "Echtzeit-Minuten für die siebte Diebstahlstrafe, die einen Spieler sonst bannen würde.",
+        "label": "Gefängnisstrafe Ban-Stufe 9"
+      },
+      "prisontheftkicksentencegameminutes": {
+        "desc": "Spielzeit-Minuten für Diebstahlstrafen, die einen Spieler sonst kicken würden.",
+        "label": "Gefängnisstrafe statt Kick"
+      },
+      "prison": {
+        "desc": "Gefängnisfunktion und Strafdauer bei Diebstahl.",
+        "label": "Gefängnis"
+      },
+      "punishmounttheft": {
+        "desc": "Bestrafung für Spieler, die versuchen, Mounts zu stehlen.",
+        "label": "Mount-Diebstahl bestrafen"
+      },
+      "reloadonchange": {
+        "desc": "Dokumentiert, dass AdminUtils-Einstellungen neu geladen werden, wenn sich settings.properties ändert.",
+        "label": "Bei Änderung neu laden"
+      },
+      "showprisonzoneindicator": {
+        "desc": "Zeigt eine gemeinsame Tools-Anzeige, solange Spieler in einer aktivierten Gefängniszone stehen.",
+        "label": "Gefängniszonen-Anzeige"
+      },
+      "sleep": {
+        "desc": "Schlafankündigungen, AFK-Behandlung und Zeitbeschleunigung.",
+        "label": "Schlaf"
+      },
+      "uppersleeptimehour": {
+        "desc": "Startstunde des konfigurierten Schlaffensters.",
+        "label": "Obere Schlafstunde"
+      }
+    },
+    "sleep": {
+      "daytime": "Schlafen ist nur zwischen PH_UPPER_HOUR:00 und PH_LOWER_HOUR:00 möglich!",
+      "time": {
+        "speed": {
+          "normal": "Die Zeitgeschwindigkeit ist wieder normal.",
+          "up": "Die Zeit wird jetzt beschleunigt, weil genug Spieler schlafen."
+        }
+      }
+    },
+    "theft": {
+      "banned": {
+        "3": "Der Langfinger PH_PLAYER_NAME konnte es nicht sein lassen und hat sich 10 Minuten Auszeit verdient!",
+        "4": "Der Langfinger PH_PLAYER_NAME weiss nicht wann schluss ist, er hat nun 30 Minuten Auszeit verdient!",
+        "5": "Der Langfinger PH_PLAYER_NAME hat eine Lernbehinderung und darf nun 1 Stunde über seine Taten nachdenken!",
+        "6": "Der Langfinger PH_PLAYER_NAME hat Lernresistenz Rank S und darf nun 1 Tag Urlaub machen!",
+        "7": "Der Langfinger PH_PLAYER_NAME hat zu lange Finger und nun 1 Woche Zeit diese zu schneiden!",
+        "8": "Der Langfinger PH_PLAYER_NAME fingert zu oft und darf nun 1 Jahr Enthaltsamkeit üben!",
+        "9": "Der Langfinger PH_PLAYER_NAME wird die nächsten 10 Jahre keine krummen Dinger mehr drehen, Pech gehabt!"
+      },
+      "ban": {
+        "3": "Diebstahl wird nicht gedulded, 10 Minuten Auszeit für dich!",
+        "4": "Diebstahl wird nicht gedulded, 30 Minuten Auszeit für dich!",
+        "5": "Diebstahl wird nicht gedulded, 1 Stunde Auszeit für dich!",
+        "6": "Diebstahl wird nicht gedulded, 1 Tag Auszeit für dich!",
+        "7": "Diebstahl wird nicht gedulded, 7 Tage Auszeit für dich!",
+        "8": "Diebstahl wird nicht gedulded, 1 Jahr Auszeit für dich!",
+        "9": "Diebstahl wird nicht gedulded, 10 Jahre Auszeit für dich!"
+      },
+      "kick": "Du wurdest als Langfinger markiert und vom Server geworfen!",
+      "kicked": "Der Spieler PH_PLAYER_NAME wurde beim versuchten Diebstahl des Reittieres PH_MOUNT_NAME erwischt, als Langfinger markiert und gekickt!",
+      "kill": "Der Langfinger PH_PLAYER_NAME ist beim versuchten Diebstahl des Reittieres PH_MOUNT_NAME leider verstorben, tja dumm gelaufen!",
+      "prisoned": {
+        "ban": "Der Wiederholungstäter PH_PLAYER_NAME wurde beim versuchten Diebstahl des Reittieres PH_MOUNT_NAME erwischt und in das Gefängnis PH_PRISON_NAME gebracht!",
+        "kick": "Der Spieler PH_PLAYER_NAME wurde beim versuchten Diebstahl des Reittieres PH_MOUNT_NAME erwischt und in das Gefängnis PH_PRISON_NAME gebracht!"
+      },
+      "warn": {
+        "1": "\u003ccolor\u003dyellow\u003eACHTUNG\u003c/color\u003e dieses Reittier gehört dir nicht, weitere Interaktionen werden bestraft!",
+        "2": "\u003ccolor\u003dred\u003eACHTUNG\u003c/color\u003e beim Versuch mit einem fremden Reittier zu interagieren hast du dich leicht verletzt, du blutest!",
+        "3": "\u003ccolor\u003dred\u003eACHTUNG\u003c/color\u003e beim Versuch mit einem fremden Reittier zu interagieren hast du dich verletzt, du blutest und hast dir ein Bein gebrochen!",
+        "4": "\u003ccolor\u003dred\u003eACHTUNG\u003c/color\u003e beim Versuch mit einem fremden Reittier zu interagieren hast du dich schwer verletzt, du blutest und hast dir beide Beine gebrochen!",
+        "5": "\u003ccolor\u003dred\u003eACHTUNG\u003c/color\u003e beim Versuch mit einem fremden Reittier zu interagieren hast du dich sehr schwer verletzt, du hast Schaden erlitten!",
+        "6": "\u003ccolor\u003dred\u003eACHTUNG\u003c/color\u003e beim Versuch mit einem fremden Reittier zu interagieren hast du dich tödlich verletzt!"
+      }
+    },
+    "ui": {
+      "cancel": "Abbrechen",
+      "prison": {
+        "detail": {
+          "empty": "Für dieses Gefängnis sind keine Insassen gespeichert.",
+          "footer": "Begnadigen entlässt Online-Insassen sofort und merkt Offline-Wiederherstellung für den nächsten Login vor.",
+          "minutes": "PH_MINUTES min",
+          "open": "Öffnen",
+          "pardon": "Begnadigen",
+          "subtitle": "Zone #PH_AREA_ID",
+          "tab": {
+            "current": "Diese Zone",
+            "other": "Andere Zonen"
+          },
+          "th": {
+            "actions": "Aktionen",
+            "player": "Spieler",
+            "prisoners": "Insassen",
+            "remaining": "Restzeit",
+            "status": "Status",
+            "type": "Strafe",
+            "zone": "Gefängniszone"
+          },
+          "title": "Gefängnis: PH_PRISON_NAME",
+          "type": {
+            "gametime": "Spielzeit",
+            "realtime": "Echtzeit"
+          }
+        },
+        "dissolve": {
+          "confirm": {
+            "message": "Die Gefängniskonfiguration für PH_AREA_NAME wird entfernt. Dies kann nicht rückgängig gemacht werden.",
+            "title": "Gefängnis auflösen?"
+          }
+        }
+      }
+    },
+    "weather": {
+      "blizzard": "Schneesturm",
+      "breeze": "Brise",
+      "clear": "Klar",
+      "cold": "Kalt",
+      "coldfog": "Kalter Nebel",
+      "default": "Standard",
+      "densefog": "Dichter Nebel",
+      "drythunder": "Trockenes Gewitter",
+      "farthunder": "Fernes Gewitter",
+      "fog": "Nebel",
+      "heavyrain": "Starker Regen",
+      "heavysnow": "Starker Schneefall",
+      "heavythunder": "Schweres Gewitter",
+      "hurricane": "Hurrikan",
+      "lightrain": "Leichter Regen",
+      "lightsnow": "Leichter Schneefall",
+      "overcast": "Bedeckt",
+      "rain": "Regen",
+      "snow": "Schnee",
+      "storm": "Sturm",
+      "sunnysnow": "Sonnig mit Schnee",
+      "thaw": "Tauwetter",
+      "thunder": "Gewitter",
+      "wind": "Wind"
+    }
+  }
+}

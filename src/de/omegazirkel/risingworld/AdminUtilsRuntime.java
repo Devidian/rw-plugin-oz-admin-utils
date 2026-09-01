@@ -25,6 +25,7 @@ import de.omegazirkel.risingworld.adminutils.ui.AdminUtilsPlayerPluginData;
 import de.omegazirkel.risingworld.adminutils.ui.AdminUtilsPlayerPluginSettings;
 import de.omegazirkel.risingworld.adminutils.ui.NewPlayerInfoOverlay;
 import de.omegazirkel.risingworld.adminutils.ui.PrisonZoneIndicatorProvider;
+import de.omegazirkel.risingworld.adminutils.web.WebserverTestRoute;
 import de.omegazirkel.risingworld.tools.AreaUtils;
 import de.omegazirkel.risingworld.tools.Colors;
 import de.omegazirkel.risingworld.tools.I18n;
@@ -80,6 +81,7 @@ class AdminUtilsRuntime extends Plugin {
 	static final String pluginCMD = "au";
 	static final String PRISONER_AREA_PERMISSION_FILE = "ozau-prisoner.json";
 	static final String PRISONER_AREA_PERMISSION = "ozau-prisoner";
+	private static final String WEBSERVER_TEST_ROUTE = "oz-admin-utils-test";
 	static final Colors c = Colors.getInstance();
 	private static I18n t = null;
 	private static PluginSettings s = null;
@@ -96,6 +98,7 @@ class AdminUtilsRuntime extends Plugin {
 	private MapChunkSourceStore mapChunkSourceStore;
 	private RisingWorldMapChunkCapture mapChunkCapture;
 	private LivePlayerPositionCapture livePlayerPositionCapture;
+	private WebserverTestRoute webserverTestRoute;
 	private static boolean isInSpeedmode = false;
 	private static float normalGameSpeed = 2.5f;
 
@@ -133,6 +136,7 @@ class AdminUtilsRuntime extends Plugin {
 			s = PluginSettings.getInstance((AdminUtils) this);
 		t = I18n.getInstance(this);
 		s.initSettings();
+		registerWebserverTestRoute();
 		ensureDefaultPermissionFiles();
 		initMapChunkSourcePersistence();
 		sqliteCon = SQLiteConnectionFactory.open(this);
@@ -168,6 +172,10 @@ class AdminUtilsRuntime extends Plugin {
 
 	@Override
 	public void onDisable() {
+		if (webserverTestRoute != null) {
+			unregisterWebserverHandler(WEBSERVER_TEST_ROUTE);
+			webserverTestRoute = null;
+		}
 		if (name != null) {
 			PluginShortcutVisibility.unregister(name);
 			PluginInfoStatusProviders.unregisterProvider(name);
@@ -197,6 +205,12 @@ class AdminUtilsRuntime extends Plugin {
 		}
 	}
 
+	private void registerWebserverTestRoute() {
+		webserverTestRoute = new WebserverTestRoute(() -> s.enableWebserverTestRoute);
+		registerWebserverHandler(WEBSERVER_TEST_ROUTE, webserverTestRoute);
+		logger().info("Native webserver test route registered at /" + WEBSERVER_TEST_ROUTE);
+	}
+
 	private void initLivePlayerPositionCapture() {
 		try {
 			livePlayerPositionCapture = new LivePlayerPositionCapture(
@@ -212,7 +226,6 @@ class AdminUtilsRuntime extends Plugin {
 
 	public void onSettingsChanged(Path settingsPath) {
 		s.initSettings(settingsPath.toString());
-		logger().setLevel(s.logLevel);
 	}
 
 	public void ensureDefaultPermissionFiles() {
@@ -279,14 +292,14 @@ class AdminUtilsRuntime extends Plugin {
 					PluginInfoStatusProviders.show(player, name);
 					break;
 				case "help":
-					String helpMessage = t.get("TC_CMD_HELP", player).replaceAll("PH_PLUGIN_CMD", pluginCMD);
+					String helpMessage = t.get("tc.cmd.help", player).replaceAll("PH_PLUGIN_CMD", pluginCMD);
 					player.sendTextMessage(c.okay + this.getName() + ":> " + c.endTag + helpMessage);
 					break;
 				case "open":
 					gui.openMainMenu(player);
 					break;
 				default:
-					player.sendTextMessage(t.get("TC_ERR_CMD_UNKNOWN").replace("PH_PLUGIN_CMD", pluginCMD));
+					player.sendTextMessage(t.get("tc.err.cmd.unknown").replace("PH_PLUGIN_CMD", pluginCMD));
 					break;
 			}
 		}
@@ -298,7 +311,7 @@ class AdminUtilsRuntime extends Plugin {
 		if (s.enableWelcomeMessage) {
 			// Player player = event.getPlayer();
 			String lang = de.omegazirkel.risingworld.OZTools.getPlayerLanguage(player);
-			player.sendTextMessage(t.get("TC_MSG_PLUGIN_WELCOME", lang)
+			player.sendTextMessage(t.get("tc.msg.plugin.welcome", lang)
 					.replace("PH_PLUGIN_NAME", getDescription("name"))
 					.replace("PH_PLUGIN_CMD", pluginCMD)
 					.replace("PH_PLUGIN_VERSION", getDescription("version")));
@@ -339,8 +352,7 @@ class AdminUtilsRuntime extends Plugin {
 				s.newPlayerInfoWidthPercent,
 				s.newPlayerInfoHeightPercent);
 		player.setAttribute(NewPlayerInfoOverlay.PLAYER_ATTRIBUTE, overlay);
-		player.addUIElement(overlay);
-		de.omegazirkel.risingworld.tools.ui.CursorManager.show(player);
+		player.addUIElement(overlay, net.risingworld.api.ui.UITarget.Modal);
 	}
 
 	private void handlePrisonerSpawn(Player player) {
@@ -395,11 +407,11 @@ class AdminUtilsRuntime extends Plugin {
 		// reset game time speed
 		Server.setGameTimeSpeed(normalGameSpeed);
 		for (Player p : Server.getAllPlayers()) {
-			p.sendTextMessage(t().get("TC_SLEEP_TIME_SPEED_NORMAL", p));
+			p.sendTextMessage(t().get("tc.sleep.time.speed.normal", p));
 		}
 		if (s.discordSleepEventChannelId != 0)
 			DiscordConnect.sendDiscordMessage(
-					t().get("TC_SLEEP_TIME_SPEED_NORMAL", DiscordConnect.botLang()),
+					t().get("tc.sleep.time.speed.normal", DiscordConnect.botLang()),
 					s.discordSleepEventChannelId);
 		isInSpeedmode = false;
 	}
@@ -435,11 +447,11 @@ class AdminUtilsRuntime extends Plugin {
 			this.executeDelayed(minutesToSkip * targetTimeSpeed, () -> returnToNormalTimeSpeed());
 
 			for (Player p : allPlayers) {
-				p.sendTextMessage(t().get("TC_SLEEP_TIME_SPEED_UP", p));
+				p.sendTextMessage(t().get("tc.sleep.time.speed.up", p));
 			}
 			if (s.discordSleepEventChannelId != 0)
 				DiscordConnect.sendDiscordMessage(
-						t().get("TC_SLEEP_TIME_SPEED_UP", DiscordConnect.botLang()),
+						t().get("tc.sleep.time.speed.up", DiscordConnect.botLang()),
 						s.discordSleepEventChannelId);
 			// time per minute in seconds, 60 = real-time, 1 = 1 in game minute per second
 			// we set it to 1/60 so 1 second real life should be 1 hour ingame
@@ -455,7 +467,7 @@ class AdminUtilsRuntime extends Plugin {
 		// only working between 21:00 and 7:00
 		if (toState == State.Sleeping && currentGameHour < (int) s.upperSleepTimeHour
 				&& currentGameHour >= (int) s.lowerSleepTimeHour) {
-			player.sendTextMessage(t().get("TC_SLEEP_DAYTIME", player)
+			player.sendTextMessage(t().get("tc.sleep.daytime", player)
 					.replace("PH_UPPER_HOUR", s.upperSleepTimeHour + "")
 					.replace("PH_LOWER_HOUR", s.lowerSleepTimeHour + ""));
 			return;
@@ -463,7 +475,7 @@ class AdminUtilsRuntime extends Plugin {
 		String translateKey = "";
 		Player[] allPlayers = Server.getAllPlayers();
 		if (fromState == State.Sleeping) {
-			translateKey = "TC_PLAYER_STATE_AWAKE";
+			translateKey = "tc.player.state.awake";
 			// must be executed delayed because event is not persisted until all handlers
 			// are done
 			this.executeDelayed(1, () -> {
@@ -472,7 +484,7 @@ class AdminUtilsRuntime extends Plugin {
 			});
 		}
 		if (toState == State.Sleeping) {
-			translateKey = "TC_PLAYER_STATE_SLEEPING";
+			translateKey = "tc.player.state.sleeping";
 			// must be executed delayed because event is not persisted until all handlers
 			// are done
 			this.executeDelayed(1, () -> speedUpTime());
@@ -491,13 +503,13 @@ class AdminUtilsRuntime extends Plugin {
 		if (player.getState() == State.Sleeping)
 			return;
 		if (idleTime > 30) {
-			player.sendTextMessage(t().get("TC_IDLE_WARN", player));
+			player.sendTextMessage(t().get("tc.idle.warn", player));
 		}
 		if (idleTime > s.afkPlayerSleepTimeoutSeconds) {
-			player.kick(t().get("TC_IDLE_KICK", player));
+			player.kick(t().get("tc.idle.kick", player));
 			for (Player p : Server.getAllPlayers()) {
 
-				p.sendTextMessage(t().get("TC_PLAYER_STATE_IDLE", p)
+				p.sendTextMessage(t().get("tc.player.state.idle", p)
 						.replace("PH_PLAYER_NAME", player.getName())
 						.replace("PH_IDLE_TIME", idleTime + ""));
 
@@ -547,7 +559,7 @@ class AdminUtilsRuntime extends Plugin {
 
 		mount.setName(playerMountName);
 		mount.setInvincible(true);
-		player.sendTextMessage(t().get("TC_MOUNT_CLAIMED", player));
+		player.sendTextMessage(t().get("tc.mount.claimed", player));
 		logger().info("ℹ️ Player " + player.getName() + " claimed a mount (id:" + mount.getGlobalID() + ")");
 		return true;
 	}
@@ -559,7 +571,7 @@ class AdminUtilsRuntime extends Plugin {
 
 		Integer playerTheftAttempt = (Integer) mount.getAttribute("theftCounter");
 		if (playerTheftAttempt == null) {
-			player.sendTextMessage(t().get("TC_THEFT_WARN_1", player));
+			player.sendTextMessage(t().get("tc.theft.warn.1", player));
 			playerTheftAttempt = 1;
 		} else
 			playerTheftAttempt++;
@@ -616,12 +628,12 @@ class AdminUtilsRuntime extends Plugin {
 					return;
 				}
 
-				player.kick(t().get("TC_THEFT_KICK", player));
-				DiscordConnect.sendDiscordTheftReport(t().get("TC_THEFT_KICKED", DiscordConnect.botLang())
+				player.kick(t().get("tc.theft.kick", player));
+				DiscordConnect.sendDiscordTheftReport(t().get("tc.theft.kicked", DiscordConnect.botLang())
 						.replace("PH_PLAYER_NAME", player.getName())
 						.replace("PH_MOUNT_NAME", mount.getName()));
 				for (Player p : Server.getAllPlayers()) {
-					p.sendTextMessage(t().get("TC_THEFT_KICKED", p)
+					p.sendTextMessage(t().get("tc.theft.kicked", p)
 							.replace("PH_PLAYER_NAME", player.getName())
 							.replace("PH_MOUNT_NAME", mount.getName()));
 				}
@@ -638,12 +650,12 @@ class AdminUtilsRuntime extends Plugin {
 			player.addDamage(5 * playerTheftAttempt);
 		if (playerTheftAttempt > 5) {
 			player.kill();
-			DiscordConnect.sendDiscordTheftReport(t().get("TC_THEFT_KILL", DiscordConnect.botLang())
+			DiscordConnect.sendDiscordTheftReport(t().get("tc.theft.kill", DiscordConnect.botLang())
 					.replace("PH_PLAYER_NAME", player.getName())
 					.replace("PH_MOUNT_NAME", mount.getName()));
 			// loop all player
 			for (Player p : Server.getAllPlayers()) {
-				p.sendTextMessage(t().get("TC_THEFT_KILL", p)
+				p.sendTextMessage(t().get("tc.theft.kill", p)
 						.replace("PH_PLAYER_NAME", player.getName())
 						.replace("PH_MOUNT_NAME", mount.getName()));
 			}
@@ -653,13 +665,13 @@ class AdminUtilsRuntime extends Plugin {
 	private boolean tryPrisonTheftKickReplacement(Player player, Npc mount) {
 		long sentenceMs = Math.max(1, s.prisonTheftKickSentenceGameMinutes) * 60_000L;
 		return tryPrisonTheftReplacement(player, mount, sentenceMs, false, "MOUNT_THEFT_KICK",
-				"TC_THEFT_PRISONED_KICK");
+				"tc.theft.prisoned.kick");
 	}
 
 	private boolean tryPrisonTheftBanReplacement(Player player, Npc mount, int playerTheftKicked) {
 		long sentenceMs = Math.max(1, s.prisonTheftBanSentenceRealMinutes(playerTheftKicked)) * 60_000L;
 		return tryPrisonTheftReplacement(player, mount, sentenceMs, true, "MOUNT_THEFT_BAN_" + playerTheftKicked,
-				"TC_THEFT_PRISONED_BAN");
+				"tc.theft.prisoned.ban");
 	}
 
 	private boolean tryPrisonTheftReplacement(Player player, Npc mount, long sentenceMs, boolean realtime,
@@ -755,7 +767,7 @@ class AdminUtilsRuntime extends Plugin {
 			logger().info("Player " + player.getName() + " tried to interact with npc:" + npc.getGlobalID()
 					+ " in area " + area.getName() + " (id: " + area.getID() + ") (chunk: " + chunkPos.toString()
 					+ ")");
-			player.sendTextMessage(t().get("TC_ANIMAL_PROTECTED_INTERACTION", player));
+			player.sendTextMessage(t().get("tc.animal.protected.interaction", player));
 			event.setCancelled(true);
 		}
 	}
@@ -824,7 +836,7 @@ class AdminUtilsRuntime extends Plugin {
 		if (ownsCurrentProperty(player) && !AdminUtilsPlayerPluginSettings.releasesMountOnOwnProperty(player))
 			return;
 		mount.setName("");
-		player.sendTextMessage(t().get("TC_MOUNT_RELEASED", player));
+		player.sendTextMessage(t().get("tc.mount.released", player));
 		logger().info("ℹ️ Player " + player.getName() + " released mount (id:" + mount.getGlobalID() + ")");
 	}
 
@@ -863,7 +875,7 @@ class AdminUtilsRuntime extends Plugin {
 			return;
 		}
 		Player player = event.getPlayer();
-		String message = t.get("TC_EVENT_PLAYER_DEATH", DiscordConnect.botLang())
+		String message = t.get("tc.event.player.death", DiscordConnect.botLang())
 				.replace("PH_PLAYER", player.getName())
 				.replace("PH_CAUSE", playerDeathCause(event))
 				.replace("PH_LOCATION", event.getDeathPosition().toString().replaceAll("[,()]", ""));
@@ -891,7 +903,7 @@ class AdminUtilsRuntime extends Plugin {
 
 		if (s.discordPlayerStatusChannelId != 0)
 			DiscordConnect.sendDiscordMessage(
-					t.get("TC_EVENT_PLAYER_CONNECTED", DiscordConnect.botLang())
+					t.get("tc.event.player.connected", DiscordConnect.botLang())
 							.replace("PH_PLAYER", player.getName()),
 					s.discordPlayerStatusChannelId);
 
@@ -907,7 +919,7 @@ class AdminUtilsRuntime extends Plugin {
 			eventLogger().info("Player " + player.getName() + " disconnected at "
 					+ player.getPosition().toString().replaceAll("[,()]", ""));
 			DiscordConnect.sendDiscordMessage(
-					t.get("TC_EVENT_PLAYER_DISCONNECTED", DiscordConnect.botLang())
+					t.get("tc.event.player.disconnected", DiscordConnect.botLang())
 							.replace("PH_PLAYER", player.getName()),
 					s.discordPlayerStatusChannelId);
 
@@ -924,7 +936,7 @@ class AdminUtilsRuntime extends Plugin {
 		if (!pickupable)
 			return;
 
-		String msg = t.get("TC_EVENT_OBJECT_REMOVE", DiscordConnect.botLang())
+		String msg = t.get("tc.event.object.remove", DiscordConnect.botLang())
 				.replace("PH_PLAYER", player.getName())
 				.replace("PH_OBJECT_NAME", name)
 				.replace("PH_LOCATION", player.getPosition().toString().replaceAll("[,()]", ""))
@@ -945,7 +957,7 @@ class AdminUtilsRuntime extends Plugin {
 		String posMap = ((int) posX) + (posX > 0 ? "W" : "E") + " " + ((int) posZ) + (posZ > 0 ? "N" : "S");
 		if (!pickupable)
 			return;
-		String msg = t.get("TC_EVENT_OBJECT_DESTROY", DiscordConnect.botLang())
+		String msg = t.get("tc.event.object.destroy", DiscordConnect.botLang())
 				.replace("PH_PLAYER", player.getName())
 				.replace("PH_OBJECT_NAME", name)
 				.replace("PH_LOCATION", player.getPosition().toString().replaceAll("[,()]", ""))
@@ -987,7 +999,7 @@ class AdminUtilsRuntime extends Plugin {
 
 		if (isMount) {
 			// a mount was killed
-			String msg = t.get("TC_EVENT_KILL_MOUNT", DiscordConnect.botLang())
+			String msg = t.get("tc.event.kill.mount", DiscordConnect.botLang())
 					.replace("PH_PLAYER", player.getName())
 					.replace("PH_NPC_NAME", replacementNPCNameString)
 					.replace("PH_NPC_CLASS", replacementNPCClassString)
@@ -1000,7 +1012,7 @@ class AdminUtilsRuntime extends Plugin {
 			return;
 		} else if (isAnimal && !isAggressive) {
 			// Non agressive animal was killed
-			String msg = t.get("TC_EVENT_KILL_ANIMAL", DiscordConnect.botLang())
+			String msg = t.get("tc.event.kill.animal", DiscordConnect.botLang())
 					.replace("PH_PLAYER", player.getName())
 					.replace("PH_NPC_NAME", replacementNPCNameString)
 					.replace("PH_NPC_CLASS", replacementNPCClassString)
@@ -1025,7 +1037,7 @@ class AdminUtilsRuntime extends Plugin {
 				DiscordConnect.botLang());
 		String seasonTo = t.get("TC_SEASON_" + event.getSeason().toString().toUpperCase(),
 				DiscordConnect.botLang());
-		String message = t.get("TC_EVENT_SEASON_CHANGE", DiscordConnect.botLang())
+		String message = t.get("tc.event.season.change", DiscordConnect.botLang())
 				.replace("PH_SEASON_FROM", season)
 				.replace("PH_SEASON_TO", seasonTo);
 		if (s.enableSeasonChangeEventLogging)
@@ -1041,7 +1053,7 @@ class AdminUtilsRuntime extends Plugin {
 		WeatherDefs.Weather defNext = event.getNextWeather();
 		String nextWeatherName = defNext != null ? defNext.name : "";
 
-		String message = t.get("TC_EVENT_WEATHER_CHANGE", DiscordConnect.botLang())
+		String message = t.get("tc.event.weather.change", DiscordConnect.botLang())
 				.replace("PH_WEATHER_FROM",
 						t.get("TC_WEATHER_" + currentWeatherName.toUpperCase(), DiscordConnect.botLang()))
 				.replace("PH_WEATHER_TO",
@@ -1057,7 +1069,7 @@ class AdminUtilsRuntime extends Plugin {
 	public void onPlayerTeleport(PlayerTeleportEvent event) {
 		Player player = event.getPlayer();
 
-		String message = t.get("TC_EVENT_PLAYER_TELEPORT", DiscordConnect.botLang())
+		String message = t.get("tc.event.player.teleport", DiscordConnect.botLang())
 				.replace("PH_PLAYER", player.getName())
 				.replace("PH_LOCATION", player.getPosition().toString().replaceAll("[,()]", ""));
 

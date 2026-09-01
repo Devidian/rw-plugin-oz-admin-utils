@@ -37,7 +37,8 @@ public class PluginSettingsTest {
                 "exposePluginList=false",
                 "exposePlayerData=false",
                 "exposeServerConfig=false",
-                "exposeWorldAreas=false"));
+                "exposeWorldAreas=false",
+                "enableWebserverTestRoute=true"));
 
         PluginSettings pluginSettings = PluginSettings.getInstance();
         pluginSettings.initSettings(settings.toString());
@@ -47,6 +48,7 @@ public class PluginSettingsTest {
         assertFalse(pluginSettings.exposePlayerData);
         assertFalse(pluginSettings.exposeServerConfig);
         assertFalse(pluginSettings.exposeWorldAreas);
+        assertTrue(pluginSettings.enableWebserverTestRoute);
 
         Files.writeString(settings, "");
         pluginSettings.initSettings(settings.toString());
@@ -56,5 +58,6 @@ public class PluginSettingsTest {
         assertTrue(pluginSettings.exposePlayerData);
         assertTrue(pluginSettings.exposeServerConfig);
         assertTrue(pluginSettings.exposeWorldAreas);
+        assertFalse(pluginSettings.enableWebserverTestRoute);
     }
 }

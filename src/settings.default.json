@@ -1,0 +1,73 @@
+{
+  "general": {
+    "logLevel": "ALL",
+    "reloadOnChange": true,
+    "newPlayerInfo": {
+      "enabled": false,
+      "text": "",
+      "widthPercent": 42,
+      "heightPercent": 36
+    },
+    "onlyAdminMapGen": true,
+    "mapGenChunkScanRadius": 0,
+    "mapGenChunkCooldownSeconds": 60,
+    "livePlayerPositionIntervalSeconds": 1,
+    "forceAreaOwnership": true,
+    "punishMountTheft": true,
+    "showPrisonZoneIndicator": true,
+    "prisonTheftKickSentenceGameMinutes": 10,
+    "prisonTheftBan3SentenceRealMinutes": 10,
+    "prisonTheftBan4SentenceRealMinutes": 30,
+    "prisonTheftBan5SentenceRealMinutes": 60,
+    "prisonTheftBan6SentenceRealMinutes": 1440,
+    "prisonTheftBan7SentenceRealMinutes": 10080,
+    "prisonTheftBan8SentenceRealMinutes": 525600,
+    "prisonTheftBan9SentenceRealMinutes": 5256000,
+    "afkPlayerSleepTimeoutSeconds": 180,
+    "afkPlayerSleepWarnSeconds": 30,
+    "upperSleepTimeHour": 21,
+    "lowerSleepTimeHour": 7
+  },
+  "feature": {
+    "welcomeMessage": false,
+    "mapGen": false,
+    "webserverTestRoute": false,
+    "mountOwnership": true,
+    "prison": false,
+    "sleepAnnouncement": false,
+    "sleepKickAFKPlayer": false,
+    "speedUpTime": false,
+    "playerDeathLogging": true,
+    "playerStatusLogging": true,
+    "playerRemoveObjectLogging": false,
+    "playerDestroyObjectLogging": false,
+    "npcDeathByNonPlayerLogging": false,
+    "mountDeathByPlayerLogging": true,
+    "animalDeathByPlayerLogging": false,
+    "allAnimalDeathByPlayerLogging": false,
+    "seasonChangeEventLogging": false,
+    "weatherChangeEventLogging": false,
+    "playerTeleportEventLogging": true
+  },
+  "expose": {
+    "mapData": true,
+    "pluginList": true,
+    "playerData": true,
+    "serverConfig": true,
+    "worldAreas": true
+  },
+  "discord": {
+    "sleepEventChannelId": 0,
+    "theftReportChannelId": 0,
+    "playerDeathChannelId": 0,
+    "playerStatusChannelId": 0,
+    "playerRemoveObjectChannelId": 0,
+    "playerDestroyObjectChannelId": 0,
+    "npcDeathByNonPlayerChannelId": 0,
+    "mountDeathByPlayerChannelId": 0,
+    "animalDeathByPlayerChannelId": 0,
+    "seasonChangeEventChannelId": 0,
+    "weatherChangeEventChannelId": 0,
+    "playerTeleportChannelId": 0
+  }
+}

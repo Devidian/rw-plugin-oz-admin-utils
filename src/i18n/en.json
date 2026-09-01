@@ -1,0 +1,539 @@
+{
+  "tc": {
+    "admin": {
+      "utils": {
+        "info": {
+          "panel": {
+            "info": "\u003cb\u003ePH_PLUGIN_NAME\u003c/b\u003e\nVersion: PH_VERSION\nCommand: /PH_PLUGIN_CMD\n\nAdmin Utils owns operational safety workflows such as mount protection, prison moderation, sleep handling, and event logging.",
+            "status": "\u003cb\u003eAdmin Utils status\u003c/b\u003e\nMount ownership: PH_MOUNT_OWNERSHIP\nTheft punishment: PH_THEFT_PUNISHMENT\nPrison enabled: PH_PRISON_ENABLED\nPrisons: PH_PRISON_COUNT\nInmates: PH_INMATE_COUNT\nSleep announcements: PH_SLEEP_ANNOUNCEMENT\nTime speed-up: PH_SPEED_UP_TIME\nEvent logging: PH_EVENT_LOGGING"
+          }
+        }
+      }
+    },
+    "animal": {
+      "protected": {
+        "interaction": "You cannot interact with this protected animal!"
+      }
+    },
+    "cmd": {
+      "help": "Help:\nAvailable chat commands:\n\u003ccolor\u003dred\u003e/PH_PLUGIN_CMD status\u003c/color\u003e or \u003ccolor\u003dred\u003e/PH_PLUGIN_CMD info\u003c/color\u003e shows plugin infos\n\u003ccolor\u003dred\u003e/PH_PLUGIN_CMD open\u003c/color\u003e opens the plugin menu\n\u003ccolor\u003dred\u003e/PH_PLUGIN_CMD help\u003c/color\u003e shows this help\n\n\u003ccolor\u003dyellow\u003eTip:\u003c/color\u003e Bind the command \u003ccolor\u003dred\u003e/PH_PLUGIN_CMD open\u003c/color\u003e to a mouse button or keyboard key.",
+      "status": "🔎 Plugin Status\n➡️ Plugin version: PH_VERSION\n➡️ Installed languages: PH_LANG_AVAILABLE\n➡️ Your language: PH_LANGUAGE\n➡️ Used language: PH_USEDLANG\n➡️ Translated by: Devidian"
+    },
+    "err": {
+      "cmd": {
+        "unknown": "Unknown command. Type \u003ccolor\u003dred\u003e/PH_PLUGIN_CMD help\u003c/color\u003e for help."
+      }
+    },
+    "event": {
+      "kill": {
+        "animal": "Player PH_PLAYER killed a non hostile animal PH_NPC_CLASS (PH_NPC_NAME) at `goto PH_LOCATION` (map: PH_MAP_COORDINATES)",
+        "mount": "Player PH_PLAYER killed a mount PH_NPC_CLASS (PH_NPC_NAME) at `goto PH_LOCATION` (map: PH_MAP_COORDINATES)"
+      },
+      "object": {
+        "destroy": "Player PH_PLAYER destroyed an object (PH_OBJECT_NAME) at `goto PH_LOCATION` (map: PH_MAP_COORDINATES)",
+        "remove": "Player PH_PLAYER removed an object (PH_OBJECT_NAME) at `goto PH_LOCATION` (map: PH_MAP_COORDINATES)"
+      },
+      "player": {
+        "connected": "Player PH_PLAYER has connected to the server",
+        "death": "Player PH_PLAYER died at `goto PH_LOCATION` (cause: PH_CAUSE)",
+        "disconnected": "Player PH_PLAYER has disconnected from the server",
+        "teleport": "Player PH_PLAYER teleported to PH_LOCATION"
+      },
+      "season": {
+        "change": "Season changed from PH_SEASON_FROM to PH_SEASON_TO"
+      },
+      "weather": {
+        "change": "Weather changed from PH_WEATHER_FROM to PH_WEATHER_TO"
+      }
+    },
+    "idle": {
+      "kick": "You have been kicked for idling while others want to sleep!",
+      "warn": "You have been idle for PH_IDLE_TIME seconds while others want to sleep, please become active or you will be kicked!"
+    },
+    "label": {
+      "adminutils": {
+        "shortcut": "Show Admin Utils shortcut in /ozt and inventory"
+      },
+      "new": {
+        "player": {
+          "info": {
+            "visible": "Show Admin Utils info panel on login"
+          }
+        }
+      },
+      "release": {
+        "mount": {
+          "on": {
+            "own": {
+              "property": "Release mount on own property"
+            }
+          }
+        }
+      }
+    },
+    "menu": {
+      "info": {
+        "status": "Info / Status"
+      },
+      "prison": {
+        "zone": {
+          "create": "Create prison here",
+          "details": "Prison details",
+          "dissolve": "Dissolve prison",
+          "manage": "Manage zone",
+          "set": {
+            "spawn": "Set prison spawn here"
+          },
+          "sync": {
+            "name": "Sync prison name"
+          }
+        }
+      }
+    },
+    "mount": {
+      "claimed": "You have claimed this mount!",
+      "released": "You have released this mount."
+    },
+    "msg": {
+      "plugin": {
+        "welcome": "➡️ \u003ccolor\u003d#F00000\u003ePH_PLUGIN_NAME\u003c/color\u003e | \u003ccolor\u003d#F0F000\u003evPH_PLUGIN_VERSION\u003c/color\u003e | \u003ccolor\u003d#C0C0C0\u003e/PH_PLUGIN_CMD\u003c/color\u003e | loaded!"
+      }
+    },
+    "new": {
+      "player": {
+        "info": {
+          "dont": {
+            "show": "Do not show again"
+          },
+          "ok": "OK",
+          "title": "Server information"
+        }
+      }
+    },
+    "player": {
+      "state": {
+        "awake": "PH_PLAYER_NAME is awake.",
+        "idle": "PH_PLAYER_NAME is being kicked for idleing PH_IDLE_TIME seconds, while others want to sleep.",
+        "sleeping": "PH_PLAYER_NAME is tired and has lay down for sleeping."
+      }
+    },
+    "prison": {
+      "detail": {
+        "pardoned": {
+          "$value": "Pardoned PH_PLAYER_NAME. Restoration is queued for next login.",
+          "restored": "Pardoned PH_PLAYER_NAME and restored the player immediately."
+        },
+        "service": {
+          "unavailable": "Prisoner persistence is not available."
+        }
+      },
+      "zone": {
+        "admin": {
+          "required": "Only admins can manage prison zones."
+        },
+        "created": "Created prison PH_AREA_NAME (#PH_AREA_ID). Existing prisons: PH_PRISON_COUNT.",
+        "dissolved": "Dissolved prison for PH_AREA_NAME.",
+        "dissolve": {
+          "blocked": "Prison PH_AREA_NAME still has prisoner records and cannot be dissolved."
+        },
+        "name": {
+          "synced": "Updated prison name from the current area: PH_AREA_NAME (#PH_AREA_ID)."
+        },
+        "no": {
+          "area": "Stand inside an existing area before managing prison settings."
+        },
+        "service": {
+          "unavailable": "Prison persistence is not available."
+        },
+        "spawn": {
+          "updated": "Updated prison spawn for PH_AREA_NAME (#PH_AREA_ID) to your current position."
+        }
+      }
+    },
+    "season": {
+      "autumn": "Autumn",
+      "spring": "Spring",
+      "summer": "Summer",
+      "winter": "Winter"
+    },
+    "settings": {
+      "admin": {
+        "hint": "Admins can change Admin Utils server settings in the admin settings tab."
+      },
+      "player": {
+        "empty": "Admin Utils currently has no personal player settings. Moderation, prison, sleep, logging, and Discord behavior are configured by admins."
+      }
+    },
+    "setting": {
+      "afkplayersleeptimeoutseconds": {
+        "desc": "Seconds before AFK sleepers are kicked.",
+        "label": "Sleep AFK timeout"
+      },
+      "afkplayersleepwarnseconds": {
+        "desc": "Minimum AFK seconds before warning a sleeper before kicking.",
+        "label": "Sleep AFK warning"
+      },
+      "discordanimaldeathbyplayerchannelid": {
+        "desc": "Discord channel id for animal death events.",
+        "label": "Animal death channel"
+      },
+      "discordmountdeathbyplayerchannelid": {
+        "desc": "Discord channel id for mount death events.",
+        "label": "Mount death channel"
+      },
+      "discordnpcdeathbynonplayerchannelid": {
+        "desc": "Discord channel id for non-player NPC death events.",
+        "label": "NPC non-player death channel"
+      },
+      "discordplayerdeathchannelid": {
+        "desc": "Discord channel id for player death events.",
+        "label": "Player death channel"
+      },
+      "discordplayerdestroyobjectchannelid": {
+        "desc": "Discord channel id for player destroy-object events.",
+        "label": "Destroy-object channel"
+      },
+      "discordplayerremoveobjectchannelid": {
+        "desc": "Discord channel id for player remove-object events.",
+        "label": "Remove-object channel"
+      },
+      "discordplayerstatuschannelid": {
+        "desc": "Discord channel id for player status events.",
+        "label": "Player status channel"
+      },
+      "discordplayerteleportchannelid": {
+        "desc": "Discord channel id for player teleport events.",
+        "label": "Player teleport channel"
+      },
+      "discordseasonchangeeventchannelid": {
+        "desc": "Discord channel id for season change events.",
+        "label": "Season change channel"
+      },
+      "discordsleepeventchannelid": {
+        "desc": "Discord channel id for sleep events; 0 disables Discord sleep messages.",
+        "label": "Sleep Discord channel"
+      },
+      "discordtheftreportchannelid": {
+        "desc": "Discord channel id for theft reports; 0 disables channel-specific routing.",
+        "label": "Theft report channel"
+      },
+      "discordweatherchangeeventchannelid": {
+        "desc": "Discord channel id for weather change events.",
+        "label": "Weather change channel"
+      },
+      "enableallanimaldeathbyplayerlogging": {
+        "desc": "Logs all animal deaths caused by players, including non-aggressive animals.",
+        "label": "All animal death logging"
+      },
+      "enableanimaldeathbyplayerlogging": {
+        "desc": "Enables logging for animal deaths caused by players.",
+        "label": "Animal death logging"
+      },
+      "enablemapgen": {
+        "desc": "Captures raw surface data when eligible players leave chunks.",
+        "label": "Map source capture"
+      },
+      "enablemountdeathbyplayerlogging": {
+        "desc": "Enables logging for mount deaths caused by players.",
+        "label": "Mount death logging"
+      },
+      "enablemountownership": {
+        "desc": "Enables mount ownership protection.",
+        "label": "Mount ownership"
+      },
+      "enablenpcdeathbynonplayerlogging": {
+        "desc": "Enables logging for NPC deaths not caused by players.",
+        "label": "NPC non-player death logging"
+      },
+      "enableplayerdeathlogging": {
+        "desc": "Enables player death event logging.",
+        "label": "Player death logging"
+      },
+      "enableplayerdestroyobjectlogging": {
+        "desc": "Enables logging when players destroy objects.",
+        "label": "Destroy-object logging"
+      },
+      "enableplayerremoveobjectlogging": {
+        "desc": "Enables logging when players remove objects.",
+        "label": "Remove-object logging"
+      },
+      "enableplayerstatuslogging": {
+        "desc": "Enables player join/leave status logging.",
+        "label": "Player status logging"
+      },
+      "enableplayerteleporteventlogging": {
+        "desc": "Enables player teleport event logging.",
+        "label": "Player teleport logging"
+      },
+      "enableprison": {
+        "desc": "Enables prison behavior when at least one prison zone exists.",
+        "label": "Prison feature"
+      },
+      "enableseasonchangeeventlogging": {
+        "desc": "Enables season change event logging.",
+        "label": "Season change logging"
+      },
+      "enablesleepannouncement": {
+        "desc": "Sends sleep announcements to players.",
+        "label": "Sleep announcements"
+      },
+      "enablesleepkickafkplayer": {
+        "desc": "Kicks AFK sleeping players when enabled.",
+        "label": "Sleep AFK kick"
+      },
+      "enablespeeduptime": {
+        "desc": "Speeds up game time when enough players are sleeping.",
+        "label": "Speed up time"
+      },
+      "enableweatherchangeeventlogging": {
+        "desc": "Enables weather change event logging.",
+        "label": "Weather change logging"
+      },
+      "enablewelcomemessage": {
+        "desc": "Shows a short AdminUtils message when a player joins.",
+        "label": "Welcome message"
+      },
+      "eventlogging": {
+        "desc": "Operational event logging switches and Discord targets.",
+        "label": "Event logging"
+      },
+      "exposemapdata": {
+        "desc": "Allows bridge layers to read map data.",
+        "label": "Expose map data"
+      },
+      "exposeplayerdata": {
+        "desc": "Allows bridge layers to read player data.",
+        "label": "Expose player data"
+      },
+      "exposepluginlist": {
+        "desc": "Allows bridge layers to read the plugin list.",
+        "label": "Expose plugin list"
+      },
+      "exposeserverconfig": {
+        "desc": "Allows bridge layers to read server configuration.",
+        "label": "Expose server config"
+      },
+      "exposeworldareas": {
+        "desc": "Allows bridge layers to read world areas.",
+        "label": "Expose world areas"
+      },
+      "forceareaownership": {
+        "desc": "Requires area add-player permission before taking mount ownership.",
+        "label": "Force area ownership"
+      },
+      "general": {
+        "desc": "Logging, reload, and welcome behavior.",
+        "label": "General"
+      },
+      "loglevel": {
+        "desc": "Controls AdminUtils logging verbosity.",
+        "label": "Log level"
+      },
+      "lowersleeptimehour": {
+        "desc": "End hour for the configured sleep window.",
+        "label": "Lower sleep hour"
+      },
+      "mapgenchunkcooldownseconds": {
+        "desc": "Minimum seconds before the same chunk can trigger another capture.",
+        "label": "Map chunk cooldown"
+      },
+      "mapgenchunkscanradius": {
+        "desc": "Captures a square radius of chunks around the departed chunk; allowed range is 0 to 5.",
+        "label": "Map chunk scan radius"
+      },
+      "mapsource": {
+        "desc": "Automatic raw chunk capture for backend map rendering.",
+        "label": "Map source capture"
+      },
+      "mounts": {
+        "desc": "Mount ownership protection and theft punishment.",
+        "label": "Mount ownership"
+      },
+      "newplayerinfo": {
+        "enabled": {
+          "desc": "Shows the configured info panel to players until they opt out.",
+          "label": "New player info"
+        },
+        "heightpercent": {
+          "desc": "Panel height as percentage of the screen; allowed range is 24 to 95.",
+          "label": "New player info height"
+        },
+        "text": {
+          "desc": "Text shown in the optional new-player information panel.",
+          "label": "New player info text"
+        },
+        "widthpercent": {
+          "desc": "Panel width as percentage of the screen; allowed range is 20 to 95.",
+          "label": "New player info width"
+        }
+      },
+      "onlyadminmapgen": {
+        "desc": "Restricts map source capture triggers to admin players.",
+        "label": "Admin-only map capture"
+      },
+      "prisontheftban3sentencerealminutes": {
+        "desc": "Real-time minutes for the first theft punishment that would currently ban a player.",
+        "label": "Prison ban 3 sentence"
+      },
+      "prisontheftban4sentencerealminutes": {
+        "desc": "Real-time minutes for the second theft punishment that would currently ban a player.",
+        "label": "Prison ban 4 sentence"
+      },
+      "prisontheftban5sentencerealminutes": {
+        "desc": "Real-time minutes for the third theft punishment that would currently ban a player.",
+        "label": "Prison ban 5 sentence"
+      },
+      "prisontheftban6sentencerealminutes": {
+        "desc": "Real-time minutes for the fourth theft punishment that would currently ban a player.",
+        "label": "Prison ban 6 sentence"
+      },
+      "prisontheftban7sentencerealminutes": {
+        "desc": "Real-time minutes for the fifth theft punishment that would currently ban a player.",
+        "label": "Prison ban 7 sentence"
+      },
+      "prisontheftban8sentencerealminutes": {
+        "desc": "Real-time minutes for the sixth theft punishment that would currently ban a player.",
+        "label": "Prison ban 8 sentence"
+      },
+      "prisontheftban9sentencerealminutes": {
+        "desc": "Real-time minutes for the seventh theft punishment that would currently ban a player.",
+        "label": "Prison ban 9 sentence"
+      },
+      "prisontheftkicksentencegameminutes": {
+        "desc": "Game-time minutes for theft punishments that would currently kick a player.",
+        "label": "Prison kick sentence"
+      },
+      "prison": {
+        "desc": "Prison feature and theft sentence lengths.",
+        "label": "Prison"
+      },
+      "punishmounttheft": {
+        "desc": "Punishes players who try to steal mounts.",
+        "label": "Punish mount theft"
+      },
+      "reloadonchange": {
+        "desc": "Documents that AdminUtils settings reload when settings.properties changes.",
+        "label": "Reload on change"
+      },
+      "showprisonzoneindicator": {
+        "desc": "Shows a shared Tools indicator while players stand inside an enabled prison zone.",
+        "label": "Prison zone indicator"
+      },
+      "sleep": {
+        "desc": "Sleep announcements, AFK handling, and time speed-up.",
+        "label": "Sleep"
+      },
+      "uppersleeptimehour": {
+        "desc": "Start hour for the configured sleep window.",
+        "label": "Upper sleep hour"
+      }
+    },
+    "sleep": {
+      "daytime": "Sleeping is only possible between PH_UPPER_HOUR:00 and PH_LOWER_HOUR:00!",
+      "time": {
+        "speed": {
+          "normal": "Time speed is back to normal.",
+          "up": "Time is now speeding up because enough players are sleeping."
+        }
+      }
+    },
+    "theft": {
+      "banned": {
+        "3": "The thief PH_PLAYER_NAME couldn\u0027t help himself and has earned 10 minutes timeout!",
+        "4": "The thief PH_PLAYER_NAME doesn\u0027t know when to stop, he has now earned 30 minutes timeout!",
+        "5": "The thief PH_PLAYER_NAME has a learning disability and may now reflect on his actions for 1 hour!",
+        "6": "The thief PH_PLAYER_NAME has learning resistance Rank S and may now take 1 day off to think about it!",
+        "7": "The thief PH_PLAYER_NAME has long fingers and now has 1 week to cut them!",
+        "8": "The thief PH_PLAYER_NAME fingers too often and may now practice abstinence for 1 year!",
+        "9": "The thief PH_PLAYER_NAME will not be able to pull any more shady deals for the next 10 years, tough luck!"
+      },
+      "ban": {
+        "3": "Theft will not be tolerated, 10 minutes timeout for you!",
+        "4": "Theft will not be tolerated, 30 minutes timeout for you!",
+        "5": "Theft will not be tolerated, 1 hour timeout for you!",
+        "6": "Theft will not be tolerated, 1 day timeout for you!",
+        "7": "Theft will not be tolerated, 7 days timeout for you!",
+        "8": "Theft will not be tolerated, 1 year timeout for you!",
+        "9": "Theft will not be tolerated, 10 years timeout for you!"
+      },
+      "kick": "You have been marked as a thief and kicked from the server!",
+      "kicked": "The player PH_PLAYER_NAME was caught attempting to steal the mount PH_MOUNT_NAME, marked as a thief and kicked!",
+      "kill": "The thief PH_PLAYER_NAME has unfortunately died while attempting to steal the mount PH_MOUNT_NAME, tough luck!",
+      "prisoned": {
+        "ban": "The repeat thief PH_PLAYER_NAME was caught attempting to steal the mount PH_MOUNT_NAME and was sent to prison PH_PRISON_NAME!",
+        "kick": "The player PH_PLAYER_NAME was caught attempting to steal the mount PH_MOUNT_NAME and was sent to prison PH_PRISON_NAME!"
+      },
+      "warn": {
+        "1": "\u003ccolor\u003dyellow\u003eWARNING\u003c/color\u003e this mount does not belong to you, further interactions will be punished!",
+        "2": "\u003ccolor\u003dred\u003eWARNING\u003c/color\u003e while trying to interact with a foreign mount you have slightly injured yourself, you are bleeding!",
+        "3": "\u003ccolor\u003dred\u003eWARNING\u003c/color\u003e while trying to interact with a foreign mount you have injured yourself, you are bleeding and have broken a leg!",
+        "4": "\u003ccolor\u003dred\u003eWARNING\u003c/color\u003e while trying to interact with a foreign mount you have seriously injured yourself, you are bleeding and have broken both legs!",
+        "5": "\u003ccolor\u003dred\u003eWARNING\u003c/color\u003e while trying to interact with a foreign mount you have severely injured yourself, you have taken damage!",
+        "6": "\u003ccolor\u003dred\u003eWARNING\u003c/color\u003e while trying to interact with a foreign mount you have fatally injured yourself!"
+      }
+    },
+    "ui": {
+      "cancel": "Cancel",
+      "prison": {
+        "detail": {
+          "empty": "No inmates are recorded for this prison.",
+          "footer": "Pardon releases online inmates immediately and queues offline restoration for next login.",
+          "minutes": "PH_MINUTES min",
+          "open": "Open",
+          "pardon": "Pardon",
+          "subtitle": "Area #PH_AREA_ID",
+          "tab": {
+            "current": "This zone",
+            "other": "Other zones"
+          },
+          "th": {
+            "actions": "Actions",
+            "player": "Player",
+            "prisoners": "Prisoners",
+            "remaining": "Remaining",
+            "status": "Status",
+            "type": "Sentence",
+            "zone": "Prison zone"
+          },
+          "title": "Prison: PH_PRISON_NAME",
+          "type": {
+            "gametime": "Game time",
+            "realtime": "Real time"
+          }
+        },
+        "dissolve": {
+          "confirm": {
+            "message": "The prison configuration for PH_AREA_NAME will be removed. This cannot be undone.",
+            "title": "Dissolve prison?"
+          }
+        }
+      }
+    },
+    "weather": {
+      "blizzard": "Blizzard",
+      "breeze": "Breeze",
+      "clear": "Clear",
+      "cold": "Cold",
+      "coldfog": "Cold fog",
+      "default": "Default",
+      "densefog": "Dense fog",
+      "drythunder": "Dry thunder",
+      "farthunder": "Far thunder",
+      "fog": "Fog",
+      "heavyrain": "Heavy rain",
+      "heavysnow": "Heavy snow",
+      "heavythunder": "Heavy thunder",
+      "hurricane": "Hurricane",
+      "lightrain": "Light rain",
+      "lightsnow": "Light snow",
+      "overcast": "Overcast",
+      "rain": "Rain",
+      "snow": "Snow",
+      "storm": "Storm",
+      "sunnysnow": "Sunny snow",
+      "thaw": "Thaw",
+      "thunder": "Thunder",
+      "wind": "Wind"
+    }
+  }
+}

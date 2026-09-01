@@ -11,7 +11,6 @@ import de.omegazirkel.risingworld.adminutils.db.entities.Prisoner;
 import de.omegazirkel.risingworld.tools.I18n;
 import de.omegazirkel.risingworld.tools.ui.AdvancedButtonFactory;
 import de.omegazirkel.risingworld.tools.ui.BasePluginOverlayWithTabs;
-import de.omegazirkel.risingworld.tools.ui.CursorManager;
 import de.omegazirkel.risingworld.tools.ui.AdvancedButton;
 import de.omegazirkel.risingworld.tools.ui.OZUIElement;
 import de.omegazirkel.risingworld.tools.ui.table.TableCell;
@@ -50,27 +49,27 @@ public class PrisonDetailOverlay extends BasePluginOverlayWithTabs {
 
     @Override
     protected String titleText() {
-        return t().get("TC_UI_PRISON_DETAIL_TITLE", player).replace("PH_PRISON_NAME", prison.name);
+        return t().get("tc.ui.prison.detail.title", player).replace("PH_PRISON_NAME", prison.name);
     }
 
     @Override
     protected String descriptionText() {
-        return t().get("TC_UI_PRISON_DETAIL_SUBTITLE", player).replace("PH_AREA_ID", String.valueOf(prison.areaId));
+        return t().get("tc.ui.prison.detail.subtitle", player).replace("PH_AREA_ID", String.valueOf(prison.areaId));
     }
 
     @Override
     protected String legendText() {
-        return t().get("TC_UI_PRISON_DETAIL_FOOTER", player);
+        return t().get("tc.ui.prison.detail.footer", player);
     }
 
     @Override
     protected void setupTabs() {
         setupTabContainer();
-        addTab(t().get("TC_UI_PRISON_DETAIL_TAB_CURRENT", player), 180, activeDetailTab == DetailTab.CURRENT, true, () -> {
+        addTab(t().get("tc.ui.prison.detail.tab.current", player), 180, activeDetailTab == DetailTab.CURRENT, true, () -> {
             activeDetailTab = DetailTab.CURRENT;
             rebuild();
         });
-        addTab(t().get("TC_UI_PRISON_DETAIL_TAB_OTHER", player), 180, activeDetailTab == DetailTab.OTHER, true, () -> {
+        addTab(t().get("tc.ui.prison.detail.tab.other", player), 180, activeDetailTab == DetailTab.OTHER, true, () -> {
             activeDetailTab = DetailTab.OTHER;
             rebuild();
         });
@@ -84,18 +83,18 @@ public class PrisonDetailOverlay extends BasePluginOverlayWithTabs {
     private void setupPrisonerTable() {
         TableScrollView table = new TableScrollView(
                 Arrays.asList(
-                        t().get("TC_UI_PRISON_DETAIL_TH_PLAYER", player),
-                        t().get("TC_UI_PRISON_DETAIL_TH_STATUS", player),
-                        t().get("TC_UI_PRISON_DETAIL_TH_TYPE", player),
-                        t().get("TC_UI_PRISON_DETAIL_TH_REMAINING", player),
-                        t().get("TC_UI_PRISON_DETAIL_TH_ACTIONS", player)),
+                        t().get("tc.ui.prison.detail.th.player", player),
+                        t().get("tc.ui.prison.detail.th.status", player),
+                        t().get("tc.ui.prison.detail.th.type", player),
+                        t().get("tc.ui.prison.detail.th.remaining", player),
+                        t().get("tc.ui.prison.detail.th.actions", player)),
                 Arrays.asList(30f, 18f, 16f, 18f, 18f));
         table.setScrollBodyHeight(TABLE_SCROLL_BODY_HEIGHT);
 
         PrisonerService prisonerService = AdminUtils.prisonerService();
         List<Prisoner> prisoners = prisonerService == null ? List.of() : prisonerService.getByPrison(prison.areaId);
         if (prisoners.isEmpty()) {
-            table.addRow(textOnlyRow(t().get("TC_UI_PRISON_DETAIL_EMPTY", player), 100f));
+            table.addRow(textOnlyRow(t().get("tc.ui.prison.detail.empty", player), 100f));
         } else {
             for (Prisoner prisoner : prisoners) {
                 table.addRow(prisonerRow(prisoner));
@@ -107,15 +106,15 @@ public class PrisonDetailOverlay extends BasePluginOverlayWithTabs {
     private void setupOtherPrisonsTable() {
         TableScrollView table = new TableScrollView(
                 Arrays.asList(
-                        t().get("TC_UI_PRISON_DETAIL_TH_ZONE", player),
-                        t().get("TC_UI_PRISON_DETAIL_TH_PRISONERS", player),
-                        t().get("TC_UI_PRISON_DETAIL_TH_ACTIONS", player)),
+                        t().get("tc.ui.prison.detail.th.zone", player),
+                        t().get("tc.ui.prison.detail.th.prisoners", player),
+                        t().get("tc.ui.prison.detail.th.actions", player)),
                 Arrays.asList(50f, 20f, 30f));
         table.setScrollBodyHeight(TABLE_SCROLL_BODY_HEIGHT);
         List<Prison> prisons = AdminUtils.prisonService() == null ? List.of() : AdminUtils.prisonService().getAll();
         prisons.stream().sorted(Comparator.comparingLong(value -> value.areaId)).forEach(candidate -> table.addRow(prisonRow(candidate)));
         if (prisons.isEmpty()) {
-            table.addRow(textOnlyRow(t().get("TC_UI_PRISON_DETAIL_EMPTY", player), 100f));
+            table.addRow(textOnlyRow(t().get("tc.ui.prison.detail.empty", player), 100f));
         }
         body.addChild(table);
     }
@@ -125,7 +124,7 @@ public class PrisonDetailOverlay extends BasePluginOverlayWithTabs {
         int prisoners = service == null ? 0 : service.getByPrison(candidate.areaId).size();
         OZUIElement actions = new OZUIElement();
         actions.setSize(100, 100, true);
-        AdvancedButton select = AdvancedButtonFactory.defaultButton(t().get("TC_UI_PRISON_DETAIL_OPEN", player), event -> {
+        AdvancedButton select = AdvancedButtonFactory.defaultButton(t().get("tc.ui.prison.detail.open", player), event -> {
             prison = candidate;
             activeDetailTab = DetailTab.CURRENT;
             rebuild();
@@ -135,7 +134,7 @@ public class PrisonDetailOverlay extends BasePluginOverlayWithTabs {
         select.setSize(78, 26, false);
         actions.addChild(select);
         if (prisoners == 0) {
-            AdvancedButton dissolve = AdvancedButtonFactory.danger(t().get("TC_MENU_PRISON_ZONE_DISSOLVE", player), event -> showDissolveConfirmation(candidate));
+            AdvancedButton dissolve = AdvancedButtonFactory.danger(t().get("tc.menu.prison.zone.dissolve", player), event -> showDissolveConfirmation(candidate));
             dissolve.setPivot(Pivot.UpperLeft);
             dissolve.setPosition(86, 4, false);
             dissolve.setSize(150, 26, false);
@@ -157,14 +156,14 @@ public class PrisonDetailOverlay extends BasePluginOverlayWithTabs {
         dialog.setBorderColor(0xD7AE55FF);
         panel.addChild(dialog);
 
-        UILabel title = new UILabel(t().get("TC_UI_PRISON_DISSOLVE_CONFIRM_TITLE", player));
+        UILabel title = new UILabel(t().get("tc.ui.prison.dissolve.confirm.title", player));
         title.setPivot(Pivot.UpperLeft);
         title.setPosition(20, 18, false);
         title.setSize(440, 28, false);
         title.setFontSize(18);
         dialog.addChild(title);
 
-        UILabel message = new UILabel(t().get("TC_UI_PRISON_DISSOLVE_CONFIRM_MESSAGE", player)
+        UILabel message = new UILabel(t().get("tc.ui.prison.dissolve.confirm.message", player)
                 .replace("PH_AREA_NAME", candidate.name));
         message.setPivot(Pivot.UpperLeft);
         message.setPosition(20, 54, false);
@@ -173,12 +172,12 @@ public class PrisonDetailOverlay extends BasePluginOverlayWithTabs {
         message.setTextWrap(true);
         dialog.addChild(message);
 
-        AdvancedButton cancel = AdvancedButtonFactory.cancel(t().get("TC_UI_CANCEL", player), event -> panel.removeChild(dialog));
+        AdvancedButton cancel = AdvancedButtonFactory.cancel(t().get("tc.ui.cancel", player), event -> panel.removeChild(dialog));
         cancel.setPivot(Pivot.UpperLeft);
         cancel.setPosition(24, 142, false);
         cancel.setSize(150, 32, false);
         dialog.addChild(cancel);
-        AdvancedButton confirm = AdvancedButtonFactory.danger(t().get("TC_MENU_PRISON_ZONE_DISSOLVE", player), event -> {
+        AdvancedButton confirm = AdvancedButtonFactory.danger(t().get("tc.menu.prison.zone.dissolve", player), event -> {
             panel.removeChild(dialog);
             dissolve(candidate);
         });
@@ -191,12 +190,12 @@ public class PrisonDetailOverlay extends BasePluginOverlayWithTabs {
     private void dissolve(Prison candidate) {
         PrisonerService prisonerService = AdminUtils.prisonerService();
         if (prisonerService != null && !prisonerService.getByPrison(candidate.areaId).isEmpty()) {
-            player.sendTextMessage(t().get("TC_PRISON_ZONE_DISSOLVE_BLOCKED", player).replace("PH_AREA_NAME", candidate.name));
+            player.sendTextMessage(t().get("tc.prison.zone.dissolve.blocked", player).replace("PH_AREA_NAME", candidate.name));
             rebuild();
             return;
         }
         if (AdminUtils.prisonService() != null && AdminUtils.prisonService().remove(candidate.areaId)) {
-            player.sendTextMessage(t().get("TC_PRISON_ZONE_DISSOLVED", player).replace("PH_AREA_NAME", candidate.name));
+            player.sendTextMessage(t().get("tc.prison.zone.dissolved", player).replace("PH_AREA_NAME", candidate.name));
         }
         rebuild();
     }
@@ -227,7 +226,7 @@ public class PrisonDetailOverlay extends BasePluginOverlayWithTabs {
         OZUIElement actions = new OZUIElement();
         actions.setSize(100, 100, true);
         if (!"RELEASED".equalsIgnoreCase(prisoner.status)) {
-            AdvancedButton pardon = AdvancedButtonFactory.danger(t().get("TC_UI_PRISON_DETAIL_PARDON", player), event -> {
+            AdvancedButton pardon = AdvancedButtonFactory.danger(t().get("tc.ui.prison.detail.pardon", player), event -> {
                 pardon(prisoner);
             });
             pardon.setPivot(Pivot.UpperLeft);
@@ -247,14 +246,14 @@ public class PrisonDetailOverlay extends BasePluginOverlayWithTabs {
     private void pardon(Prisoner prisoner) {
         PrisonerService prisonerService = AdminUtils.prisonerService();
         if (prisonerService == null) {
-            player.sendTextMessage(t().get("TC_PRISON_DETAIL_SERVICE_UNAVAILABLE", player));
+            player.sendTextMessage(t().get("tc.prison.detail.service.unavailable", player));
             return;
         }
 
         Player prisonerPlayer = Server.getPlayerByDbID(prisoner.playerDbId);
         if (AdminUtils.prisonReleaseService() != null && prisonerPlayer != null) {
             if (AdminUtils.prisonReleaseService().release(prisonerPlayer, prisoner, "PARDONED").success()) {
-                player.sendTextMessage(t().get("TC_PRISON_DETAIL_PARDONED_RESTORED", player)
+                player.sendTextMessage(t().get("tc.prison.detail.pardoned.restored", player)
                         .replace("PH_PLAYER_NAME", playerName(prisoner)));
                 rebuild();
                 return;
@@ -263,7 +262,7 @@ public class PrisonDetailOverlay extends BasePluginOverlayWithTabs {
             prisonerService.pardon(prisoner, "PARDONED", System.currentTimeMillis());
         }
 
-        player.sendTextMessage(t().get("TC_PRISON_DETAIL_PARDONED", player)
+        player.sendTextMessage(t().get("tc.prison.detail.pardoned", player)
                 .replace("PH_PLAYER_NAME", playerName(prisoner)));
         rebuild();
     }
@@ -276,7 +275,7 @@ public class PrisonDetailOverlay extends BasePluginOverlayWithTabs {
     }
 
     private String sentenceType(Prisoner prisoner) {
-        return t().get(prisoner.realtime ? "TC_UI_PRISON_DETAIL_TYPE_REALTIME" : "TC_UI_PRISON_DETAIL_TYPE_GAMETIME",
+        return t().get(prisoner.realtime ? "tc.ui.prison.detail.type.realtime" : "tc.ui.prison.detail.type.gametime",
                 player);
     }
 
@@ -285,7 +284,7 @@ public class PrisonDetailOverlay extends BasePluginOverlayWithTabs {
                 ? Math.max(0, prisoner.sentenceTotalMs - (System.currentTimeMillis() - prisoner.sentenceStartTs))
                 : prisoner.getRemainingMs();
         long minutes = Math.max(0, (remainingMs + 59999) / 60000);
-        return t().get("TC_UI_PRISON_DETAIL_MINUTES", player).replace("PH_MINUTES", String.valueOf(minutes));
+        return t().get("tc.ui.prison.detail.minutes", player).replace("PH_MINUTES", String.valueOf(minutes));
     }
 
     @Override

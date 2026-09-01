@@ -7,6 +7,8 @@ import java.util.function.BooleanSupplier;
 import de.omegazirkel.risingworld.AdminUtils;
 import de.omegazirkel.risingworld.tools.DiagnosticThreadFactory;
 import net.risingworld.api.World;
+import net.risingworld.api.definitions.Biomes.Biome;
+import net.risingworld.api.definitions.Biomes.Region;
 import net.risingworld.api.objects.Player;
 import net.risingworld.api.objects.world.Chunk;
 import net.risingworld.api.utils.Vector3i;
@@ -68,7 +70,15 @@ public final class RisingWorldMapChunkCapture {
                 textures[index] = chunk.getLODSurfaceTexture(localX, localZ);
             }
         }
-        return new MapChunkSurfaceData(chunkX, chunkZ, heights, textures);
+        int center = MapChunkSourceData.CHUNK_SIZE / 2;
+        float x = chunkX * MapChunkSourceData.CHUNK_SIZE + center;
+        float z = chunkZ * MapChunkSourceData.CHUNK_SIZE + center;
+        float y = heights[MapChunkSourceEncoder.index(center, center)];
+        Biome biome = World.getBiome(x, y, z);
+        Region region = World.getRegion(x, y, z);
+        return new MapChunkSurfaceData(chunkX, chunkZ, heights, textures,
+                biome == null ? null : (int) biome.id,
+                region == null ? null : (int) region.id);
     }
 
     private static boolean persist(MapChunkSourceStore store, MapChunkSurfaceData surface) throws Exception {
@@ -81,8 +91,8 @@ public final class RisingWorldMapChunkCapture {
                 textures,
                 System.currentTimeMillis(),
                 MapChunkSourceEncoder.contentHash(heights, textures),
-                null,
-                null));
+                surface.biome(),
+                surface.region()));
     }
 
     private static boolean sameChunk(Vector3i first, Vector3i second) {

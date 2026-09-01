@@ -1,6 +1,6 @@
 package de.omegazirkel.risingworld.adminutils.mapsource;
 
-public record MapChunkSurfaceData(int chunkX, int chunkZ, float[] heights, byte[] textures) {
+public record MapChunkSurfaceData(int chunkX, int chunkZ, float[] heights, byte[] textures, Integer biome, Integer region) {
     public MapChunkSurfaceData {
         heights = heights.clone();
         textures = textures.clone();

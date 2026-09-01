@@ -30,13 +30,13 @@ public class AdminUtilsPlayerPluginSettings extends PlayerPluginSettings {
             @Override
             protected void redrawContent() {
                 flexWrapper.removeAllChilds();
-                flexWrapper.addChild(booleanSetting(uiPlayer, shortcutKey(), "TC_LABEL_ADMINUTILS_SHORTCUT"));
+                flexWrapper.addChild(booleanSetting(uiPlayer, shortcutKey(), "tc.label.adminutils.shortcut"));
                 flexWrapper.addChild(booleanSetting(uiPlayer, NEW_PLAYER_INFO_VISIBLE_KEY,
-                        "TC_LABEL_NEW_PLAYER_INFO_VISIBLE"));
+                        "tc.label.new.player.info.visible"));
                 flexWrapper.addChild(booleanSetting(uiPlayer, RELEASE_MOUNT_ON_OWN_PROPERTY_KEY,
-                        "TC_LABEL_RELEASE_MOUNT_ON_OWN_PROPERTY", false));
+                        "tc.label.release.mount.on.own.property", false));
                 if (uiPlayer.isAdmin()) {
-                    flexWrapper.addChild(infoCard(uiPlayer, "TC_SETTINGS_ADMIN_HINT"));
+                    flexWrapper.addChild(infoCard(uiPlayer, "tc.settings.admin.hint"));
                 }
             }
 

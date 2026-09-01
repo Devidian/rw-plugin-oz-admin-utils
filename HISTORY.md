@@ -2,6 +2,10 @@
 
 <https://www.conventionalcommits.org/en/v1.0.0/>
 
+## [Unreleased]
+
+- feat: add an opt-in native PluginAPI webserver test route for validating game-managed plugin HTTP routes.
+
 ## [0.9.1] - 2026-08-12 | Mount release safeguards
 
 - feat: let mount owners release a mount by unsaddling it outside their own property, with an opt-in player setting for releasing it on their own property.

@@ -7,7 +7,6 @@ import de.omegazirkel.risingworld.AdminUtils;
 import de.omegazirkel.risingworld.adminutils.db.entities.Prison;
 import de.omegazirkel.risingworld.adminutils.ui.PrisonDetailOverlay;
 import de.omegazirkel.risingworld.tools.I18n;
-import de.omegazirkel.risingworld.tools.ui.CursorManager;
 import de.omegazirkel.risingworld.tools.ui.MenuItem;
 import de.omegazirkel.risingworld.tools.ui.PluginInfoStatusProviders;
 import de.omegazirkel.risingworld.tools.ui.PluginMenuManager;
@@ -59,7 +58,7 @@ public class PluginGUI {
         if (uiPlayer.isAdmin()) {
             menuItems.add(menuItemManagePrisonZone(uiPlayer));
         }
-        menuItems.add(PluginInfoStatusProviders.menuItem(t().get("TC_MENU_INFO_STATUS", uiPlayer), AdminUtils.name));
+        menuItems.add(PluginInfoStatusProviders.menuItem(t().get("tc.menu.info.status", uiPlayer), AdminUtils.name));
         menuItems.add(MenuItem.closeMenu(uiPlayer));
         PluginMenuManager.showMenu(uiPlayer, menuItems);
     }
@@ -67,7 +66,7 @@ public class PluginGUI {
     private MenuItem menuItemManagePrisonZone(Player uiPlayer) {
         return new MenuItem(
                 "zone-manage",
-                t().get("TC_MENU_PRISON_ZONE_MANAGE", uiPlayer),
+                t().get("tc.menu.prison.zone.manage", uiPlayer),
                 p -> openPrisonZoneMenu(p, this::openMainMenu));
     }
 
@@ -76,13 +75,13 @@ public class PluginGUI {
         Area currentArea = uiPlayer.getCurrentArea();
 
         if (!uiPlayer.isAdmin()) {
-            uiPlayer.sendTextMessage(t().get("TC_PRISON_ZONE_ADMIN_REQUIRED", uiPlayer));
+            uiPlayer.sendTextMessage(t().get("tc.prison.zone.admin.required", uiPlayer));
             onBack.onCall(uiPlayer);
             return;
         }
 
         if (currentArea == null) {
-            uiPlayer.sendTextMessage(t().get("TC_PRISON_ZONE_NO_AREA", uiPlayer));
+            uiPlayer.sendTextMessage(t().get("tc.prison.zone.no.area", uiPlayer));
             onBack.onCall(uiPlayer);
             return;
         } else {
@@ -106,10 +105,10 @@ public class PluginGUI {
     private MenuItem menuItemCreatePrison(Player uiPlayer, Area area, Callback<Player> onBack) {
         return new MenuItem(
                 "zone-prison-create",
-                t().get("TC_MENU_PRISON_ZONE_CREATE", uiPlayer),
+                t().get("tc.menu.prison.zone.create", uiPlayer),
                 p -> {
                     if (AdminUtils.prisonService() == null) {
-                        p.sendTextMessage(t().get("TC_PRISON_ZONE_SERVICE_UNAVAILABLE", p));
+                        p.sendTextMessage(t().get("tc.prison.zone.service.unavailable", p));
                         openPrisonZoneMenu(p, onBack);
                         return;
                     }
@@ -126,7 +125,7 @@ public class PluginGUI {
                             0L,
                             0);
                     Prison saved = AdminUtils.prisonService().createIfAbsent(area.getID(), prison);
-                    p.sendTextMessage(t().get("TC_PRISON_ZONE_CREATED", p)
+                    p.sendTextMessage(t().get("tc.prison.zone.created", p)
                             .replace("PH_AREA_NAME", saved.name)
                             .replace("PH_AREA_ID", String.valueOf(saved.areaId))
                             .replace("PH_PRISON_COUNT", String.valueOf(AdminUtils.prisonService().getAll().size())));
@@ -137,16 +136,14 @@ public class PluginGUI {
     private MenuItem menuItemOpenPrisonDetails(Player uiPlayer, Prison prison, Callback<Player> onBack) {
         return new MenuItem(
                 "zone-prison-manage",
-                t().get("TC_MENU_PRISON_ZONE_DETAILS", uiPlayer),
+                t().get("tc.menu.prison.zone.details", uiPlayer),
                 p -> {
                     UIElement existing = (UIElement) p.getAttribute(PrisonDetailOverlay.ATTRIBUTE_KEY);
                     if (existing != null) {
-                        p.removeUIElement(existing);
-                        CursorManager.hide(p);
+                        p.deleteAttribute(PrisonDetailOverlay.ATTRIBUTE_KEY);
                     }
                     PrisonDetailOverlay overlay = new PrisonDetailOverlay(p, prison, onBack);
-                    p.addUIElement(overlay, UITarget.HUD);
-                    CursorManager.show(p);
+                    p.addUIElement(overlay, UITarget.Modal);
                     p.setAttribute(PrisonDetailOverlay.ATTRIBUTE_KEY, overlay);
                     p.hideRadialMenu(false);
                 });
@@ -155,12 +152,12 @@ public class PluginGUI {
     private MenuItem menuItemUpdatePrisonSpawn(Player uiPlayer, Area area, Prison prison, Callback<Player> onBack) {
         return new MenuItem(
                 "zone-prison-set-spawn",
-                t().get("TC_MENU_PRISON_ZONE_SET_SPAWN", uiPlayer),
+                t().get("tc.menu.prison.zone.set.spawn", uiPlayer),
                 p -> {
                     Vector3f position = p.getPosition();
                     prison.spawnPosition = new Vector3f(position.x, position.y, position.z);
                     AdminUtils.prisonService().markDirty(prison);
-                    p.sendTextMessage(t().get("TC_PRISON_ZONE_SPAWN_UPDATED", p)
+                    p.sendTextMessage(t().get("tc.prison.zone.spawn.updated", p)
                             .replace("PH_AREA_NAME", prisonName(area))
                             .replace("PH_AREA_ID", String.valueOf(area.getID())));
                     openPrisonZoneMenu(p, onBack);
@@ -170,11 +167,11 @@ public class PluginGUI {
     private MenuItem menuItemSyncPrisonName(Player uiPlayer, Area area, Prison prison, Callback<Player> onBack) {
         return new MenuItem(
                 "zone-name-sync",
-                t().get("TC_MENU_PRISON_ZONE_SYNC_NAME", uiPlayer),
+                t().get("tc.menu.prison.zone.sync.name", uiPlayer),
                 p -> {
                     prison.name = prisonName(area);
                     AdminUtils.prisonService().markDirty(prison);
-                    p.sendTextMessage(t().get("TC_PRISON_ZONE_NAME_SYNCED", p)
+                    p.sendTextMessage(t().get("tc.prison.zone.name.synced", p)
                             .replace("PH_AREA_NAME", prison.name)
                             .replace("PH_AREA_ID", String.valueOf(area.getID())));
                     openPrisonZoneMenu(p, onBack);
@@ -182,21 +179,19 @@ public class PluginGUI {
     }
 
     private MenuItem menuItemDissolvePrison(Player uiPlayer, Area area, Prison prison, Callback<Player> onBack) {
-        return new MenuItem("zone-prison-release", t().get("TC_MENU_PRISON_ZONE_DISSOLVE", uiPlayer), p -> {
+        return new MenuItem("zone-prison-release", t().get("tc.menu.prison.zone.dissolve", uiPlayer), p -> {
             if (AdminUtils.prisonService() == null || AdminUtils.prisonerService() == null) {
-                p.sendTextMessage(t().get("TC_PRISON_ZONE_SERVICE_UNAVAILABLE", p));
+                p.sendTextMessage(t().get("tc.prison.zone.service.unavailable", p));
             } else if (!AdminUtils.prisonerService().getByPrison(prison.areaId).isEmpty()) {
-                p.sendTextMessage(t().get("TC_PRISON_ZONE_DISSOLVE_BLOCKED", p)
+                p.sendTextMessage(t().get("tc.prison.zone.dissolve.blocked", p)
                         .replace("PH_AREA_NAME", prisonName(area)));
             } else {
                 UIElement existing = (UIElement) p.getAttribute(PrisonDetailOverlay.ATTRIBUTE_KEY);
                 if (existing != null) {
-                    p.removeUIElement(existing);
-                    CursorManager.hide(p);
+                    p.deleteAttribute(PrisonDetailOverlay.ATTRIBUTE_KEY);
                 }
                 PrisonDetailOverlay overlay = new PrisonDetailOverlay(p, prison, onBack);
-                p.addUIElement(overlay, UITarget.HUD);
-                CursorManager.show(p);
+                p.addUIElement(overlay, UITarget.Modal);
                 p.setAttribute(PrisonDetailOverlay.ATTRIBUTE_KEY, overlay);
                 p.hideRadialMenu(false);
                 overlay.showDissolveConfirmation(prison);

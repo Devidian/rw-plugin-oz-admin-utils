@@ -4,7 +4,6 @@ import de.omegazirkel.risingworld.AdminUtils;
 import de.omegazirkel.risingworld.tools.I18n;
 import de.omegazirkel.risingworld.tools.ui.AdvancedButton;
 import de.omegazirkel.risingworld.tools.ui.AdvancedButtonFactory;
-import de.omegazirkel.risingworld.tools.ui.CursorManager;
 import de.omegazirkel.risingworld.tools.ui.OZUIElement;
 import net.risingworld.api.objects.Player;
 import net.risingworld.api.ui.UIElement;
@@ -44,7 +43,7 @@ public class NewPlayerInfoOverlay extends OZUIElement {
         panel.setBorderEdgeRadius(6, false);
         addChild(panel);
 
-        UILabel title = new UILabel(t().get("TC_NEW_PLAYER_INFO_TITLE", player));
+        UILabel title = new UILabel(t().get("tc.new.player.info.title", player));
         title.setPivot(Pivot.UpperLeft);
         title.setPosition(5, 6, true);
         title.setSize(90, 14, true);
@@ -80,9 +79,9 @@ public class NewPlayerInfoOverlay extends OZUIElement {
         footer.style.alignItems.set(Align.Center);
         panel.addChild(footer);
 
-        footer.addChild(button(AdvancedButtonFactory.ok(t().get("TC_NEW_PLAYER_INFO_OK", player), event -> close(event.getPlayer())),
+        footer.addChild(button(AdvancedButtonFactory.ok(t().get("tc.new.player.info.ok", player), event -> close(event.getPlayer())),
                 34));
-        footer.addChild(button(AdvancedButtonFactory.cancel(t().get("TC_NEW_PLAYER_INFO_DONT_SHOW", player), event -> {
+        footer.addChild(button(AdvancedButtonFactory.cancel(t().get("tc.new.player.info.dont.show", player), event -> {
             AdminUtilsPlayerPluginSettings.setNewPlayerInfoVisible(event.getPlayer(), false);
             close(event.getPlayer());
         }), 58));
@@ -113,6 +112,6 @@ public class NewPlayerInfoOverlay extends OZUIElement {
     public void close(Player player) {
         player.removeUIElement(this);
         player.deleteAttribute(PLAYER_ATTRIBUTE);
-        CursorManager.hide(player);
+        player.closeAllActiveUIWindows();
     }
 }

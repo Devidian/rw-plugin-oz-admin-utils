@@ -85,6 +85,15 @@ player exposure clears the snapshot; the bridge then falls back to persisted
 World area geometry is intentionally owned by Admin Utils because it comes from
 the Rising World world database rather than from LandClaim plugin persistence.
 
+## Native webserver test route
+
+Admin Utils registers the native PluginAPI webserver probe
+`/oz-admin-utils-test`. It remains unavailable until an administrator sets
+`enableWebserverTestRoute=true`; enable it only on Development while testing
+the game API. A `GET` then returns the fixed JSON response
+`{"schemaVersion":1,"service":"oz-admin-utils","status":"ok"}`. All other
+methods return `405`, and the disabled route returns `404`.
+
 ## Contributor Workflow
 
 - Review `AGENTS.md`, `PLANS.md`, `.codex/agents.toml`, and `.codex/skills/` before making structural changes.

@@ -265,7 +265,7 @@ public class MapChunkCaptureCoordinatorTest {
                 chunkX,
                 chunkZ,
                 new float[MapChunkSourceData.VALUE_COUNT],
-                new byte[MapChunkSourceData.VALUE_COUNT]);
+                new byte[MapChunkSourceData.VALUE_COUNT], null, null);
     }
 
     private static final class DirectExecutor extends AbstractExecutorService {
