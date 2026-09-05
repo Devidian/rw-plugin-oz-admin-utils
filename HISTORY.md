@@ -2,9 +2,12 @@
 
 <https://www.conventionalcommits.org/en/v1.0.0/>
 
-## [Unreleased]
+## [0.10.0] - 2026-09-05 | Native Manager exports
 
 - feat: add an opt-in native PluginAPI webserver test route for validating game-managed plugin HTTP routes.
+- feat: add the opt-in native Admin Utils `info` route with validated public map and administrator metadata for the Manager migration.
+- feat: expose Admin Utils map, player-list, and world-area exports through native PluginAPI handlers.
+- feat: expose masked server configuration through the native PluginAPI route.
 
 ## [0.9.1] - 2026-08-12 | Mount release safeguards
 

@@ -39,12 +39,15 @@ public class PluginSettings {
 
 	// Future native route exposure
 	public boolean exposeMapData = true;
-	public boolean exposePluginList = true;
 	public boolean exposePlayerData = true;
 	public boolean exposeServerConfig = true;
 	public boolean exposeWorldAreas = true;
 	public int livePlayerPositionIntervalSeconds = 1;
 	public boolean enableWebserverTestRoute = false;
+	public boolean exposeNativeInfo = false;
+	public String nativeMapUrl = "";
+	public String nativeAdminUid = "";
+	public String nativeAdmins = "";
 
 	// Mount ownership
 	public boolean enableMountOwnership = true;
@@ -172,11 +175,14 @@ public class PluginSettings {
 			mapGenChunkCooldownSeconds = Math.max(0,
 					Integer.parseInt(settings.getProperty("mapGenChunkCooldownSeconds", "60")));
 			exposeMapData = settings.getProperty("exposeMapData", "true").contentEquals("true");
-			exposePluginList = settings.getProperty("exposePluginList", "true").contentEquals("true");
 			exposePlayerData = settings.getProperty("exposePlayerData", "true").contentEquals("true");
 			exposeServerConfig = settings.getProperty("exposeServerConfig", "true").contentEquals("true");
 			exposeWorldAreas = settings.getProperty("exposeWorldAreas", "true").contentEquals("true");
 			enableWebserverTestRoute = settings.getProperty("enableWebserverTestRoute", "false").contentEquals("true");
+			exposeNativeInfo = settings.getProperty("exposeNativeInfo", "false").contentEquals("true");
+			nativeMapUrl = settings.getProperty("nativeMapUrl", "").trim();
+			nativeAdminUid = settings.getProperty("nativeAdminUid", "").trim();
+			nativeAdmins = settings.getProperty("nativeAdmins", "").trim();
 			livePlayerPositionIntervalSeconds = Math.max(1, Math.min(30,
 					Integer.parseInt(settings.getProperty("livePlayerPositionIntervalSeconds", "1"))));
 
@@ -315,9 +321,6 @@ public class PluginSettings {
 				entry("exposeMapData", "Expose map data",
 						"Enables the future Admin Utils map-data export route.", exposeMapData, "true",
 						AdminSettingsType.BOOLEAN),
-				entry("exposePluginList", "Expose plugin list",
-						"Enables the future Admin Utils plugin-list export route.", exposePluginList, "true",
-						AdminSettingsType.BOOLEAN),
 				entry("exposePlayerData", "Expose player data",
 						"Enables the future Admin Utils player-data export route.", exposePlayerData, "true",
 						AdminSettingsType.BOOLEAN),
@@ -333,6 +336,18 @@ public class PluginSettings {
 				entry("enableWebserverTestRoute", "Native webserver test route",
 						"Temporarily exposes the native webserver test route for API validation.",
 						enableWebserverTestRoute, "false", AdminSettingsType.BOOLEAN),
+				entry("exposeNativeInfo", "Expose native Manager info",
+						"Exposes validated map and administrator metadata through the native info route.",
+						exposeNativeInfo, "false", AdminSettingsType.BOOLEAN),
+				entry("nativeMapUrl", "Native map URL",
+						"Absolute HTTP(S) map URL returned by the native info route.", nativeMapUrl, "",
+						AdminSettingsType.TEXT),
+				entry("nativeAdminUid", "Native administrator UID",
+						"Steam UID of the server owner returned by the native info route.", nativeAdminUid, "",
+						AdminSettingsType.TEXT),
+				entry("nativeAdmins", "Native administrator UIDs",
+						"Comma-separated Steam UIDs authorized by the native Manager route.", nativeAdmins, "",
+						AdminSettingsType.TEXT),
 				AdminSettingsEntry.group("mounts", "Mount ownership", "Mount ownership protection and theft punishment."),
 				entry("enableMountOwnership", "Mount ownership", "Enables mount ownership protection.",
 						enableMountOwnership, "true", AdminSettingsType.BOOLEAN),

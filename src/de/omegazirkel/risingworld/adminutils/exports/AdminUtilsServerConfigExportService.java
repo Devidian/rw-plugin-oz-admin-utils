@@ -14,6 +14,20 @@ public final class AdminUtilsServerConfigExportService {
         return exportConfig(serverProperties, null);
     }
 
+    /** Resolves the server config from the documented plugin-directory layout. */
+    public static Path serverPropertiesFromPluginPath(String pluginPath) {
+        if (pluginPath == null || pluginPath.isBlank()) {
+            throw new IllegalArgumentException("Plugin path is unavailable");
+        }
+        Path pluginDirectory = Path.of(pluginPath).toAbsolutePath().normalize();
+        Path pluginsDirectory = pluginDirectory.getParent();
+        Path serverDirectory = pluginsDirectory == null ? null : pluginsDirectory.getParent();
+        if (serverDirectory == null) {
+            throw new IllegalArgumentException("Plugin path has no server root");
+        }
+        return serverDirectory.resolve("server.properties").normalize();
+    }
+
     public ServerConfigExport exportConfig(Path serverProperties, Long lastChange) throws IOException {
         try (Reader reader = Files.newBufferedReader(serverProperties)) {
             return exportConfig(reader, lastChange);

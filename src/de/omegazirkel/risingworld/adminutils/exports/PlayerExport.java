@@ -10,5 +10,12 @@ public record PlayerExport(
         boolean connected,
         long lastTimeOnline,
         int currentPlayTime,
-        int totalPlayTime) {
+        int totalPlayTime,
+        Double posx,
+        Double posy,
+        Double posz,
+        Long lastseen,
+        Double health,
+        Double hunger,
+        Double thirst) {
 }

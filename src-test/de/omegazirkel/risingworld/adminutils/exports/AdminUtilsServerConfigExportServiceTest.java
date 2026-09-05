@@ -3,10 +3,17 @@ package de.omegazirkel.risingworld.adminutils.exports;
 import static org.junit.Assert.assertEquals;
 
 import java.io.StringReader;
+import java.nio.file.Path;
 
 import org.junit.Test;
 
 public class AdminUtilsServerConfigExportServiceTest {
+
+    @Test
+    public void resolvesServerConfigTwoLevelsAbovePluginDirectory() {
+        assertEquals(Path.of("/srv/risingworld/server.properties"),
+                AdminUtilsServerConfigExportService.serverPropertiesFromPluginPath("/srv/risingworld/Plugins/OZAdminUtils"));
+    }
 
     @Test
     public void parsesAndMasksServerConfig() throws Exception {

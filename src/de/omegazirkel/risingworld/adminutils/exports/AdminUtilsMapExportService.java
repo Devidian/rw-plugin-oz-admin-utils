@@ -18,17 +18,27 @@ public final class AdminUtilsMapExportService {
     }
 
     public MapDataExport exportMapData(Long lastChange) throws SQLException {
+        return exportMapData(lastChange, null, null);
+    }
+
+    public MapDataExport exportMapData(Long lastChange, Integer limit, Integer offset) throws SQLException {
         long cursor = lastChange == null ? -1L : lastChange.longValue();
+        int pageOffset = offset == null ? 0 : offset.intValue();
         List<MapChunkExport> chunks = new ArrayList<>();
         long nextChange = Math.max(0L, cursor);
-        try (PreparedStatement statement = connection.prepareStatement("""
+        String sql = """
                 SELECT schema_version, chunk_x, chunk_z, heights, textures,
                        updated_at_ms, content_hash, biome, region
                 FROM map_chunks_v1
                 WHERE updated_at_ms > ?
-                ORDER BY updated_at_ms ASC, chunk_x ASC, chunk_z ASC;
-                """)) {
+                ORDER BY updated_at_ms ASC, chunk_x ASC, chunk_z ASC
+                """ + (limit == null ? ";" : " LIMIT ? OFFSET ?;");
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setLong(1, cursor);
+            if (limit != null) {
+                statement.setInt(2, limit.intValue() + 1);
+                statement.setInt(3, pageOffset);
+            }
             try (ResultSet result = statement.executeQuery()) {
                 while (result.next()) {
                     MapChunkExport chunk = readChunk(result);
@@ -37,7 +47,12 @@ public final class AdminUtilsMapExportService {
                 }
             }
         }
-        return new MapDataExport(SCHEMA_VERSION, lastChange == null, nextChange, chunks);
+        boolean partial = limit != null && chunks.size() > limit.intValue();
+        List<MapChunkExport> page = partial ? chunks.subList(0, limit.intValue()) : chunks;
+        long pageNextChange = page.stream().mapToLong(MapChunkExport::updatedAtMs).max().orElse(nextChange);
+        return new MapDataExport(SCHEMA_VERSION, lastChange == null, pageNextChange,
+                limit == null ? null : Boolean.valueOf(partial),
+                partial ? Integer.valueOf(pageOffset + limit.intValue()) : null, page);
     }
 
     private static MapChunkExport readChunk(ResultSet result) throws SQLException {

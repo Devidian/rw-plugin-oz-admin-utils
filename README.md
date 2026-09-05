@@ -71,17 +71,17 @@ an external backend renderer. Admin Utils does not generate PNG map tiles or a
 tile pyramid. A successful database insert/update writes the debug-level log
 `chunk <x> <z> updated in <ms>ms`.
 
-Admin Utils also contains route-ready export DTOs/services for future native
+Admin Utils also contains route-ready export DTOs/services for native
 plugin routes. Prepared exports cover map source chunks with `lastChange`
-cursor filtering, runtime plugin metadata, runtime player snapshots, masked
-server configuration, and world area geometry. Route exposure flags are
-available in `settings.properties`: `exposeMapData`, `exposePluginList`,
+cursor filtering, complete persisted player snapshots with current live
+positions, masked server configuration, and world area geometry. Route
+exposure flags are available in `settings.properties`: `exposeMapData`,
 `exposePlayerData`, `exposeServerConfig`, and `exposeWorldAreas`.
 While `exposePlayerData=true`, Admin Utils also keeps a bounded runtime
 position snapshot in `live_player_positions_v1`. The default
 `livePlayerPositionIntervalSeconds=1` may be raised up to 30 seconds. Disabling
-player exposure clears the snapshot; the bridge then falls back to persisted
-`Player.db` coordinates.
+player exposure clears the snapshot; the player export continues to use
+persisted `Player.db` coordinates through the PluginAPI.
 World area geometry is intentionally owned by Admin Utils because it comes from
 the Rising World world database rather than from LandClaim plugin persistence.
 
@@ -93,6 +93,24 @@ Admin Utils registers the native PluginAPI webserver probe
 the game API. A `GET` then returns the fixed JSON response
 `{"schemaVersion":1,"service":"oz-admin-utils","status":"ok"}`. All other
 methods return `405`, and the disabled route returns `404`.
+
+The opt-in `info` route is the first production native data route. Set
+`exposeNativeInfo=true` together with an absolute `nativeMapUrl`, the numeric
+Steam `nativeAdminUid`, and optional comma-separated `nativeAdmins`. It is
+available through the game-managed `/plugins/oz---admin-utils/info` prefix and
+returns only those validated public metadata fields; it never exposes server
+configuration or passwords. Invalid or incomplete configuration keeps the
+route unavailable.
+
+Admin Utils also registers native `map`, `playerlist`, and `world-areas`
+handlers. Their existing `exposeMapData`, `exposePlayerData`, and
+`exposeWorldAreas` flags remain their independent opt-ins. The map handler
+validates `lastChange`, `limit` (1-5000), and `offset`, retaining cursor and
+pagination semantics for the map renderer.
+
+The native `server-config` handler uses the existing `exposeServerConfig` flag
+and reads `server.properties` two directory levels above the plugin directory.
+Password-bearing keys remain masked as `***`.
 
 ## Contributor Workflow
 

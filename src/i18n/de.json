@@ -298,23 +298,19 @@
         "label": "Ereignisprotokollierung"
       },
       "exposemapdata": {
-        "desc": "Erlaubt Bridge-Layern Lesezugriff auf Kartendaten.",
+        "desc": "Erlaubt nativen Manager-Routen Lesezugriff auf Kartendaten.",
         "label": "Kartendaten bereitstellen"
       },
       "exposeplayerdata": {
-        "desc": "Erlaubt Bridge-Layern Lesezugriff auf Spielerdaten.",
+        "desc": "Erlaubt nativen Manager-Routen Lesezugriff auf Spielerdaten.",
         "label": "Spielerdaten bereitstellen"
       },
-      "exposepluginlist": {
-        "desc": "Erlaubt Bridge-Layern Lesezugriff auf die Pluginliste.",
-        "label": "Pluginliste bereitstellen"
-      },
       "exposeserverconfig": {
-        "desc": "Erlaubt Bridge-Layern Lesezugriff auf die Serverkonfiguration.",
+        "desc": "Erlaubt nativen Manager-Routen Lesezugriff auf die Serverkonfiguration.",
         "label": "Serverkonfiguration bereitstellen"
       },
       "exposeworldareas": {
-        "desc": "Erlaubt Bridge-Layern Lesezugriff auf Weltbereiche.",
+        "desc": "Erlaubt nativen Manager-Routen Lesezugriff auf Weltbereiche.",
         "label": "Weltbereiche bereitstellen"
       },
       "forceareaownership": {

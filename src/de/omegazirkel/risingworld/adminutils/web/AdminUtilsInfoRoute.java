@@ -1,6 +1,8 @@
 package de.omegazirkel.risingworld.adminutils.web;
 
-import java.util.function.BooleanSupplier;
+import java.util.function.Supplier;
+
+import com.google.gson.Gson;
 
 import de.omegazirkel.risingworld.OZToolsNativeWebAccess;
 
@@ -8,23 +10,20 @@ import net.risingworld.api.callbacks.WebserverHandler;
 import net.risingworld.api.events.general.HttpRequestEvent;
 import net.risingworld.api.events.general.HttpRequestEvent.HttpMethod;
 
-/** Minimal native webserver route used to validate plugin route registration. */
-public final class WebserverTestRoute implements WebserverHandler {
-    private final BooleanSupplier enabled;
+/** Native, opt-in Manager metadata route. It never exposes server configuration. */
+public final class AdminUtilsInfoRoute implements WebserverHandler {
+    private static final Gson GSON = new Gson();
 
-    public WebserverTestRoute(BooleanSupplier enabled) {
-        this.enabled = enabled;
+    private final Supplier<AdminUtilsInfoExport> info;
+
+    public AdminUtilsInfoRoute(Supplier<AdminUtilsInfoExport> info) {
+        this.info = info;
     }
 
     @Override
     public void onRequest(HttpRequestEvent event) {
         event.setResponseHeader("Cache-Control", "no-store");
         event.setContentType("application/json; charset=utf-8");
-        if (!enabled.getAsBoolean()) {
-            event.setResponseCode(404);
-            event.setResponseBody("{\"error\":\"not_found\"}");
-            return;
-        }
         if (!OZToolsNativeWebAccess.authorize(event)) return;
         if (event.getMethod() != HttpMethod.GET) {
             event.setResponseCode(405);
@@ -32,11 +31,17 @@ public final class WebserverTestRoute implements WebserverHandler {
             event.setResponseBody("{\"error\":\"method_not_allowed\"}");
             return;
         }
+        AdminUtilsInfoExport payload = info.get();
+        if (payload == null) {
+            event.setResponseCode(404);
+            event.setResponseBody("{\"error\":\"not_found\"}");
+            return;
+        }
         event.setResponseCode(200);
-        event.setResponseBody(successResponse());
+        event.setResponseBody(GSON.toJson(payload));
     }
 
-    static String successResponse() {
-        return "{\"schemaVersion\":1,\"service\":\"oz-admin-utils\",\"status\":\"ok\"}";
+    static String successResponse(AdminUtilsInfoExport info) {
+        return GSON.toJson(info);
     }
 }

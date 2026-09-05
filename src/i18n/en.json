@@ -298,23 +298,19 @@
         "label": "Event logging"
       },
       "exposemapdata": {
-        "desc": "Allows bridge layers to read map data.",
+        "desc": "Allows native manager routes to read map data.",
         "label": "Expose map data"
       },
       "exposeplayerdata": {
-        "desc": "Allows bridge layers to read player data.",
+        "desc": "Allows native manager routes to read player data.",
         "label": "Expose player data"
       },
-      "exposepluginlist": {
-        "desc": "Allows bridge layers to read the plugin list.",
-        "label": "Expose plugin list"
-      },
       "exposeserverconfig": {
-        "desc": "Allows bridge layers to read server configuration.",
+        "desc": "Allows native manager routes to read server configuration.",
         "label": "Expose server config"
       },
       "exposeworldareas": {
-        "desc": "Allows bridge layers to read world areas.",
+        "desc": "Allows native manager routes to read world areas.",
         "label": "Expose world areas"
       },
       "forceareaownership": {

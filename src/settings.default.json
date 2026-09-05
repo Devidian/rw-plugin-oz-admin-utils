@@ -1,7 +1,5 @@
 {
   "general": {
-    "logLevel": "ALL",
-    "reloadOnChange": true,
     "newPlayerInfo": {
       "enabled": false,
       "text": "",
@@ -12,6 +10,9 @@
     "mapGenChunkScanRadius": 0,
     "mapGenChunkCooldownSeconds": 60,
     "livePlayerPositionIntervalSeconds": 1,
+    "nativeMapUrl": "",
+    "nativeAdminUid": "",
+    "nativeAdmins": "",
     "forceAreaOwnership": true,
     "punishMountTheft": true,
     "showPrisonZoneIndicator": true,
@@ -50,8 +51,8 @@
     "playerTeleportEventLogging": true
   },
   "expose": {
+    "nativeInfo": false,
     "mapData": true,
-    "pluginList": true,
     "playerData": true,
     "serverConfig": true,
     "worldAreas": true

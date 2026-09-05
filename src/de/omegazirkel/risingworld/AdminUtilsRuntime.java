@@ -3,6 +3,9 @@ package de.omegazirkel.risingworld;
 import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Arrays;
+
+import com.google.gson.Gson;
 
 import de.omegazirkel.risingworld.adminutils.DiscordConnect;
 import de.omegazirkel.risingworld.adminutils.AdminUtilsPluginInfoStatusProvider;
@@ -26,6 +29,13 @@ import de.omegazirkel.risingworld.adminutils.ui.AdminUtilsPlayerPluginSettings;
 import de.omegazirkel.risingworld.adminutils.ui.NewPlayerInfoOverlay;
 import de.omegazirkel.risingworld.adminutils.ui.PrisonZoneIndicatorProvider;
 import de.omegazirkel.risingworld.adminutils.web.WebserverTestRoute;
+import de.omegazirkel.risingworld.adminutils.web.AdminUtilsInfoExport;
+import de.omegazirkel.risingworld.adminutils.web.AdminUtilsInfoRoute;
+import de.omegazirkel.risingworld.adminutils.web.NativeJsonExportRoute;
+import de.omegazirkel.risingworld.adminutils.exports.AdminUtilsMapExportService;
+import de.omegazirkel.risingworld.adminutils.exports.AdminUtilsPlayerExportService;
+import de.omegazirkel.risingworld.adminutils.exports.AdminUtilsWorldAreaExportService;
+import de.omegazirkel.risingworld.adminutils.exports.AdminUtilsServerConfigExportService;
 import de.omegazirkel.risingworld.tools.AreaUtils;
 import de.omegazirkel.risingworld.tools.Colors;
 import de.omegazirkel.risingworld.tools.I18n;
@@ -42,6 +52,8 @@ import de.omegazirkel.risingworld.tools.ui.PluginShortcutVisibility;
 import de.omegazirkel.risingworld.tools.ui.SharedIndicators;
 import net.risingworld.api.Plugin;
 import net.risingworld.api.Server;
+import net.risingworld.api.database.WorldDatabase.Target;
+import net.risingworld.api.database.WorldDatabase;
 import net.risingworld.api.definitions.Npcs;
 import net.risingworld.api.definitions.Npcs.Behaviour;
 import net.risingworld.api.definitions.WeatherDefs;
@@ -82,6 +94,11 @@ class AdminUtilsRuntime extends Plugin {
 	static final String PRISONER_AREA_PERMISSION_FILE = "ozau-prisoner.json";
 	static final String PRISONER_AREA_PERMISSION = "ozau-prisoner";
 	private static final String WEBSERVER_TEST_ROUTE = "oz-admin-utils-test";
+	private static final String WEBSERVER_INFO_ROUTE = "info";
+	private static final String WEBSERVER_MAP_ROUTE = "map";
+	private static final String WEBSERVER_PLAYERLIST_ROUTE = "playerlist";
+	private static final String WEBSERVER_WORLD_AREAS_ROUTE = "world-areas";
+	private static final String WEBSERVER_SERVER_CONFIG_ROUTE = "server-config";
 	static final Colors c = Colors.getInstance();
 	private static I18n t = null;
 	private static PluginSettings s = null;
@@ -98,7 +115,15 @@ class AdminUtilsRuntime extends Plugin {
 	private MapChunkSourceStore mapChunkSourceStore;
 	private RisingWorldMapChunkCapture mapChunkCapture;
 	private LivePlayerPositionCapture livePlayerPositionCapture;
+	private LivePlayerPositionStore livePlayerPositionStore;
 	private WebserverTestRoute webserverTestRoute;
+	private AdminUtilsInfoRoute webserverInfoRoute;
+	private NativeJsonExportRoute webserverMapRoute;
+	private NativeJsonExportRoute webserverPlayerlistRoute;
+	private NativeJsonExportRoute webserverWorldAreasRoute;
+	private NativeJsonExportRoute webserverServerConfigRoute;
+	private WorldDatabase playerDatabase;
+	private AutoCloseable playerStatusConnectorFeature;
 	private static boolean isInSpeedmode = false;
 	private static float normalGameSpeed = 2.5f;
 
@@ -136,11 +161,15 @@ class AdminUtilsRuntime extends Plugin {
 			s = PluginSettings.getInstance((AdminUtils) this);
 		t = I18n.getInstance(this);
 		s.initSettings();
+		playerDatabase = getWorldDatabase(Target.Players);
 		registerWebserverTestRoute();
+		registerWebserverInfoRoute();
+		registerWebserverExportRoutes();
 		ensureDefaultPermissionFiles();
 		initMapChunkSourcePersistence();
 		sqliteCon = SQLiteConnectionFactory.open(this);
 		initLivePlayerPositionCapture();
+		registerPlayerStatusConnector();
 		ps = new PlayerSettings(sqliteCon);
 		initPrisonPersistence();
 		gui = PluginGUI.getInstance(this);
@@ -172,10 +201,16 @@ class AdminUtilsRuntime extends Plugin {
 
 	@Override
 	public void onDisable() {
+		closePlayerStatusConnector();
 		if (webserverTestRoute != null) {
 			unregisterWebserverHandler(WEBSERVER_TEST_ROUTE);
 			webserverTestRoute = null;
 		}
+		if (webserverInfoRoute != null) {
+			unregisterWebserverHandler(WEBSERVER_INFO_ROUTE);
+			webserverInfoRoute = null;
+		}
+		unregisterWebserverExportRoutes();
 		if (name != null) {
 			PluginShortcutVisibility.unregister(name);
 			PluginInfoStatusProviders.unregisterProvider(name);
@@ -211,11 +246,105 @@ class AdminUtilsRuntime extends Plugin {
 		logger().info("Native webserver test route registered at /" + WEBSERVER_TEST_ROUTE);
 	}
 
+	private void registerWebserverInfoRoute() {
+		webserverInfoRoute = new AdminUtilsInfoRoute(() -> {
+			if (!s.exposeNativeInfo) return null;
+			return AdminUtilsInfoExport.configured(s.nativeMapUrl, s.nativeAdminUid,
+					Arrays.stream(s.nativeAdmins.split(","))
+							.map(String::trim)
+							.filter(value -> !value.isEmpty())
+							.toList());
+		});
+		registerWebserverHandler(WEBSERVER_INFO_ROUTE, webserverInfoRoute);
+		logger().info("Native Admin Utils info route registered at /" + WEBSERVER_INFO_ROUTE);
+	}
+
+	private void registerWebserverExportRoutes() {
+		webserverMapRoute = new NativeJsonExportRoute(() -> s.exposeMapData, query ->
+				new AdminUtilsMapExportService(sqliteCon).exportMapData(
+						NativeJsonExportRoute.optionalNonNegativeLong(query, "lastChange"),
+						NativeJsonExportRoute.optionalBoundedInteger(query, "limit", 1, 5000),
+						NativeJsonExportRoute.optionalBoundedInteger(query, "offset", 0, Integer.MAX_VALUE)),
+				"map_source_unavailable");
+		webserverPlayerlistRoute = new NativeJsonExportRoute(() -> s.exposePlayerData,
+				query -> exportPlayers(),
+				"playerlist_unavailable");
+		webserverWorldAreasRoute = new NativeJsonExportRoute(() -> s.exposeWorldAreas,
+				query -> new AdminUtilsWorldAreaExportService().exportRuntimeAreas(Server.getAllAreas()),
+				"world_areas_unavailable");
+		webserverServerConfigRoute = new NativeJsonExportRoute(() -> s.exposeServerConfig,
+				query -> new AdminUtilsServerConfigExportService().exportConfig(
+						AdminUtilsServerConfigExportService.serverPropertiesFromPluginPath(getPath())),
+				"server_config_unavailable");
+		registerWebserverHandler(WEBSERVER_MAP_ROUTE, webserverMapRoute);
+		registerWebserverHandler(WEBSERVER_PLAYERLIST_ROUTE, webserverPlayerlistRoute);
+		registerWebserverHandler(WEBSERVER_WORLD_AREAS_ROUTE, webserverWorldAreasRoute);
+		registerWebserverHandler(WEBSERVER_SERVER_CONFIG_ROUTE, webserverServerConfigRoute);
+		logger().info("Native Admin Utils export routes registered: /map, /playerlist, /world-areas, /server-config");
+	}
+
+	private Object exportPlayers() throws Exception {
+		try {
+			return new AdminUtilsPlayerExportService().exportPlayers(
+					this,
+					playerDatabase,
+					livePlayerPositionStore == null ? java.util.Map.of() : livePlayerPositionStore.list());
+		} catch (Exception ex) {
+			logger().warn("Native player export failed: " + ex.getMessage());
+			throw ex;
+		}
+	}
+
+	private void registerPlayerStatusConnector() {
+		playerStatusConnectorFeature = OZTools.registerGameConnectorFeature("playerStatus", this::publishPlayerStatus);
+	}
+
+	private void closePlayerStatusConnector() {
+		if (playerStatusConnectorFeature == null) return;
+		try {
+			playerStatusConnectorFeature.close();
+		} catch (Exception ex) {
+			logger().warn("Failed to unregister player-status connector feature: " + ex.getMessage());
+		} finally {
+			playerStatusConnectorFeature = null;
+		}
+	}
+
+	/** Sends a complete runtime snapshot; the backend owns its server-scoped cache. */
+	private void publishPlayerStatus() {
+		try {
+			Object payload = new AdminUtilsPlayerExportService().exportRuntimePlayers(Server.getAllPlayers());
+			OZTools.publishGameConnectorEvent("playerStatus", new Gson().toJsonTree(payload));
+		} catch (RuntimeException ex) {
+			logger().warn("Failed to publish player-status connector event: " + ex.getMessage());
+		}
+	}
+
+	private void unregisterWebserverExportRoutes() {
+		if (webserverMapRoute != null) {
+			unregisterWebserverHandler(WEBSERVER_MAP_ROUTE);
+			webserverMapRoute = null;
+		}
+		if (webserverPlayerlistRoute != null) {
+			unregisterWebserverHandler(WEBSERVER_PLAYERLIST_ROUTE);
+			webserverPlayerlistRoute = null;
+		}
+		if (webserverWorldAreasRoute != null) {
+			unregisterWebserverHandler(WEBSERVER_WORLD_AREAS_ROUTE);
+			webserverWorldAreasRoute = null;
+		}
+		if (webserverServerConfigRoute != null) {
+			unregisterWebserverHandler(WEBSERVER_SERVER_CONFIG_ROUTE);
+			webserverServerConfigRoute = null;
+		}
+	}
+
 	private void initLivePlayerPositionCapture() {
 		try {
+			livePlayerPositionStore = new LivePlayerPositionStore(sqliteCon);
 			livePlayerPositionCapture = new LivePlayerPositionCapture(
 					(AdminUtils) this,
-					new LivePlayerPositionStore(sqliteCon),
+					livePlayerPositionStore,
 					() -> s.exposePlayerData,
 					() -> s.livePlayerPositionIntervalSeconds);
 			livePlayerPositionCapture.start();
@@ -910,6 +1039,7 @@ class AdminUtilsRuntime extends Plugin {
 		if (prisonReleaseService != null) {
 			this.executeDelayed(1, () -> prisonReleaseService.releaseIfDue(player));
 		}
+		executeDelayed(1, this::publishPlayerStatus);
 	}
 
 	public void onPlayerDisconnect(PlayerDisconnectEvent event) {
@@ -918,12 +1048,14 @@ class AdminUtilsRuntime extends Plugin {
 		if (s.enablePlayerStatusLogging) {
 			eventLogger().info("Player " + player.getName() + " disconnected at "
 					+ player.getPosition().toString().replaceAll("[,()]", ""));
+		}
+		if (s.discordPlayerStatusChannelId != 0) {
 			DiscordConnect.sendDiscordMessage(
 					t.get("tc.event.player.disconnected", DiscordConnect.botLang())
 							.replace("PH_PLAYER", player.getName()),
 					s.discordPlayerStatusChannelId);
-
 		}
+		executeDelayed(1, this::publishPlayerStatus);
 	}
 
 	public void onPlayerRemoveObject(PlayerRemoveObjectEvent event) {

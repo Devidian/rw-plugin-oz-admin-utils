@@ -12,8 +12,10 @@ public class AdminUtilsPlayerExportServiceTest {
     @Test
     public void exportsPlayersSortedByName() {
         PlayerListExport export = new AdminUtilsPlayerExportService().exportPlayers(List.of(
-                new PlayerExport(2, "uid-2", 20, "Zed", "guest", false, true, 2000L, 10, 50),
-                new PlayerExport(1, "uid-1", 10, "Alice", "admin", true, true, 1000L, 20, 70)));
+                new PlayerExport(2, "uid-2", 20, "Zed", "guest", false, true, 2000L, 10, 50,
+                        20.0, 10.0, 30.0, 2000L, 100.0, 80.0, 70.0),
+                new PlayerExport(1, "uid-1", 10, "Alice", "admin", true, true, 1000L, 20, 70,
+                        10.0, 20.0, 30.0, 1000L, 100.0, 80.0, 70.0)));
 
         assertEquals(1, export.schemaVersion());
         assertEquals(2, export.players().size());

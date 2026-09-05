@@ -34,30 +34,39 @@ public class PluginSettingsTest {
         Path settings = Files.createTempFile("oz-admin-utils-settings-", ".properties");
         Files.writeString(settings, String.join("\n",
                 "exposeMapData=false",
-                "exposePluginList=false",
                 "exposePlayerData=false",
                 "exposeServerConfig=false",
                 "exposeWorldAreas=false",
-                "enableWebserverTestRoute=true"));
+                "enableWebserverTestRoute=true",
+                "exposeNativeInfo=true",
+                "nativeMapUrl=https://maps.example/",
+                "nativeAdminUid=76561198000000001",
+                "nativeAdmins=76561198000000002,76561198000000003"));
 
         PluginSettings pluginSettings = PluginSettings.getInstance();
         pluginSettings.initSettings(settings.toString());
 
         assertFalse(pluginSettings.exposeMapData);
-        assertFalse(pluginSettings.exposePluginList);
         assertFalse(pluginSettings.exposePlayerData);
         assertFalse(pluginSettings.exposeServerConfig);
         assertFalse(pluginSettings.exposeWorldAreas);
         assertTrue(pluginSettings.enableWebserverTestRoute);
+        assertTrue(pluginSettings.exposeNativeInfo);
+        assertEquals("https://maps.example/", pluginSettings.nativeMapUrl);
+        assertEquals("76561198000000001", pluginSettings.nativeAdminUid);
+        assertEquals("76561198000000002,76561198000000003", pluginSettings.nativeAdmins);
 
         Files.writeString(settings, "");
         pluginSettings.initSettings(settings.toString());
 
         assertTrue(pluginSettings.exposeMapData);
-        assertTrue(pluginSettings.exposePluginList);
         assertTrue(pluginSettings.exposePlayerData);
         assertTrue(pluginSettings.exposeServerConfig);
         assertTrue(pluginSettings.exposeWorldAreas);
         assertFalse(pluginSettings.enableWebserverTestRoute);
+        assertFalse(pluginSettings.exposeNativeInfo);
+        assertEquals("", pluginSettings.nativeMapUrl);
+        assertEquals("", pluginSettings.nativeAdminUid);
+        assertEquals("", pluginSettings.nativeAdmins);
     }
 }

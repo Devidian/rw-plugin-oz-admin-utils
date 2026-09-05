@@ -6,6 +6,8 @@ public record MapDataExport(
         int schemaVersion,
         boolean full,
         long nextChange,
+        Boolean partial,
+        Integer nextOffset,
         List<MapChunkExport> chunks) {
 
     public MapDataExport {

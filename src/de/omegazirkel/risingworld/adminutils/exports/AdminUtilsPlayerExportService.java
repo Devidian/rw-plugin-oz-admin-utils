@@ -4,7 +4,11 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 
+import de.omegazirkel.risingworld.adminutils.live.LivePlayerPosition;
+import net.risingworld.api.database.WorldDatabase;
+import net.risingworld.api.Plugin;
 import net.risingworld.api.objects.Player;
 
 public final class AdminUtilsPlayerExportService {
@@ -27,18 +31,26 @@ public final class AdminUtilsPlayerExportService {
     }
 
     public PlayerListExport exportRuntimePlayers(Player[] players, Long lastChange) {
+        return exportRuntimePlayers(players, Map.of(), lastChange);
+    }
+
+    public PlayerListExport exportPlayers(Plugin plugin, WorldDatabase database, Map<String, LivePlayerPosition> livePositions) throws Exception {
+        return exportPlayers(PersistedPlayerExportService.read(plugin, database, livePositions), null);
+    }
+
+    private PlayerListExport exportRuntimePlayers(Player[] players, Map<String, LivePlayerPosition> livePositions, Long lastChange) {
         return exportPlayers(Arrays.stream(players == null ? new Player[0] : players)
-                .map(player -> new PlayerExport(
-                        player.getID(),
-                        player.getUID(),
-                        player.getDbID(),
-                        player.getName(),
-                        player.getPermissionGroup(),
-                        player.isAdmin(),
-                        player.isConnected(),
-                        player.getLastTimeOnline(),
-                        player.getCurrentPlayTime(),
-                        player.getTotalPlayTime()))
+                .map(player -> exportRuntimePlayer(player, livePositions.get(player.getUID())))
                 .toList(), lastChange);
+    }
+
+    private static PlayerExport exportRuntimePlayer(Player player, LivePlayerPosition position) {
+        return new PlayerExport(
+                player.getID(), player.getUID(), player.getDbID(), player.getName(), player.getPermissionGroup(),
+                player.isAdmin(), player.isConnected(), player.getLastTimeOnline(), player.getCurrentPlayTime(),
+                player.getTotalPlayTime(), position == null ? null : (double) position.x(),
+                position == null ? null : (double) position.y(), position == null ? null : (double) position.z(),
+                position == null ? null : position.updatedAtMs() / 1000,
+                null, null, null);
     }
 }

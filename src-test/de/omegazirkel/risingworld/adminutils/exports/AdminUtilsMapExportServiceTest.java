@@ -52,6 +52,21 @@ public class AdminUtilsMapExportServiceTest {
         }
     }
 
+    @Test
+    public void paginatesWithoutAdvancingTheCursorPastTheReturnedPage() throws Exception {
+        try (Connection connection = database()) {
+            insertChunk(connection, 1, 2, 1000L, null, null);
+            insertChunk(connection, 3, 4, 2000L, null, null);
+
+            MapDataExport page = new AdminUtilsMapExportService(connection).exportMapData(null, 1, 0);
+
+            assertTrue(page.partial());
+            assertEquals(Integer.valueOf(1), page.nextOffset());
+            assertEquals(1, page.chunks().size());
+            assertEquals(1000L, page.nextChange());
+        }
+    }
+
     private static Connection database() throws Exception {
         Connection connection = DriverManager.getConnection("jdbc:sqlite::memory:");
         MapChunkSourceSchema.init(connection);

@@ -2,9 +2,12 @@ package de.omegazirkel.risingworld.adminutils.live;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.LinkedHashMap;
 import java.util.Collection;
+import java.util.Map;
 
 public final class LivePlayerPositionStore {
     private static final String UPSERT = """
@@ -59,5 +62,23 @@ public final class LivePlayerPositionStore {
         } finally {
             connection.setAutoCommit(autoCommit);
         }
+    }
+
+    public synchronized Map<String, LivePlayerPosition> list() throws SQLException {
+        Map<String, LivePlayerPosition> positions = new LinkedHashMap<>();
+        try (Statement statement = connection.createStatement();
+                ResultSet result = statement.executeQuery(
+                        "SELECT uid, name, pos_x, pos_y, pos_z, updated_at_ms FROM live_player_positions_v1")) {
+            while (result.next()) {
+                positions.put(result.getString("uid"), new LivePlayerPosition(
+                        result.getString("uid"),
+                        result.getString("name"),
+                        result.getFloat("pos_x"),
+                        result.getFloat("pos_y"),
+                        result.getFloat("pos_z"),
+                        result.getLong("updated_at_ms")));
+            }
+        }
+        return positions;
     }
 }
