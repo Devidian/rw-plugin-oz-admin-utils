@@ -8,6 +8,7 @@
 - feat: add the opt-in native Admin Utils `info` route with validated public map and administrator metadata for the Manager migration.
 - feat: expose Admin Utils map, player-list, and world-area exports through native PluginAPI handlers.
 - feat: expose masked server configuration through the native PluginAPI route.
+- change: migrate Admin Utils settings and translations to JSON while retaining existing administration data.
 
 ## [0.9.1] - 2026-08-12 | Mount release safeguards
 
