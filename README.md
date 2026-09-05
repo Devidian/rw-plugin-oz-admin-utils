@@ -4,7 +4,7 @@ Collection of utilities to help server admins to manage their servers (logging, 
 
 ## Current features
 
-All features can be enabled or disabled in `settings.properties`
+All features can be enabled or disabled in `settings.<world>.json`
 
 ### New-player info panel
 
@@ -75,7 +75,7 @@ Admin Utils also contains route-ready export DTOs/services for native
 plugin routes. Prepared exports cover map source chunks with `lastChange`
 cursor filtering, complete persisted player snapshots with current live
 positions, masked server configuration, and world area geometry. Route
-exposure flags are available in `settings.properties`: `exposeMapData`,
+exposure flags are available in `settings.<world>.json`: `exposeMapData`,
 `exposePlayerData`, `exposeServerConfig`, and `exposeWorldAreas`.
 While `exposePlayerData=true`, Admin Utils also keeps a bounded runtime
 position snapshot in `live_player_positions_v1`. The default
@@ -119,3 +119,13 @@ Password-bearing keys remain masked as `***`.
 - Run `mvn -B -DskipTests package` and `mvn -B test` before release-facing changes are merged.
 - Use `RUNTIME_TESTING.md` and `scripts/docker-runtime-smoke.sh <PluginFolderName>` for runtime smoke tests when behavior changes need server validation.
 - Keep `README.md` and `HISTORY.md` current and use Conventional Commit titles for commits and PRs.
+
+## JSON-only distribution
+
+Settings defaults (`settings.default.json`) and translations (`i18n/*.json`)
+are shipped only as JSON. Legacy default and translation `.properties` files
+are no longer included. Runtime settings remain world-scoped as
+`settings.<world>.json`; migration of an existing `settings.properties` and
+its backup remains supported. Updating the package does not delete old files
+already present on the server. Use `mvn clean package` for a fresh local
+package; ZIP assembly also excludes stale legacy settings and translations.
