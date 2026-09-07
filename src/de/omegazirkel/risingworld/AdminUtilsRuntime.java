@@ -260,12 +260,11 @@ class AdminUtilsRuntime extends Plugin {
 	}
 
 	private void registerWebserverExportRoutes() {
-		webserverMapRoute = new NativeJsonExportRoute(() -> s.exposeMapData, query ->
+		webserverMapRoute = NativeJsonExportRoute.publicMap(() -> s.exposeMapData, query ->
 				new AdminUtilsMapExportService(sqliteCon).exportMapData(
 						NativeJsonExportRoute.optionalNonNegativeLong(query, "lastChange"),
 						NativeJsonExportRoute.optionalBoundedInteger(query, "limit", 1, 5000),
-						NativeJsonExportRoute.optionalBoundedInteger(query, "offset", 0, Integer.MAX_VALUE)),
-				"map_source_unavailable");
+						NativeJsonExportRoute.optionalBoundedInteger(query, "offset", 0, Integer.MAX_VALUE)));
 		webserverPlayerlistRoute = new NativeJsonExportRoute(() -> s.exposePlayerData,
 				query -> exportPlayers(),
 				"playerlist_unavailable");

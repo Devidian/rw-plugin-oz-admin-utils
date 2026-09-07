@@ -2,6 +2,11 @@
 
 <https://www.conventionalcommits.org/en/v1.0.0/>
 
+## [0.10.1] - 2026-09-07 | Public renderer map
+
+- fix: make the enabled terrain map export available to standalone renderers while retaining authentication for all other native exports.
+- build: ship JSON settings and translations only; retain existing-server migration and backups.
+
 ## [0.10.0] - 2026-09-05 | Native Manager exports
 
 - feat: add an opt-in native PluginAPI webserver test route for validating game-managed plugin HTTP routes.

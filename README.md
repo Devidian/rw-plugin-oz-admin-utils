@@ -104,9 +104,21 @@ route unavailable.
 
 Admin Utils also registers native `map`, `playerlist`, and `world-areas`
 handlers. Their existing `exposeMapData`, `exposePlayerData`, and
-`exposeWorldAreas` flags remain their independent opt-ins. The map handler
+`exposeWorldAreas` flags independently control availability. The map handler
 validates `lastChange`, `limit` (1-5000), and `offset`, retaining cursor and
 pagination semantics for the map renderer.
+
+`GET /plugins/oz---admin-utils/map` is public when `exposeMapData=true`
+(the existing default). Installing this version therefore makes enabled terrain
+exports accessible without a connector credential. Set `exposeMapData=false`
+in `settings.<world>.json` to return 404 instead. Other native exports continue
+through the Tools authorization guard. Only terrain chunk data is published by
+this exception, including heights, textures, biome/region and change metadata;
+it does not expose player positions or server configuration.
+
+Standalone renderers can point their `baseUrl` at the game HTTP server directly.
+No Manager proxy, pairing or private connector credential is required. Existing
+GET-only handling and pagination bounds remain in effect.
 
 The native `server-config` handler uses the existing `exposeServerConfig` flag
 and reads `server.properties` two directory levels above the plugin directory.

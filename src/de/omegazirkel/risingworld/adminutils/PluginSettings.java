@@ -319,7 +319,7 @@ public class PluginSettings {
 				AdminSettingsEntry.group("exportRoutes", "Export routes",
 						"Future native route exposure flags for external manager services."),
 				entry("exposeMapData", "Expose map data",
-						"Enables the future Admin Utils map-data export route.", exposeMapData, "true",
+						"Publishes terrain map data for standalone renderers without authentication.", exposeMapData, "true",
 						AdminSettingsType.BOOLEAN),
 				entry("exposePlayerData", "Expose player data",
 						"Enables the future Admin Utils player-data export route.", exposePlayerData, "true",
