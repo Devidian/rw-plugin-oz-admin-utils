@@ -2,6 +2,7 @@ package de.omegazirkel.risingworld.adminutils.web;
 
 import java.sql.SQLException;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BooleanSupplier;
 
 import com.google.gson.Gson;
@@ -29,6 +30,7 @@ public final class NativeJsonExportRoute implements WebserverHandler {
     private final BooleanSupplier enabled;
     private final Exporter exporter;
     private final String unavailableError;
+    private final AtomicBoolean mapExportInProgress;
 
     public NativeJsonExportRoute(BooleanSupplier enabled, Exporter exporter, String unavailableError) {
         this(enabled, exporter, unavailableError, false);
@@ -45,6 +47,7 @@ public final class NativeJsonExportRoute implements WebserverHandler {
         this.enabled = enabled;
         this.exporter = exporter;
         this.unavailableError = unavailableError;
+        this.mapExportInProgress = publicMap ? new AtomicBoolean() : null;
     }
 
     @Override
@@ -64,6 +67,12 @@ public final class NativeJsonExportRoute implements WebserverHandler {
             event.setResponseBody("{\"error\":\"method_not_allowed\"}");
             return;
         }
+        if (!beginMapExport()) {
+            event.setResponseCode(429);
+            event.setResponseHeader("Retry-After", "1");
+            event.setResponseBody("{\"error\":\"map_export_busy\"}");
+            return;
+        }
         try {
             event.setResponseCode(200);
             event.setResponseBody(serializeExport(exporter.export(event.getQueryParameters())));
@@ -73,6 +82,8 @@ public final class NativeJsonExportRoute implements WebserverHandler {
         } catch (Exception ex) {
             event.setResponseCode(503);
             event.setResponseBody("{\"error\":\"" + unavailableError + "\"}");
+        } finally {
+            endMapExport();
         }
     }
 
@@ -83,6 +94,14 @@ public final class NativeJsonExportRoute implements WebserverHandler {
     Access checkAccess(BooleanSupplier authorize) {
         if (!enabled.getAsBoolean()) return Access.DISABLED;
         return publicMap || authorize.getAsBoolean() ? Access.ALLOWED : Access.DENIED;
+    }
+
+    boolean beginMapExport() {
+        return !publicMap || mapExportInProgress.compareAndSet(false, true);
+    }
+
+    void endMapExport() {
+        if (publicMap) mapExportInProgress.set(false);
     }
 
     public static Long optionalNonNegativeLong(Map<String, String> query, String key) {

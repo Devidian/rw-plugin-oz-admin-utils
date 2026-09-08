@@ -67,6 +67,28 @@ public class AdminUtilsMapExportServiceTest {
         }
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void rejectsPageSizesAboveTheSafeResponseLimit() throws Exception {
+        try (Connection connection = database()) {
+            new AdminUtilsMapExportService(connection).exportMapData(null, 101, 0);
+        }
+    }
+
+    @Test
+    public void usesTheSafePageSizeWhenTheCallerDoesNotSupplyALimit() throws Exception {
+        try (Connection connection = database()) {
+            for (int index = 0; index <= AdminUtilsMapExportService.DEFAULT_PAGE_SIZE; index++) {
+                insertChunk(connection, index, 0, index, null, null);
+            }
+
+            MapDataExport page = new AdminUtilsMapExportService(connection).exportMapData(null);
+
+            assertEquals(AdminUtilsMapExportService.DEFAULT_PAGE_SIZE, page.chunks().size());
+            assertTrue(page.partial());
+            assertEquals(Integer.valueOf(AdminUtilsMapExportService.DEFAULT_PAGE_SIZE), page.nextOffset());
+        }
+    }
+
     private static Connection database() throws Exception {
         Connection connection = DriverManager.getConnection("jdbc:sqlite::memory:");
         MapChunkSourceSchema.init(connection);

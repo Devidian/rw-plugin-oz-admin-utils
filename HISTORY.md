@@ -2,6 +2,10 @@
 
 <https://www.conventionalcommits.org/en/v1.0.0/>
 
+## [0.10.2] - 2026-09-08 | Bounded terrain map export
+
+- fix: bound native terrain-map responses to 100 chunks and reject concurrent exports before they can exhaust game-server memory.
+
 ## [0.10.1] - 2026-09-07 | Public renderer map
 
 - fix: make the enabled terrain map export available to standalone renderers while retaining authentication for all other native exports.

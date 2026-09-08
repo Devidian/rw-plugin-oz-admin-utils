@@ -55,11 +55,21 @@ public class NativeJsonExportRouteTest {
     public void parsesOnlyBoundedUnsignedRouteParameters() {
         assertNull(NativeJsonExportRoute.optionalNonNegativeLong(Map.of(), "lastChange"));
         assertEquals(Long.valueOf(42L), NativeJsonExportRoute.optionalNonNegativeLong(Map.of("lastChange", "42"), "lastChange"));
-        assertEquals(Integer.valueOf(5000), NativeJsonExportRoute.optionalBoundedInteger(Map.of("limit", "5000"), "limit", 1, 5000));
+        assertEquals(Integer.valueOf(100), NativeJsonExportRoute.optionalBoundedInteger(Map.of("limit", "100"), "limit", 1, 100));
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void rejectsSignedAndOutOfRangeRouteParameters() {
-        NativeJsonExportRoute.optionalBoundedInteger(Map.of("limit", "-1"), "limit", 1, 5000);
+        NativeJsonExportRoute.optionalBoundedInteger(Map.of("limit", "101"), "limit", 1, 100);
+    }
+
+    @Test
+    public void allowsOnlyOneMapExportAtATime() {
+        NativeJsonExportRoute route = NativeJsonExportRoute.publicMap(() -> true, query -> null);
+        org.junit.Assert.assertTrue(route.beginMapExport());
+        org.junit.Assert.assertFalse(route.beginMapExport());
+        route.endMapExport();
+        org.junit.Assert.assertTrue(route.beginMapExport());
+        route.endMapExport();
     }
 }

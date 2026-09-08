@@ -99,6 +99,7 @@ class AdminUtilsRuntime extends Plugin {
 	private static final String WEBSERVER_PLAYERLIST_ROUTE = "playerlist";
 	private static final String WEBSERVER_WORLD_AREAS_ROUTE = "world-areas";
 	private static final String WEBSERVER_SERVER_CONFIG_ROUTE = "server-config";
+	private static final int MAP_EXPORT_PAGE_SIZE = 100;
 	static final Colors c = Colors.getInstance();
 	private static I18n t = null;
 	private static PluginSettings s = null;
@@ -263,7 +264,7 @@ class AdminUtilsRuntime extends Plugin {
 		webserverMapRoute = NativeJsonExportRoute.publicMap(() -> s.exposeMapData, query ->
 				new AdminUtilsMapExportService(sqliteCon).exportMapData(
 						NativeJsonExportRoute.optionalNonNegativeLong(query, "lastChange"),
-						NativeJsonExportRoute.optionalBoundedInteger(query, "limit", 1, 5000),
+						NativeJsonExportRoute.optionalBoundedInteger(query, "limit", 1, MAP_EXPORT_PAGE_SIZE),
 						NativeJsonExportRoute.optionalBoundedInteger(query, "offset", 0, Integer.MAX_VALUE)));
 		webserverPlayerlistRoute = new NativeJsonExportRoute(() -> s.exposePlayerData,
 				query -> exportPlayers(),

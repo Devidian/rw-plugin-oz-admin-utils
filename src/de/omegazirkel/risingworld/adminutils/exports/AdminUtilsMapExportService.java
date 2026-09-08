@@ -10,6 +10,7 @@ import java.util.List;
 
 public final class AdminUtilsMapExportService {
     private static final int SCHEMA_VERSION = 1;
+    public static final int DEFAULT_PAGE_SIZE = 100;
 
     private final Connection connection;
 
@@ -18,10 +19,14 @@ public final class AdminUtilsMapExportService {
     }
 
     public MapDataExport exportMapData(Long lastChange) throws SQLException {
-        return exportMapData(lastChange, null, null);
+        return exportMapData(lastChange, DEFAULT_PAGE_SIZE, 0);
     }
 
     public MapDataExport exportMapData(Long lastChange, Integer limit, Integer offset) throws SQLException {
+        int effectiveLimit = limit == null ? DEFAULT_PAGE_SIZE : limit.intValue();
+        if (effectiveLimit < 1 || effectiveLimit > DEFAULT_PAGE_SIZE) {
+            throw new IllegalArgumentException("limit must be between 1 and " + DEFAULT_PAGE_SIZE);
+        }
         long cursor = lastChange == null ? -1L : lastChange.longValue();
         int pageOffset = offset == null ? 0 : offset.intValue();
         List<MapChunkExport> chunks = new ArrayList<>();
@@ -32,13 +37,12 @@ public final class AdminUtilsMapExportService {
                 FROM map_chunks_v1
                 WHERE updated_at_ms > ?
                 ORDER BY updated_at_ms ASC, chunk_x ASC, chunk_z ASC
-                """ + (limit == null ? ";" : " LIMIT ? OFFSET ?;");
+                LIMIT ? OFFSET ?;
+                """;
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setLong(1, cursor);
-            if (limit != null) {
-                statement.setInt(2, limit.intValue() + 1);
-                statement.setInt(3, pageOffset);
-            }
+            statement.setInt(2, effectiveLimit + 1);
+            statement.setInt(3, pageOffset);
             try (ResultSet result = statement.executeQuery()) {
                 while (result.next()) {
                     MapChunkExport chunk = readChunk(result);
@@ -47,12 +51,12 @@ public final class AdminUtilsMapExportService {
                 }
             }
         }
-        boolean partial = limit != null && chunks.size() > limit.intValue();
-        List<MapChunkExport> page = partial ? chunks.subList(0, limit.intValue()) : chunks;
+        boolean partial = chunks.size() > effectiveLimit;
+        List<MapChunkExport> page = partial ? chunks.subList(0, effectiveLimit) : chunks;
         long pageNextChange = page.stream().mapToLong(MapChunkExport::updatedAtMs).max().orElse(nextChange);
         return new MapDataExport(SCHEMA_VERSION, lastChange == null, pageNextChange,
-                limit == null ? null : Boolean.valueOf(partial),
-                partial ? Integer.valueOf(pageOffset + limit.intValue()) : null, page);
+                Boolean.valueOf(partial),
+                partial ? Integer.valueOf(pageOffset + effectiveLimit) : null, page);
     }
 
     private static MapChunkExport readChunk(ResultSet result) throws SQLException {

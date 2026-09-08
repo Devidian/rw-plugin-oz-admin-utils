@@ -105,8 +105,11 @@ route unavailable.
 Admin Utils also registers native `map`, `playerlist`, and `world-areas`
 handlers. Their existing `exposeMapData`, `exposePlayerData`, and
 `exposeWorldAreas` flags independently control availability. The map handler
-validates `lastChange`, `limit` (1-5000), and `offset`, retaining cursor and
-pagination semantics for the map renderer.
+always paginates: a missing `limit` means 100 chunks, and values outside
+`1-100` are rejected. It retains `lastChange` and `offset` cursor semantics
+for the map renderer. Exactly one map export may run at a time; concurrent
+requests receive `429` with `Retry-After: 1` before any database or JSON work
+starts.
 
 `GET /plugins/oz---admin-utils/map` is public when `exposeMapData=true`
 (the existing default). Installing this version therefore makes enabled terrain
