@@ -165,6 +165,12 @@
       }
     },
     "setting": {
+      "liveplayerpositionintervalseconds": { "label": "Live player position refresh interval", "desc": "Seconds between live player-position updates." },
+      "enablewebservertestroute": { "label": "Enable webserver test route", "desc": "Enables the Admin Utils webserver test route." },
+      "exposenativeinfo": { "label": "Expose native information", "desc": "Allows Manager read access to native admin information." },
+      "nativemapurl": { "label": "Native map URL", "desc": "Base URL of this server's native map view." },
+      "nativeadminuid": { "label": "Native admin UID", "desc": "Single UID with native admin access." },
+      "nativeadmins": { "label": "Native administrators", "desc": "Administrators with native admin access." },
       "afkplayersleeptimeoutseconds": {
         "desc": "Seconds before AFK sleepers are kicked.",
         "label": "Sleep AFK timeout"

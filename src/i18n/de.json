@@ -165,6 +165,12 @@
       }
     },
     "setting": {
+      "liveplayerpositionintervalseconds": { "label": "Aktualisierungsintervall für Live-Spielerpositionen", "desc": "Sekunden zwischen Aktualisierungen der Live-Spielerpositionen." },
+      "enablewebservertestroute": { "label": "Webserver-Testroute aktivieren", "desc": "Aktiviert die Admin-Utils-Webserver-Testroute." },
+      "exposenativeinfo": { "label": "Native Informationen bereitstellen", "desc": "Erlaubt dem Manager lesenden Zugriff auf native Admin-Informationen." },
+      "nativemapurl": { "label": "Native Karten-URL", "desc": "Basis-URL der servereigenen Kartenansicht." },
+      "nativeadminuid": { "label": "Native Admin-UID", "desc": "Einzelne UID mit Zugriff auf native Admin-Funktionen." },
+      "nativeadmins": { "label": "Native Administratoren", "desc": "Administratoren mit Zugriff auf native Admin-Funktionen." },
       "afkplayersleeptimeoutseconds": {
         "desc": "Sekunden, bevor AFK-Schläfer gekickt werden.",
         "label": "AFK-Schlaf-Timeout"
