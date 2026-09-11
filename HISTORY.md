@@ -2,6 +2,10 @@
 
 <https://www.conventionalcommits.org/en/v1.0.0/>
 
+## [0.10.3] - 2026-09-11 | Plugin-setting localization
+
+- fix: add German and English labels for native map and player-position settings.
+
 ## [0.10.2] - 2026-09-08 | Bounded terrain map export
 
 - fix: bound native terrain-map responses to 100 chunks and reject concurrent exports before they can exhaust game-server memory.
