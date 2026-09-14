@@ -9,6 +9,7 @@
     "onlyAdminMapGen": true,
     "mapGenChunkScanRadius": 0,
     "mapGenChunkCooldownSeconds": 60,
+    "maxRenderWorldResolution": 256,
     "livePlayerPositionIntervalSeconds": 1,
     "nativeMapUrl": "",
     "nativeAdminUid": "",
@@ -32,6 +33,7 @@
   "feature": {
     "welcomeMessage": false,
     "mapGen": false,
+    "allowRenderWorld": false,
     "webserverTestRoute": false,
     "mountOwnership": true,
     "prison": false,

@@ -52,6 +52,11 @@
     },
     "label": {
       "adminutils": {
+        "renderworld": "Experimentelles RenderWorld aktivieren",
+        "renderworldresolution": {
+          "$value": "RenderWorld-Auflösung: PH_RESOLUTION",
+          "change": "Auflösung ändern"
+        },
         "shortcut": "Admin-Utils-Shortcut in /ozt und Inventar anzeigen"
       },
       "new": {
@@ -165,6 +170,9 @@
       }
     },
     "setting": {
+      "renderworld": { "label": "Experimentelles RenderWorld", "desc": "Opt-in-Rendering veränderter Außenbereiche nach einem Chunk-Wechsel." },
+      "allowrenderworld": { "label": "RenderWorld erlauben", "desc": "Erlaubt angemeldeten Administratoren und Spielern, veränderte Chunks zu rendern." },
+      "maxrenderworldresolution": { "label": "Maximale RenderWorld-Auflösung", "desc": "Obergrenze für die von Spielern gewählte RenderWorld-Auflösung; erlaubt sind 64 bis 1024." },
       "liveplayerpositionintervalseconds": { "label": "Aktualisierungsintervall für Live-Spielerpositionen", "desc": "Sekunden zwischen Aktualisierungen der Live-Spielerpositionen." },
       "enablewebservertestroute": { "label": "Webserver-Testroute aktivieren", "desc": "Aktiviert die Admin-Utils-Webserver-Testroute." },
       "exposenativeinfo": { "label": "Native Informationen bereitstellen", "desc": "Erlaubt dem Manager lesenden Zugriff auf native Admin-Informationen." },

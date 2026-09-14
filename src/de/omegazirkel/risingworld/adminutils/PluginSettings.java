@@ -36,6 +36,8 @@ public class PluginSettings {
 	public boolean onlyAdminMapGen = true;
 	public int mapGenChunkScanRadius = 0;
 	public int mapGenChunkCooldownSeconds = 60;
+	public boolean allowRenderWorld = false;
+	public int maxRenderWorldResolution = 256;
 
 	// Future native route exposure
 	public boolean exposeMapData = true;
@@ -174,6 +176,9 @@ public class PluginSettings {
 					Integer.parseInt(settings.getProperty("mapGenChunkScanRadius", "0")));
 			mapGenChunkCooldownSeconds = Math.max(0,
 					Integer.parseInt(settings.getProperty("mapGenChunkCooldownSeconds", "60")));
+			allowRenderWorld = settings.getProperty("allowRenderWorld", "false").contentEquals("true");
+			maxRenderWorldResolution = clampRenderWorldResolution(
+					Integer.parseInt(settings.getProperty("maxRenderWorldResolution", "256")));
 			exposeMapData = settings.getProperty("exposeMapData", "true").contentEquals("true");
 			exposePlayerData = settings.getProperty("exposePlayerData", "true").contentEquals("true");
 			exposeServerConfig = settings.getProperty("exposeServerConfig", "true").contentEquals("true");
@@ -316,6 +321,13 @@ public class PluginSettings {
 				entry("mapGenChunkCooldownSeconds", "Map chunk cooldown",
 						"Minimum seconds before the same chunk can trigger another capture.",
 						mapGenChunkCooldownSeconds, "60", AdminSettingsType.INTEGER),
+				AdminSettingsEntry.group("renderWorld", "Experimental RenderWorld",
+						"Opt-in client world rendering after entering a changed outdoor chunk."),
+				entry("allowRenderWorld", "Allow RenderWorld", "Allows opted-in administrators and players to render changed chunks.",
+						allowRenderWorld, "false", AdminSettingsType.BOOLEAN),
+				entry("maxRenderWorldResolution", "Maximum RenderWorld resolution",
+						"Maximum player-selected RenderWorld resolution; allowed range is 64 to 1024.",
+						maxRenderWorldResolution, "256", AdminSettingsType.INTEGER),
 				AdminSettingsEntry.group("exportRoutes", "Export routes",
 						"Future native route exposure flags for external manager services."),
 				entry("exposeMapData", "Expose map data",
@@ -479,6 +491,10 @@ public class PluginSettings {
 
 	static int clampMapGenChunkScanRadius(int radius) {
 		return Math.max(0, Math.min(5, radius));
+	}
+
+	static int clampRenderWorldResolution(int resolution) {
+		return Math.max(64, Math.min(1024, resolution));
 	}
 
 	static int clampNewPlayerInfoWidthPercent(int widthPercent) {

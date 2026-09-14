@@ -2,6 +2,14 @@
 
 <https://www.conventionalcommits.org/en/v1.0.0/>
 
+## Unreleased
+
+## [0.11.0] - 2026-09-14 | Experimental RenderWorld
+
+- feat: add default-off experimental RenderWorld dispatch for opted-in players entering changed outdoor chunks.
+- feat: provide server, administrator, and player opt-ins with bounded player-selected resolution.
+- fix: localize the experimental PluginSettings in German and English and align the player resolution control with the standard settings card.
+
 ## [0.10.3] - 2026-09-11 | Plugin-setting localization
 
 - fix: add German and English labels for native map and player-position settings.

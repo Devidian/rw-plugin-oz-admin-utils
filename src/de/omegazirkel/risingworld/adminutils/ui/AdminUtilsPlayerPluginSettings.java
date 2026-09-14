@@ -6,13 +6,18 @@ import de.omegazirkel.risingworld.tools.ui.BasePlayerPluginSettingsPanel;
 import de.omegazirkel.risingworld.tools.ui.OZUIElement;
 import de.omegazirkel.risingworld.tools.ui.PlayerPluginSettings;
 import de.omegazirkel.risingworld.tools.ui.PluginShortcutVisibility;
+import de.omegazirkel.risingworld.tools.ui.AdvancedButton;
+import de.omegazirkel.risingworld.tools.ui.AdvancedButtonFactory;
 import net.risingworld.api.objects.Player;
 import net.risingworld.api.ui.UILabel;
+import net.risingworld.api.ui.style.Pivot;
 import net.risingworld.api.ui.style.Unit;
 
 public class AdminUtilsPlayerPluginSettings extends PlayerPluginSettings {
     public static final String NEW_PLAYER_INFO_VISIBLE_KEY = "oz.adminutils.newPlayerInfo.visible";
     public static final String RELEASE_MOUNT_ON_OWN_PROPERTY_KEY = "oz.adminutils.mount.releaseOnOwnProperty";
+    public static final String RENDER_WORLD_KEY = "oz.adminutils.renderWorld";
+    public static final String RENDER_WORLD_RESOLUTION_KEY = "oz.adminutils.renderWorldResolution";
 
     public AdminUtilsPlayerPluginSettings(String pluginVersion) {
         this.pluginLabel = AdminUtils.name;
@@ -35,6 +40,9 @@ public class AdminUtilsPlayerPluginSettings extends PlayerPluginSettings {
                         "tc.label.new.player.info.visible"));
                 flexWrapper.addChild(booleanSetting(uiPlayer, RELEASE_MOUNT_ON_OWN_PROPERTY_KEY,
                         "tc.label.release.mount.on.own.property", false));
+                flexWrapper.addChild(booleanSetting(uiPlayer, RENDER_WORLD_KEY,
+                        "tc.label.adminutils.renderworld", false));
+                flexWrapper.addChild(renderResolutionSetting(uiPlayer));
                 if (uiPlayer.isAdmin()) {
                     flexWrapper.addChild(infoCard(uiPlayer, "tc.settings.admin.hint"));
                 }
@@ -44,7 +52,7 @@ public class AdminUtilsPlayerPluginSettings extends PlayerPluginSettings {
                 return booleanSetting(uiPlayer, key, labelKey, true);
             }
 
-            protected OZUIElement booleanSetting(Player uiPlayer, String key, String labelKey, boolean defaultValue) {
+			protected OZUIElement booleanSetting(Player uiPlayer, String key, String labelKey, boolean defaultValue) {
                 OZUIElement element = defaultSettingsContainer();
                 element.addChild(defaultSettingsLabel(t().get(labelKey, uiPlayer)));
                 boolean visible = AdminUtils.ps == null
@@ -56,10 +64,29 @@ public class AdminUtilsPlayerPluginSettings extends PlayerPluginSettings {
                     }
                     redrawContent();
                 }));
+				return element;
+			}
+
+            private OZUIElement renderResolutionSetting(Player player) {
+                OZUIElement element = defaultSettingsContainer();
+                int resolution = renderWorldResolution(player, 256);
+                element.addChild(defaultSettingsLabel(t().get("tc.label.adminutils.renderworldresolution", player)
+                        .replace("PH_RESOLUTION", String.valueOf(resolution))));
+                AdvancedButton change = AdvancedButtonFactory.defaultButton(
+                        t().get("tc.label.adminutils.renderworldresolution.change", player), event -> {
+                    int next = switch (resolution) { case 64 -> 128; case 128 -> 256; case 256 -> 512; case 512 -> 1024; default -> 64; };
+                    if (AdminUtils.ps != null) AdminUtils.ps.setInt(player.getDbID(), RENDER_WORLD_RESOLUTION_KEY, next);
+                    redrawContent();
+                });
+                change.setPivot(Pivot.UpperLeft);
+                change.setPosition(10, 62, false);
+                change.setSize(250, 28, false);
+                change.setBorderEdgeRadius(3, false);
+                element.addChild(change);
                 return element;
             }
 
-            private OZUIElement infoCard(Player uiPlayer, String labelKey) {
+			private OZUIElement infoCard(Player uiPlayer, String labelKey) {
                 OZUIElement element = defaultSettingsContainer();
                 element.style.width.set(95, Unit.Percent);
                 element.style.height.set(118, Unit.Pixel);
@@ -90,6 +117,16 @@ public class AdminUtilsPlayerPluginSettings extends PlayerPluginSettings {
     public static boolean releasesMountOnOwnProperty(Player player) {
         return AdminUtils.ps != null
                 && AdminUtils.ps.getBoolean(player.getDbID(), RELEASE_MOUNT_ON_OWN_PROPERTY_KEY).orElse(false);
+    }
+
+    public static boolean renderWorldEnabled(Player player) {
+        return AdminUtils.ps != null && player != null
+                && AdminUtils.ps.getBoolean(player.getDbID(), RENDER_WORLD_KEY).orElse(false);
+    }
+
+    public static int renderWorldResolution(Player player, int fallback) {
+        return AdminUtils.ps == null || player == null ? fallback
+                : AdminUtils.ps.getInt(player.getDbID(), RENDER_WORLD_RESOLUTION_KEY).orElse(fallback);
     }
 
     private static String shortcutKey() {

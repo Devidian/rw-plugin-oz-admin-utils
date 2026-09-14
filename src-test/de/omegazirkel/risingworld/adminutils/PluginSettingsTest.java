@@ -20,6 +20,13 @@ public class PluginSettingsTest {
     }
 
     @Test
+    public void renderWorldResolutionIsBoundedForClientSafety() {
+        assertEquals(64, PluginSettings.clampRenderWorldResolution(1));
+        assertEquals(256, PluginSettings.clampRenderWorldResolution(256));
+        assertEquals(1024, PluginSettings.clampRenderWorldResolution(9999));
+    }
+
+    @Test
     public void newPlayerInfoPanelSizeIsClampedToScreenSafeRange() {
         assertEquals(20, PluginSettings.clampNewPlayerInfoWidthPercent(10));
         assertEquals(42, PluginSettings.clampNewPlayerInfoWidthPercent(42));

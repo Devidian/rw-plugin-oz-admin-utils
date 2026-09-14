@@ -16,6 +16,7 @@ import de.omegazirkel.risingworld.adminutils.PrisonReleaseService;
 import de.omegazirkel.risingworld.adminutils.PluginSettings;
 import de.omegazirkel.risingworld.adminutils.mapsource.MapChunkSourceStore;
 import de.omegazirkel.risingworld.adminutils.mapsource.RisingWorldMapChunkCapture;
+import de.omegazirkel.risingworld.adminutils.render.RenderWorldService;
 import de.omegazirkel.risingworld.adminutils.live.LivePlayerPositionCapture;
 import de.omegazirkel.risingworld.adminutils.live.LivePlayerPositionStore;
 import de.omegazirkel.risingworld.adminutils.db.PrisonService;
@@ -115,6 +116,7 @@ class AdminUtilsRuntime extends Plugin {
 	private static PrisonReleaseService prisonReleaseService;
 	private MapChunkSourceStore mapChunkSourceStore;
 	private RisingWorldMapChunkCapture mapChunkCapture;
+	private RenderWorldService renderWorldService;
 	private LivePlayerPositionCapture livePlayerPositionCapture;
 	private LivePlayerPositionStore livePlayerPositionStore;
 	private WebserverTestRoute webserverTestRoute;
@@ -169,6 +171,7 @@ class AdminUtilsRuntime extends Plugin {
 		ensureDefaultPermissionFiles();
 		initMapChunkSourcePersistence();
 		sqliteCon = SQLiteConnectionFactory.open(this);
+		initRenderWorldService();
 		initLivePlayerPositionCapture();
 		registerPlayerStatusConnector();
 		ps = new PlayerSettings(sqliteCon);
@@ -451,20 +454,45 @@ class AdminUtilsRuntime extends Plugin {
 
 	public void onPlayerEnterChunk(PlayerEnterChunkEvent event) {
 		Player player = event.getPlayer();
-		if (event.isCancelled() || mapChunkCapture == null || !eligibleForMapCapture(player)) {
-			return;
+		if (event.isCancelled()) return;
+		if (mapChunkCapture != null && eligibleForMapCapture(player)) {
+			mapChunkCapture.request(
+					player,
+					event.getOldChunkCoordinates(),
+					event.getNewChunkCoordinates(),
+					s.mapGenChunkScanRadius,
+					s.mapGenChunkCooldownSeconds * 1000L,
+					() -> eligibleForMapCapture(player));
 		}
-		mapChunkCapture.request(
-				player,
-				event.getOldChunkCoordinates(),
-				event.getNewChunkCoordinates(),
-				s.mapGenChunkScanRadius,
-				s.mapGenChunkCooldownSeconds * 1000L,
-				() -> eligibleForMapCapture(player));
+		maybeRenderWorld(player, event.getNewChunkCoordinates());
 	}
 
 	private boolean eligibleForMapCapture(Player player) {
 		return s.enableMapGen && player != null && (!s.onlyAdminMapGen || player.isAdmin());
+	}
+
+	private void initRenderWorldService() {
+		try {
+			renderWorldService = new RenderWorldService(sqliteCon);
+		} catch (SQLException ex) {
+			logger().warn("Failed to initialize RenderWorld state: " + ex.getMessage());
+		}
+	}
+
+	private void maybeRenderWorld(Player player, Vector3i chunk) {
+		if (player == null || chunk == null || renderWorldService == null || s == null || !s.allowRenderWorld
+				|| !AdminUtilsPlayerPluginSettings.renderWorldEnabled(player) || player.isIndoor() || player.isInCave()) {
+			return;
+		}
+		try {
+			if (!renderWorldService.changedSinceLastRender(player.getDbID(), chunk.x, chunk.z)) return;
+			int requested = AdminUtilsPlayerPluginSettings.renderWorldResolution(player, 256);
+			int resolution = Math.max(64, Math.min(s.maxRenderWorldResolution, requested));
+			player.executeCommand("renderworld " + resolution + " 0");
+			renderWorldService.recordRender(player.getDbID(), chunk.x, chunk.z);
+		} catch (SQLException ex) {
+			logger().warn("RenderWorld state lookup failed: " + ex.getMessage());
+		}
 	}
 
 	private void showNewPlayerInfo(Player player) {

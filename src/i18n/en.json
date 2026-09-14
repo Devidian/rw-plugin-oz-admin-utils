@@ -52,6 +52,11 @@
     },
     "label": {
       "adminutils": {
+        "renderworld": "Enable experimental RenderWorld",
+        "renderworldresolution": {
+          "$value": "RenderWorld resolution: PH_RESOLUTION",
+          "change": "Change resolution"
+        },
         "shortcut": "Show Admin Utils shortcut in /ozt and inventory"
       },
       "new": {
@@ -165,6 +170,9 @@
       }
     },
     "setting": {
+      "renderworld": { "label": "Experimental RenderWorld", "desc": "Opt-in rendering of changed outdoor areas after entering a new chunk." },
+      "allowrenderworld": { "label": "Allow RenderWorld", "desc": "Allows opted-in administrators and players to render changed chunks." },
+      "maxrenderworldresolution": { "label": "Maximum RenderWorld resolution", "desc": "Maximum player-selected RenderWorld resolution; allowed range is 64 to 1024." },
       "liveplayerpositionintervalseconds": { "label": "Live player position refresh interval", "desc": "Seconds between live player-position updates." },
       "enablewebservertestroute": { "label": "Enable webserver test route", "desc": "Enables the Admin Utils webserver test route." },
       "exposenativeinfo": { "label": "Expose native information", "desc": "Allows Manager read access to native admin information." },
