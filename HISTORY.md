@@ -4,6 +4,10 @@
 
 ## Unreleased
 
+## [0.11.2] - 2026-09-18 | Release pipeline compatibility
+
+- fix: install PluginAPI 0.9.3.2 in release validation and publishing workflows.
+
 ## [0.11.1] - 2026-09-18 | Server-information overlay
 
 - fix: compact the optional server-information overlay and calculate its scroll content from visible Rich Text, preventing scrollable trailing blank space.
