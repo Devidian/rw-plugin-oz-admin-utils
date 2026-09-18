@@ -4,6 +4,11 @@
 
 ## Unreleased
 
+## [0.11.1] - 2026-09-18 | Server-information overlay
+
+- fix: compact the optional server-information overlay and calculate its scroll content from visible Rich Text, preventing scrollable trailing blank space.
+- fix: keep the final information lines visible and remove the Admin Utils-only administrator hint from player settings.
+
 ## [0.11.0] - 2026-09-14 | Experimental RenderWorld
 
 - feat: add default-off experimental RenderWorld dispatch for opted-in players entering changed outdoor chunks.

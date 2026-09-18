@@ -45,8 +45,8 @@ public class NewPlayerInfoOverlay extends OZUIElement {
 
         UILabel title = new UILabel(t().get("tc.new.player.info.title", player));
         title.setPivot(Pivot.UpperLeft);
-        title.setPosition(5, 6, true);
-        title.setSize(90, 14, true);
+        title.setPosition(3, 3, true);
+        title.setSize(94, 8, true);
         title.setFont(Font.DefaultBold);
         title.setFontSize(18);
         title.setTextAlign(TextAnchor.MiddleCenter);
@@ -54,8 +54,8 @@ public class NewPlayerInfoOverlay extends OZUIElement {
 
         UIScrollView messageScroll = new UIScrollView(ScrollViewMode.Vertical);
         messageScroll.setPivot(Pivot.UpperLeft);
-        messageScroll.setPosition(7, 23, true);
-        messageScroll.setSize(86, 46, true);
+        messageScroll.setPosition(3, 14, true);
+        messageScroll.setSize(94, 62, true);
         messageScroll.setMouseWheelScrollSize(28);
         panel.addChild(messageScroll);
 
@@ -71,7 +71,7 @@ public class NewPlayerInfoOverlay extends OZUIElement {
 
         UIElement footer = new UIElement();
         footer.setPivot(Pivot.LowerCenter);
-        footer.setPosition(50, 94, true);
+        footer.setPosition(50, 97, true);
         footer.setSize(92, 20, true);
         footer.style.display.set(DisplayStyle.Flex);
         footer.style.flexDirection.set(FlexDirection.Row);
@@ -88,12 +88,17 @@ public class NewPlayerInfoOverlay extends OZUIElement {
     }
 
     static int estimateMessageHeight(String messageText, int widthPercent) {
-        int charactersPerLine = Math.max(16, widthPercent);
+        return lineCount(messageText, widthPercent) * 20;
+    }
+
+    private static int lineCount(String messageText, int widthPercent) {
+        int charactersPerLine = Math.max(16, (int) (widthPercent * 2.2));
         int lineCount = 0;
-        for (String line : messageText.split("\\R", -1)) {
+        String plainText = (messageText == null ? "" : messageText).replaceAll("<[^>]+>", "");
+        for (String line : plainText.split("\\R", -1)) {
             lineCount += Math.max(1, (line.length() + charactersPerLine - 1) / charactersPerLine);
         }
-        return Math.max(120, lineCount * 22);
+        return Math.max(1, lineCount);
     }
 
     private UIElement button(AdvancedButton button, int widthPercent) {

@@ -9,9 +9,7 @@ import de.omegazirkel.risingworld.tools.ui.PluginShortcutVisibility;
 import de.omegazirkel.risingworld.tools.ui.AdvancedButton;
 import de.omegazirkel.risingworld.tools.ui.AdvancedButtonFactory;
 import net.risingworld.api.objects.Player;
-import net.risingworld.api.ui.UILabel;
 import net.risingworld.api.ui.style.Pivot;
-import net.risingworld.api.ui.style.Unit;
 
 public class AdminUtilsPlayerPluginSettings extends PlayerPluginSettings {
     public static final String NEW_PLAYER_INFO_VISIBLE_KEY = "oz.adminutils.newPlayerInfo.visible";
@@ -43,9 +41,6 @@ public class AdminUtilsPlayerPluginSettings extends PlayerPluginSettings {
                 flexWrapper.addChild(booleanSetting(uiPlayer, RENDER_WORLD_KEY,
                         "tc.label.adminutils.renderworld", false));
                 flexWrapper.addChild(renderResolutionSetting(uiPlayer));
-                if (uiPlayer.isAdmin()) {
-                    flexWrapper.addChild(infoCard(uiPlayer, "tc.settings.admin.hint"));
-                }
             }
 
             protected OZUIElement booleanSetting(Player uiPlayer, String key, String labelKey) {
@@ -86,15 +81,6 @@ public class AdminUtilsPlayerPluginSettings extends PlayerPluginSettings {
                 return element;
             }
 
-			private OZUIElement infoCard(Player uiPlayer, String labelKey) {
-                OZUIElement element = defaultSettingsContainer();
-                element.style.width.set(95, Unit.Percent);
-                element.style.height.set(118, Unit.Pixel);
-                UILabel label = defaultSettingsLabel(t().get(labelKey, uiPlayer));
-                label.style.height.set(96, Unit.Pixel);
-                element.addChild(label);
-                return element;
-            }
         };
     }
 
