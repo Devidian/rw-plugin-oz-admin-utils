@@ -145,19 +145,13 @@ public class PluginSettings {
 	public void initSettings(String filePath) {
 		Path settingsFile = Paths.get(filePath);
 		Path defaultSettingsFile = settingsFile.resolveSibling("settings.default.json");
-		Path legacySettingsFile = settingsFile.resolveSibling("settings.properties");
-
 		try {
-			if (JsonSettingsFile.migrateLegacyProperties(legacySettingsFile, settingsFile))
-				logger().info("Migrated legacy settings.properties to " + settingsFile.getFileName());
-			if (Files.notExists(settingsFile) && Files.exists(defaultSettingsFile))
-				JsonSettingsFile.writeFlatAtomically(settingsFile, JsonSettingsFile.loadFlat(defaultSettingsFile));
-			JsonSettingsFile.normalizePaths(settingsFile);
+			JsonSettingsFile.prepareWorldSettings(settingsFile);
 
 			Properties settings = loadSettings(settingsFile);
 			if (settings.isEmpty()) {
 				logger().warn(
-						"⚠️ Neither settings.properties nor settings.default.properties found. Using default values.");
+						"⚠️ No JSON settings files found. Using default values.");
 			}
 
 			// motd settings
@@ -534,20 +528,8 @@ public class PluginSettings {
 		return JsonSettingsFile.worldSettingsFile(plugin.getPath() != null ? plugin.getPath() : ".");
 	}
 
-	/** Keeps explicit legacy settings paths usable for tooling and existing tests. */
 	private Properties loadSettings(Path file) throws IOException {
-		if (!file.getFileName().toString().endsWith(".properties")) {
-			Properties properties = JsonSettingsFile.loadProperties(file);
-			JsonSettingsFile.addCompatibilityAliases(properties);
-			return properties;
-		}
-		Properties properties = new Properties();
-		if (Files.exists(file)) {
-			try (FileInputStream input = new FileInputStream(file.toFile())) {
-				properties.load(new InputStreamReader(input, "UTF8"));
-			}
-		}
-		return properties;
+		return JsonSettingsFile.loadProperties(file);
 	}
 
 	private String decodeSettingText(String value) {

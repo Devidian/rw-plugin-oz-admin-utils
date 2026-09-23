@@ -38,17 +38,12 @@ public class PluginSettingsTest {
 
     @Test
     public void routeExposureFlagsLoadFromSettings() throws Exception {
-        Path settings = Files.createTempFile("oz-admin-utils-settings-", ".properties");
-        Files.writeString(settings, String.join("\n",
-                "exposeMapData=false",
-                "exposePlayerData=false",
-                "exposeServerConfig=false",
-                "exposeWorldAreas=false",
-                "enableWebserverTestRoute=true",
-                "exposeNativeInfo=true",
-                "nativeMapUrl=https://maps.example/",
-                "nativeAdminUid=76561198000000001",
-                "nativeAdmins=76561198000000002,76561198000000003"));
+        Path directory = Files.createTempDirectory("oz-admin-utils-settings-");
+        Path settings = directory.resolve("settings.world.json");
+        Files.writeString(directory.resolve("settings.default.json"),
+                "{\"exposeMapData\":true,\"exposePlayerData\":true,\"exposeServerConfig\":true,\"exposeWorldAreas\":true,\"enableWebserverTestRoute\":false,\"exposeNativeInfo\":false,\"nativeMapUrl\":\"\",\"nativeAdminUid\":\"\",\"nativeAdmins\":\"\"}");
+        Files.writeString(settings,
+                "{\"exposeMapData\":false,\"exposePlayerData\":false,\"exposeServerConfig\":false,\"exposeWorldAreas\":false,\"enableWebserverTestRoute\":true,\"exposeNativeInfo\":true,\"nativeMapUrl\":\"https://maps.example/\",\"nativeAdminUid\":\"76561198000000001\",\"nativeAdmins\":\"76561198000000002,76561198000000003\"}");
 
         PluginSettings pluginSettings = PluginSettings.getInstance();
         pluginSettings.initSettings(settings.toString());

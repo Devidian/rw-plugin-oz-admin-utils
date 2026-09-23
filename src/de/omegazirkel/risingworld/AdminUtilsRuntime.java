@@ -28,6 +28,7 @@ import de.omegazirkel.risingworld.adminutils.db.entities.Prisoner;
 import de.omegazirkel.risingworld.adminutils.ui.AdminUtilsPlayerPluginData;
 import de.omegazirkel.risingworld.adminutils.ui.AdminUtilsPlayerPluginSettings;
 import de.omegazirkel.risingworld.adminutils.ui.NewPlayerInfoOverlay;
+import de.omegazirkel.risingworld.adminutils.ui.PrisonSentenceOverlay;
 import de.omegazirkel.risingworld.adminutils.ui.PrisonZoneIndicatorProvider;
 import de.omegazirkel.risingworld.adminutils.web.WebserverTestRoute;
 import de.omegazirkel.risingworld.adminutils.web.AdminUtilsInfoExport;
@@ -129,6 +130,8 @@ class AdminUtilsRuntime extends Plugin {
 	private AutoCloseable playerStatusConnectorFeature;
 	private static boolean isInSpeedmode = false;
 	private static float normalGameSpeed = 2.5f;
+	private volatile boolean prisonGameTimeTickerActive;
+	private long lastPrisonGameTimeTickMs;
 
 	public static OZLogger logger() {
 		return OZLogger.getInstance("OZ.AdminUtils");
@@ -176,6 +179,7 @@ class AdminUtilsRuntime extends Plugin {
 		registerPlayerStatusConnector();
 		ps = new PlayerSettings(sqliteCon);
 		initPrisonPersistence();
+		startPrisonGameTimeTicker();
 		gui = PluginGUI.getInstance(this);
 		// Load Plugin Menu into Main Plugin Menu
 		PluginMenuManager
@@ -205,6 +209,7 @@ class AdminUtilsRuntime extends Plugin {
 
 	@Override
 	public void onDisable() {
+		prisonGameTimeTickerActive = false;
 		closePlayerStatusConnector();
 		if (webserverTestRoute != null) {
 			unregisterWebserverHandler(WEBSERVER_TEST_ROUTE);
@@ -242,6 +247,32 @@ class AdminUtilsRuntime extends Plugin {
 				logger().warn("Failed to close Admin Utils database connection: " + ex.getMessage());
 			}
 		}
+	}
+
+	private void startPrisonGameTimeTicker() {
+		prisonGameTimeTickerActive = true;
+		lastPrisonGameTimeTickMs = System.currentTimeMillis();
+		queuePrisonGameTimeTick();
+	}
+
+	private void queuePrisonGameTimeTick() {
+		executeDelayed(1, () -> {
+			if (!prisonGameTimeTickerActive) return;
+			long now = System.currentTimeMillis();
+			long realElapsedMs = Math.max(0, now - lastPrisonGameTimeTickMs);
+			lastPrisonGameTimeTickMs = now;
+			long gameElapsedMs = Math.round(realElapsedMs * Math.max(0f, Server.getGameTimeSpeed()));
+			if (prisonReleaseService != null) {
+				for (Player player : Server.getAllPlayers()) {
+					if (gameElapsedMs > 0) {
+						prisonReleaseService.advanceGameTime(player, gameElapsedMs);
+					}
+					prisonReleaseService.releaseIfDue(player);
+					refreshPrisonSentenceOverlay(player);
+				}
+			}
+			queuePrisonGameTimeTick();
+		});
 	}
 
 	private void registerWebserverTestRoute() {
@@ -450,6 +481,7 @@ class AdminUtilsRuntime extends Plugin {
 		}
 		this.executeDelayed(1, () -> showNewPlayerInfo(player));
 		this.executeDelayed(1, () -> handlePrisonerSpawn(player));
+		this.executeDelayed(1, () -> refreshPrisonSentenceOverlay(player));
 	}
 
 	public void onPlayerEnterChunk(PlayerEnterChunkEvent event) {
@@ -520,6 +552,11 @@ class AdminUtilsRuntime extends Plugin {
 			return;
 		}
 		enforceActivePrisonSpawn(player);
+	}
+
+	private void refreshPrisonSentenceOverlay(Player player) {
+		PrisonSentenceOverlay.refresh(player,
+				prisonerService == null || player == null ? null : prisonerService.get(player.getDbID()));
 	}
 
 	private void enforceActivePrisonSpawn(Player player) {
@@ -1065,7 +1102,10 @@ class AdminUtilsRuntime extends Plugin {
 					s.discordPlayerStatusChannelId);
 
 		if (prisonReleaseService != null) {
-			this.executeDelayed(1, () -> prisonReleaseService.releaseIfDue(player));
+			this.executeDelayed(1, () -> {
+				prisonReleaseService.releaseIfDue(player);
+				refreshPrisonSentenceOverlay(player);
+			});
 		}
 		executeDelayed(1, this::publishPlayerStatus);
 	}
@@ -1073,6 +1113,7 @@ class AdminUtilsRuntime extends Plugin {
 	public void onPlayerDisconnect(PlayerDisconnectEvent event) {
 
 		Player player = event.getPlayer();
+		PrisonSentenceOverlay.hide(player);
 		if (s.enablePlayerStatusLogging) {
 			eventLogger().info("Player " + player.getName() + " disconnected at "
 					+ player.getPosition().toString().replaceAll("[,()]", ""));

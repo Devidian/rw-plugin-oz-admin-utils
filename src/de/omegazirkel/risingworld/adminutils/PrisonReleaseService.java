@@ -77,6 +77,22 @@ public class PrisonReleaseService {
                 && now - prisoner.sentenceStartTs >= prisoner.sentenceTotalMs;
     }
 
+    /** Advances a non-realtime sentence while its prisoner is online. */
+    public ReleaseResult advanceGameTime(Player player, long elapsedGameMs) {
+        if (player == null || elapsedGameMs <= 0) return ReleaseResult.failed(Status.NOT_DUE, null, null);
+        Prisoner prisoner = prisonerService.get(player.getDbID());
+        if (prisoner == null || prisoner.realtime || isReleased(prisoner)) {
+            return ReleaseResult.failed(Status.NOT_DUE, null, prisoner);
+        }
+        prisoner.sentenceServedMs = Math.min(prisoner.sentenceTotalMs,
+                Math.max(0, prisoner.sentenceServedMs) + elapsedGameMs);
+        prisoner.updatedAt = System.currentTimeMillis();
+        prisonerService.markDirty(prisoner);
+        return prisoner.isCompleted()
+                ? release(player, prisoner, REASON_SENTENCE_COMPLETE)
+                : ReleaseResult.failed(Status.NOT_DUE, null, prisoner);
+    }
+
     private ReleaseResult restore(Player player, Prisoner prisoner) {
         Vector3f releasePosition = releasePosition(prisoner, player.getPosition());
         Status inventoryStatus = restoreInventory(player, prisoner);
@@ -92,7 +108,7 @@ public class PrisonReleaseService {
         player.setPosition(releasePosition);
 
         markPrisonStats(prisoner);
-        prisonerService.markRestoreComplete(prisoner, System.currentTimeMillis());
+        prisonerService.release(prisoner);
         return ReleaseResult.success(prisonService.get(prisoner.prisonAreaId), prisoner);
     }
 

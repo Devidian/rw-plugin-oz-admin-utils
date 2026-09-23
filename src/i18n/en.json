@@ -123,6 +123,9 @@
       }
     },
     "prison": {
+      "sentence": {
+        "remaining": "Sentence remaining: PH_TIME"
+      },
       "detail": {
         "pardoned": {
           "$value": "Pardoned PH_PLAYER_NAME. Restoration is queued for next login.",

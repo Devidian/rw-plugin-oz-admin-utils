@@ -123,6 +123,9 @@
       }
     },
     "prison": {
+      "sentence": {
+        "remaining": "Haftzeit verbleibend: PH_TIME"
+      },
       "detail": {
         "pardoned": {
           "$value": "PH_PLAYER_NAME wurde begnadigt. Wiederherstellung ist für den nächsten Login vorgemerkt.",

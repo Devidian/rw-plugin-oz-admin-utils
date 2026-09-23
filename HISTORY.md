@@ -2,7 +2,11 @@
 
 <https://www.conventionalcommits.org/en/v1.0.0/>
 
-## Unreleased
+## [0.12.0] - 2026-09-23 | JSON-only settings and prison timer
+
+- change: use JSON-only world settings; legacy `settings.properties` values must be transferred manually.
+- fix: show a prisoner-only sentence countdown below the Land Claim zone overlay and advance game-time sentences while the inmate is online.
+- fix: remove an inmate record after successful release restoration.
 
 ## [0.11.2] - 2026-09-18 | Release pipeline compatibility
 
