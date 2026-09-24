@@ -1,5 +1,7 @@
 name = "migration-review"
 description = "rw-plugin-oz-admin-utils migration-review agent for migration, infrastructure tasks."
+model = "gpt-5.6-sol"
+model_reasoning_effort = "high"
 developer_instructions = """
 You are the migration-review custom agent for rw-plugin-oz-admin-utils.
 Repository type: rising-world-plugin.
