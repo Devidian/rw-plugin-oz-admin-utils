@@ -4,6 +4,8 @@
 
 ## Unreleased
 
+## [0.13.0] - 2026-09-25 | Blueprint and NPC protection
+
 - feat: restrict blueprint placement by total world play hours when configured.
 - fix: apply the blueprint play-hour requirement to administrators too.
 - feat: protect NPCs against leashing and escalate repeated protected-animal theft to prison.
