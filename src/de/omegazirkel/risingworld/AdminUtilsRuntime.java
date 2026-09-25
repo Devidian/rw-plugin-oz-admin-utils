@@ -23,6 +23,7 @@ import de.omegazirkel.risingworld.adminutils.db.PrisonService;
 import de.omegazirkel.risingworld.adminutils.db.PrisonStore;
 import de.omegazirkel.risingworld.adminutils.db.PrisonerService;
 import de.omegazirkel.risingworld.adminutils.db.PrisonerStore;
+import de.omegazirkel.risingworld.adminutils.db.ProtectedNpcTheftStore;
 import de.omegazirkel.risingworld.adminutils.db.entities.Prison;
 import de.omegazirkel.risingworld.adminutils.db.entities.Prisoner;
 import de.omegazirkel.risingworld.adminutils.ui.AdminUtilsPlayerPluginData;
@@ -74,6 +75,8 @@ import net.risingworld.api.events.player.PlayerHitNpcEvent;
 import net.risingworld.api.events.player.PlayerEnterChunkEvent;
 import net.risingworld.api.events.player.PlayerMountNpcEvent;
 import net.risingworld.api.events.player.PlayerNpcInteractionEvent;
+import net.risingworld.api.events.player.PlayerNpcLeashEvent;
+import net.risingworld.api.events.player.world.PlayerPlaceBlueprintEvent;
 import net.risingworld.api.events.player.PlayerSpawnEvent;
 import net.risingworld.api.events.player.PlayerTeleportEvent;
 import net.risingworld.api.events.player.world.PlayerDestroyObjectEvent;
@@ -105,6 +108,8 @@ class AdminUtilsRuntime extends Plugin {
 	static final Colors c = Colors.getInstance();
 	private static I18n t = null;
 	private static PluginSettings s = null;
+	private ProtectedNpcTheftStore protectedNpcTheftStore;
+	private final java.util.Map<Integer, Long> recentProtectedNpcAttempts = new java.util.HashMap<>();
 	private static PluginGUI gui;
 	public static String name;
 	public static Connection sqliteCon;
@@ -174,6 +179,11 @@ class AdminUtilsRuntime extends Plugin {
 		ensureDefaultPermissionFiles();
 		initMapChunkSourcePersistence();
 		sqliteCon = SQLiteConnectionFactory.open(this);
+		try {
+			protectedNpcTheftStore = new ProtectedNpcTheftStore(sqliteCon);
+		} catch (SQLException ex) {
+			logger().error("Failed to initialize protected NPC theft state: " + ex.getMessage());
+		}
 		initRenderWorldService();
 		initLivePlayerPositionCapture();
 		registerPlayerStatusConnector();
@@ -963,6 +973,68 @@ class AdminUtilsRuntime extends Plugin {
 					+ ")");
 			player.sendTextMessage(t().get("tc.animal.protected.interaction", player));
 			event.setCancelled(true);
+			punishProtectedNpcTheft(player, npc);
+		}
+	}
+
+	public void onPlayerNpcLeashEvent(PlayerNpcLeashEvent event) {
+		Npc npc = event.getNpc();
+		Player player = event.getPlayer();
+		if (npc == null || player == null) return;
+		Area area = AreaUtils.isAreaIntersecting(AreaUtils.getVirtualAreaFromChunkVector(
+				ChunkUtils.getChunkPosition(npc.getPosition())));
+		if (area == null || Boolean.TRUE.equals(player.getPermissionValue("general_pickupitems", true))) return;
+		event.setCancelled(true);
+		punishProtectedNpcTheft(player, npc);
+	}
+
+	public void onPlayerPlaceBlueprintEvent(PlayerPlaceBlueprintEvent event) {
+		int hours = s.blueprintMinPlayHours;
+		Player player = event.getPlayer();
+		if (hours <= 0 || player == null) return;
+		long requiredSeconds = hours * 3600L;
+		if (player.getTotalPlayTime() >= requiredSeconds) return;
+		event.setCancelled(true);
+		player.sendTextMessage(t().get("tc.blueprint.playtime.required", player)
+				.replace("PH_HOURS", Integer.toString(hours)));
+	}
+
+	private void punishProtectedNpcTheft(Player player, Npc npc) {
+		if (protectedNpcTheftStore == null) return;
+		int key = player.getDbID();
+		long now = System.currentTimeMillis();
+		Long previous = recentProtectedNpcAttempts.put(key, now);
+		if (previous != null && now - previous < 1000L) return;
+		try {
+			ProtectedNpcTheftStore.State state = protectedNpcTheftStore.get(player.getDbID());
+			int attempt = Math.min(6, state.attempt() + 1);
+			logger().warn("Protected NPC theft attempt " + attempt + " by " + player.getName()
+					+ " against NPC " + npc.getGlobalID());
+			if (attempt < 6) {
+				protectedNpcTheftStore.save(player.getDbID(),
+						new ProtectedNpcTheftStore.State(attempt, state.incarcerations()));
+				if (attempt > 1) player.addDamage(5 * attempt);
+				player.sendTextMessage(t().get("tc.animal.protected.theft.warning", player)
+						.replace("PH_ATTEMPT", Integer.toString(attempt)));
+				return;
+			}
+			if (!s.enablePrison || prisonIncarcerationService == null) {
+				logger().warn("Protected NPC theft: prison unavailable for " + player.getName());
+				return;
+			}
+			long minutes = 10L * (state.incarcerations() + 1L);
+			PrisonIncarcerationService.IncarcerationResult result = prisonIncarcerationService.incarcerate(
+					player, minutes * 60_000L, true, "PROTECTED_NPC_THEFT");
+			if (result.success()) {
+				protectedNpcTheftStore.save(player.getDbID(),
+						new ProtectedNpcTheftStore.State(0, state.incarcerations() + 1));
+				player.sendTextMessage(t().get("tc.animal.protected.theft.prison", player)
+							.replace("PH_MINUTES", Long.toString(minutes)));
+			} else {
+				logger().warn("Protected NPC theft prison failed for " + player.getName() + ": " + result.status);
+			}
+		} catch (SQLException ex) {
+			logger().error("Protected NPC theft persistence failed: " + ex.getMessage());
 		}
 	}
 
@@ -1065,7 +1137,7 @@ class AdminUtilsRuntime extends Plugin {
 	// Event tracking (previously handled in DiscordConnect)
 
 	public void onPlayerDeath(PlayerDeathEvent event) {
-		if (!s.enablePlayerDeathLogging && s.discordPlayerDeathChannelId == 0) {
+		if (s.discordPlayerDeathChannelId == 0) {
 			return;
 		}
 		Player player = event.getPlayer();
@@ -1074,7 +1146,7 @@ class AdminUtilsRuntime extends Plugin {
 				.replace("PH_CAUSE", playerDeathCause(event))
 				.replace("PH_LOCATION", event.getDeathPosition().toString().replaceAll("[,()]", ""));
 
-		if (s.enablePlayerDeathLogging)
+		if (s.discordPlayerDeathChannelId != 0)
 			eventLogger().info(message);
 		if (s.discordPlayerDeathChannelId != 0)
 			DiscordConnect.sendDiscordMessage(message, s.discordPlayerDeathChannelId);
@@ -1091,7 +1163,7 @@ class AdminUtilsRuntime extends Plugin {
 
 	public void onPlayerConnect(PlayerConnectEvent event) {
 		Player player = event.getPlayer();
-		if (s.enablePlayerStatusLogging)
+		if (s.discordPlayerStatusChannelId != 0)
 			eventLogger().info("Player " + player.getName() + " connected at "
 					+ player.getPosition().toString().replaceAll("[,()]", ""));
 
@@ -1113,8 +1185,9 @@ class AdminUtilsRuntime extends Plugin {
 	public void onPlayerDisconnect(PlayerDisconnectEvent event) {
 
 		Player player = event.getPlayer();
+		recentProtectedNpcAttempts.remove(player.getDbID());
 		PrisonSentenceOverlay.hide(player);
-		if (s.enablePlayerStatusLogging) {
+		if (s.discordPlayerStatusChannelId != 0) {
 			eventLogger().info("Player " + player.getName() + " disconnected at "
 					+ player.getPosition().toString().replaceAll("[,()]", ""));
 		}
@@ -1143,7 +1216,7 @@ class AdminUtilsRuntime extends Plugin {
 				.replace("PH_LOCATION", player.getPosition().toString().replaceAll("[,()]", ""))
 				.replace("PH_MAP_COORDINATES", posMap);
 
-		if (s.enablePlayerRemoveObjectLogging)
+		if (s.discordPlayerRemoveObjectChannelId != 0)
 			eventLogger().info(msg);
 		if (s.discordPlayerRemoveObjectChannelId != 0)
 			DiscordConnect.sendDiscordMessage(msg, s.discordPlayerRemoveObjectChannelId);
@@ -1163,7 +1236,7 @@ class AdminUtilsRuntime extends Plugin {
 				.replace("PH_OBJECT_NAME", name)
 				.replace("PH_LOCATION", player.getPosition().toString().replaceAll("[,()]", ""))
 				.replace("PH_MAP_COORDINATES", posMap);
-		if (s.enablePlayerDestroyObjectLogging)
+		if (s.discordPlayerDestroyObjectChannelId != 0)
 			eventLogger().warn(msg);
 		if (s.discordPlayerDestroyObjectChannelId != 0)
 			DiscordConnect.sendDiscordMessage(msg, s.discordPlayerDestroyObjectChannelId);
@@ -1189,11 +1262,16 @@ class AdminUtilsRuntime extends Plugin {
 		boolean isAggressive = npc.getDefinition().behaviour.compareTo(Behaviour.Aggressive) == 0;
 
 		if (event.getCause() != NpcDeathEvent.Cause.KilledByPlayer) {
-			if (s.enableNpcDeathByNonPlayerLogging)
+			if (s.discordNpcDeathByNonPlayerChannelId != 0) {
 				eventLogger().debug(
 						"NPC <" + replacementNPCNameString + "> <" + replacementNPCClassString + "> died from "
 								+ event.getCause() + " at "
-								+ replacementLocatioString + " (" + replacementMapCoordinates + ")");
+								 + replacementLocatioString + " (" + replacementMapCoordinates + ")");
+				DiscordConnect.sendDiscordMessage(t.get("tc.event.kill.npc", DiscordConnect.botLang())
+						.replace("PH_NPC_NAME", replacementNPCNameString)
+						.replace("PH_CAUSE", event.getCause().toString()),
+						s.discordNpcDeathByNonPlayerChannelId);
+			}
 			return;
 		}
 		Player player = (Player) event.getKiller();
@@ -1206,7 +1284,7 @@ class AdminUtilsRuntime extends Plugin {
 					.replace("PH_NPC_CLASS", replacementNPCClassString)
 					.replace("PH_LOCATION", replacementLocatioString)
 					.replace("PH_MAP_COORDINATES", replacementMapCoordinates);
-			if (s.enableMountDeathByPlayerLogging)
+			if (s.discordMountDeathByPlayerChannelId != 0)
 				eventLogger().warn(msg);
 			if (s.discordMountDeathByPlayerChannelId != 0)
 				DiscordConnect.sendDiscordMessage(msg, s.discordMountDeathByPlayerChannelId);
@@ -1219,17 +1297,12 @@ class AdminUtilsRuntime extends Plugin {
 					.replace("PH_NPC_CLASS", replacementNPCClassString)
 					.replace("PH_LOCATION", replacementLocatioString)
 					.replace("PH_MAP_COORDINATES", replacementMapCoordinates);
-			if (s.enableAnimalDeathByPlayerLogging)
+			if (s.discordAnimalDeathByPlayerChannelId != 0)
 				eventLogger().warn(msg);
 			if (s.discordAnimalDeathByPlayerChannelId != 0)
 				DiscordConnect.sendDiscordMessage(msg, s.discordAnimalDeathByPlayerChannelId);
 			return;
-		} else if (s.enableAllAnimalDeathByPlayerLogging)
-			eventLogger().debug(
-					player.getName()
-							+ " killed NPC <name: " + replacementNPCNameString + "> <class:" + replacementNPCClassString
-							+ "> <typeId: " + npc.getTypeID() + "> <variant: " + npc.getVariant() + "> at "
-							+ replacementLocatioString + " (" + replacementMapCoordinates + ")");
+		}
 
 	}
 
@@ -1241,7 +1314,7 @@ class AdminUtilsRuntime extends Plugin {
 		String message = t.get("tc.event.season.change", DiscordConnect.botLang())
 				.replace("PH_SEASON_FROM", season)
 				.replace("PH_SEASON_TO", seasonTo);
-		if (s.enableSeasonChangeEventLogging)
+		if (s.discordSeasonChangeEventChannelId != 0)
 			eventLogger().info(message);
 
 		if (s.discordSeasonChangeEventChannelId != 0)
@@ -1260,7 +1333,7 @@ class AdminUtilsRuntime extends Plugin {
 				.replace("PH_WEATHER_TO",
 						t.get("TC_WEATHER_" + nextWeatherName.toUpperCase(), DiscordConnect.botLang()));
 
-		if (s.enableWeatherChangeEventLogging)
+		if (s.discordWeatherChangeEventChannelId != 0)
 			eventLogger().info(message);
 
 		if (s.discordWeatherChangeEventChannelId != 0)
@@ -1274,7 +1347,7 @@ class AdminUtilsRuntime extends Plugin {
 				.replace("PH_PLAYER", player.getName())
 				.replace("PH_LOCATION", player.getPosition().toString().replaceAll("[,()]", ""));
 
-		if (s.enablePlayerTeleportEventLogging)
+		if (s.discordPlayerTeleportChannelId != 0)
 			eventLogger().info(message);
 		if (s.discordPlayerTeleportChannelId != 0)
 			DiscordConnect.sendDiscordMessage(message, s.discordPlayerTeleportChannelId);

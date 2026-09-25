@@ -24,6 +24,8 @@ import net.risingworld.api.events.player.PlayerEnterChunkEvent;
 import net.risingworld.api.events.player.PlayerHitNpcEvent;
 import net.risingworld.api.events.player.PlayerMountNpcEvent;
 import net.risingworld.api.events.player.PlayerNpcInteractionEvent;
+import net.risingworld.api.events.player.PlayerNpcLeashEvent;
+import net.risingworld.api.events.player.world.PlayerPlaceBlueprintEvent;
 import net.risingworld.api.events.player.PlayerSpawnEvent;
 import net.risingworld.api.events.player.PlayerTeleportEvent;
 import net.risingworld.api.events.player.world.PlayerDestroyObjectEvent;
@@ -63,6 +65,8 @@ public final class AdminUtils extends AdminUtilsRuntime implements Listener, Fil
     @Override @EventMethod public void onNpcDamageEvent(NpcDamageEvent e) { super.onNpcDamageEvent(e); }
     @Override @EventMethod public void onPlayerHitNpcEvent(PlayerHitNpcEvent e) { super.onPlayerHitNpcEvent(e); }
     @Override @EventMethod public void onPlayerNpcInteractionEvent(PlayerNpcInteractionEvent e) { super.onPlayerNpcInteractionEvent(e); }
+    @EventMethod public void onPlayerNpcLeashEvent(PlayerNpcLeashEvent e) { super.onPlayerNpcLeashEvent(e); }
+    @EventMethod public void onPlayerPlaceBlueprintEvent(PlayerPlaceBlueprintEvent e) { super.onPlayerPlaceBlueprintEvent(e); }
     @Override @EventMethod public void onPlayerMountNpcEvent(PlayerMountNpcEvent e) { super.onPlayerMountNpcEvent(e); }
     @Override @EventMethod public void onNpcAddSaddleEvent(NpcAddSaddleEvent e) { super.onNpcAddSaddleEvent(e); }
     @Override @EventMethod public void onNpcRemoveSaddleEvent(NpcRemoveSaddleEvent e) { super.onNpcRemoveSaddleEvent(e); }

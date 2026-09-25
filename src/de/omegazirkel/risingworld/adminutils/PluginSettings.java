@@ -27,6 +27,7 @@ public class PluginSettings {
 	// Settings
 	public boolean enableWelcomeMessage = false;
 	public boolean newPlayerInfoEnabled = false;
+	public int blueprintMinPlayHours = 0;
 	public String newPlayerInfoText = "";
 	public int newPlayerInfoWidthPercent = 42;
 	public int newPlayerInfoHeightPercent = 36;
@@ -83,41 +84,28 @@ public class PluginSettings {
 	public long discordTheftReportChannelId = 0;
 
 	// player death
-	public boolean enablePlayerDeathLogging = false;
 	public long discordPlayerDeathChannelId = 0;
 
 	// player connect and disconnect
-	public boolean enablePlayerStatusLogging = false;
 	public long discordPlayerStatusChannelId = 0;
 
 	// player remove object
-	public boolean enablePlayerRemoveObjectLogging = false;
 	public long discordPlayerRemoveObjectChannelId = 0;
 
 	// player destroy object
-	public boolean enablePlayerDestroyObjectLogging = false;
 	public long discordPlayerDestroyObjectChannelId = 0;
 
 	// npc death
-	public boolean enableNpcDeathByNonPlayerLogging = false;
 	public long discordNpcDeathByNonPlayerChannelId = 0;
-
-	public boolean enableMountDeathByPlayerLogging = false;
 	public long discordMountDeathByPlayerChannelId = 0;
-
-	public boolean enableAnimalDeathByPlayerLogging = false;
 	public long discordAnimalDeathByPlayerChannelId = 0;
 
-	public boolean enableAllAnimalDeathByPlayerLogging = false;
 
 	// season change event
-	public boolean enableSeasonChangeEventLogging = false;
 	public long discordSeasonChangeEventChannelId = 0;
-	public boolean enableWeatherChangeEventLogging = false;
 	public long discordWeatherChangeEventChannelId = 0;
 
 	// player teleport
-	public boolean enablePlayerTeleportEventLogging = false;
 	public long discordPlayerTeleportChannelId = 0;
 
 	// END Settings
@@ -212,6 +200,7 @@ public class PluginSettings {
 					.parseInt(settings.getProperty("prisonTheftBan9SentenceRealMinutes", "5256000"));
 
 			enableSleepAnnouncement = settings.getProperty("enableSleepAnnouncement", "false").contentEquals("true");
+			blueprintMinPlayHours = Math.max(0, Integer.parseInt(settings.getProperty("blueprintMinPlayHours", "0")));
 			enableSleepKickAFKPlayer = settings.getProperty("enableSleepKickAFKPlayer", "false").contentEquals("true");
 			afkPlayerSleepTimeoutSeconds = Integer
 					.parseInt(settings.getProperty("afkPlayerSleepTimeoutSeconds", "300"));
@@ -225,49 +214,28 @@ public class PluginSettings {
 			discordTheftReportChannelId = Long.parseLong(settings.getProperty("discordTheftReportChannelId", "0"));
 
 			// player death
-			enablePlayerDeathLogging = settings.getProperty("enablePlayerDeathLogging", "false").contentEquals("true");
 			discordPlayerDeathChannelId = Long.parseLong(settings.getProperty("discordPlayerDeathChannelId", "0"));
 			// player connect and disconnect
-			enablePlayerStatusLogging = settings
-					.getProperty("enablePlayerStatusLogging", "false").contentEquals("true");
 			discordPlayerStatusChannelId = Long.parseLong(settings.getProperty("discordPlayerStatusChannelId", "0"));
 			// player remove object
-			enablePlayerRemoveObjectLogging = settings
-					.getProperty("enablePlayerRemoveObjectLogging", "false").contentEquals("true");
 			discordPlayerRemoveObjectChannelId = Long
 					.parseLong(settings.getProperty("discordPlayerRemoveObjectChannelId", "0"));
 			// player destroy object
-			enablePlayerDestroyObjectLogging = settings
-					.getProperty("enablePlayerDestroyObjectLogging", "false").contentEquals("true");
 			discordPlayerDestroyObjectChannelId = Long
 					.parseLong(settings.getProperty("discordPlayerDestroyObjectChannelId", "0"));
 			// npc death
-			enableNpcDeathByNonPlayerLogging = settings
-					.getProperty("enableNpcDeathByNonPlayerLogging", "false").contentEquals("true");
 			discordNpcDeathByNonPlayerChannelId = Long
 					.parseLong(settings.getProperty("discordNpcDeathByNonPlayerChannelId", "0"));
-			enableMountDeathByPlayerLogging = settings
-					.getProperty("enableMountDeathByPlayerLogging", "false").contentEquals("true");
 			discordMountDeathByPlayerChannelId = Long
 					.parseLong(settings.getProperty("discordMountDeathByPlayerChannelId", "0"));
-			enableAnimalDeathByPlayerLogging = settings
-					.getProperty("enableAnimalDeathByPlayerLogging", "false").contentEquals("true");
 			discordAnimalDeathByPlayerChannelId = Long
 					.parseLong(settings.getProperty("discordAnimalDeathByPlayerChannelId", "0"));
-			enableAllAnimalDeathByPlayerLogging = settings
-					.getProperty("enableAllAnimalDeathByPlayerLogging", "false").contentEquals("true");
 			// season change event
-			enableSeasonChangeEventLogging = settings
-					.getProperty("enableSeasonChangeEventLogging", "false").contentEquals("true");
 			discordSeasonChangeEventChannelId = Long
 					.parseLong(settings.getProperty("discordSeasonChangeEventChannelId", "0"));
-			enableWeatherChangeEventLogging = settings
-					.getProperty("enableWeatherChangeEventLogging", "false").contentEquals("true");
 			discordWeatherChangeEventChannelId = Long
 					.parseLong(settings.getProperty("discordWeatherChangeEventChannelId", "0"));
 			// player teleport
-			enablePlayerTeleportEventLogging = settings
-					.getProperty("enablePlayerTeleportEventLogging", "false").contentEquals("true");
 			discordPlayerTeleportChannelId = Long
 					.parseLong(settings.getProperty("discordPlayerTeleportChannelId", "0"));
 
@@ -301,6 +269,9 @@ public class PluginSettings {
 				entry("newPlayerInfo.heightPercent", "New player info height",
 						"Panel height as percentage of the screen; allowed range is 24 to 95.",
 						newPlayerInfoHeightPercent, "36", AdminSettingsType.INTEGER),
+				entry("blueprintMinPlayHours", "Blueprint minimum play hours",
+						"Minimum total play hours for all players, including admins, before placing blueprints; 0 disables the restriction.",
+						blueprintMinPlayHours, "0", AdminSettingsType.INTEGER),
 				AdminSettingsEntry.group("mapSource", "Map source capture",
 						"Automatic raw chunk capture for backend map rendering."),
 				entry("enableMapGen", "Map source capture",
@@ -410,74 +381,41 @@ public class PluginSettings {
 				entry("enableSpeedUpTime", "Speed up time",
 						"Speeds up game time when enough players are sleeping.", enableSpeedUpTime, "false",
 						AdminSettingsType.BOOLEAN),
+				AdminSettingsEntry.group("discordChannels", "Discord channels",
+						"Channel id 0 disables the corresponding event report."),
 				entry("discordSleepEventChannelId", "Sleep Discord channel",
 						"Discord channel id for sleep events; 0 disables Discord sleep messages.",
 						discordSleepEventChannelId, "0", AdminSettingsType.STRING),
-				AdminSettingsEntry.group("eventLogging", "Event logging",
-						"Operational event logging switches and Discord targets."),
 				entry("discordTheftReportChannelId", "Theft report channel",
 						"Discord channel id for theft reports; 0 disables channel-specific routing.",
 						discordTheftReportChannelId, "0", AdminSettingsType.STRING),
-				entry("enablePlayerDeathLogging", "Player death logging",
-						"Enables player death event logging.", enablePlayerDeathLogging, "true",
-						AdminSettingsType.BOOLEAN),
 				entry("discordPlayerDeathChannelId", "Player death channel",
 						"Discord channel id for player death events.", discordPlayerDeathChannelId, "0",
 						AdminSettingsType.STRING),
-				entry("enablePlayerStatusLogging", "Player status logging",
-						"Enables player join/leave status logging.", enablePlayerStatusLogging, "true",
-						AdminSettingsType.BOOLEAN),
 				entry("discordPlayerStatusChannelId", "Player status channel",
 						"Discord channel id for player status events.", discordPlayerStatusChannelId, "0",
 						AdminSettingsType.STRING),
-				entry("enablePlayerRemoveObjectLogging", "Remove-object logging",
-						"Enables logging when players remove objects.", enablePlayerRemoveObjectLogging, "false",
-						AdminSettingsType.BOOLEAN),
 				entry("discordPlayerRemoveObjectChannelId", "Remove-object channel",
 						"Discord channel id for player remove-object events.", discordPlayerRemoveObjectChannelId, "0",
 						AdminSettingsType.STRING),
-				entry("enablePlayerDestroyObjectLogging", "Destroy-object logging",
-						"Enables logging when players destroy objects.", enablePlayerDestroyObjectLogging, "false",
-						AdminSettingsType.BOOLEAN),
 				entry("discordPlayerDestroyObjectChannelId", "Destroy-object channel",
 						"Discord channel id for player destroy-object events.",
 						discordPlayerDestroyObjectChannelId, "0", AdminSettingsType.STRING),
-				entry("enableNpcDeathByNonPlayerLogging", "NPC non-player death logging",
-						"Enables logging for NPC deaths not caused by players.", enableNpcDeathByNonPlayerLogging,
-						"false", AdminSettingsType.BOOLEAN),
 				entry("discordNpcDeathByNonPlayerChannelId", "NPC non-player death channel",
 						"Discord channel id for non-player NPC death events.",
 						discordNpcDeathByNonPlayerChannelId, "0", AdminSettingsType.STRING),
-				entry("enableMountDeathByPlayerLogging", "Mount death logging",
-						"Enables logging for mount deaths caused by players.", enableMountDeathByPlayerLogging,
-						"true", AdminSettingsType.BOOLEAN),
 				entry("discordMountDeathByPlayerChannelId", "Mount death channel",
 						"Discord channel id for mount death events.", discordMountDeathByPlayerChannelId, "0",
 						AdminSettingsType.STRING),
-				entry("enableAnimalDeathByPlayerLogging", "Animal death logging",
-						"Enables logging for animal deaths caused by players.", enableAnimalDeathByPlayerLogging,
-						"false", AdminSettingsType.BOOLEAN),
-				entry("enableAllAnimalDeathByPlayerLogging", "All animal death logging",
-						"Logs all animal deaths caused by players, including non-aggressive animals.",
-						enableAllAnimalDeathByPlayerLogging, "false", AdminSettingsType.BOOLEAN),
 				entry("discordAnimalDeathByPlayerChannelId", "Animal death channel",
 						"Discord channel id for animal death events.", discordAnimalDeathByPlayerChannelId, "0",
 						AdminSettingsType.STRING),
-				entry("enableSeasonChangeEventLogging", "Season change logging",
-						"Enables season change event logging.", enableSeasonChangeEventLogging, "false",
-						AdminSettingsType.BOOLEAN),
 				entry("discordSeasonChangeEventChannelId", "Season change channel",
 						"Discord channel id for season change events.", discordSeasonChangeEventChannelId, "0",
 						AdminSettingsType.STRING),
-				entry("enableWeatherChangeEventLogging", "Weather change logging",
-						"Enables weather change event logging.", enableWeatherChangeEventLogging, "false",
-						AdminSettingsType.BOOLEAN),
 				entry("discordWeatherChangeEventChannelId", "Weather change channel",
 						"Discord channel id for weather change events.", discordWeatherChangeEventChannelId, "0",
 						AdminSettingsType.STRING),
-				entry("enablePlayerTeleportEventLogging", "Player teleport logging",
-						"Enables player teleport event logging.", enablePlayerTeleportEventLogging, "true",
-						AdminSettingsType.BOOLEAN),
 				entry("discordPlayerTeleportChannelId", "Player teleport channel",
 						"Discord channel id for player teleport events.", discordPlayerTeleportChannelId, "0",
 						AdminSettingsType.STRING));

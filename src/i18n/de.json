@@ -12,9 +12,11 @@
     },
     "animal": {
       "protected": {
-        "interaction": "Du kannst mit diesem geschützten Tier nicht interagieren!"
+        "interaction": "Du kannst mit diesem geschützten Tier nicht interagieren!",
+        "theft": {"warning": "Geschütztes Tier: Diebstahlversuch PH_ATTEMPT/6. Unterlasse weitere Versuche!", "prison": "Wegen wiederholten Tierdiebstahls: PH_MINUTES Minuten Haft."}
       }
     },
+    "blueprint": {"playtime": {"required": "Blaupausen sind erst nach PH_HOURS Stunden Spielzeit erlaubt."}},
     "cmd": {
       "help": "Hilfe:\nVerfügbare Chat-Kommandos:\n\u003ccolor\u003dred\u003e/PH_PLUGIN_CMD status\u003c/color\u003e oder \u003ccolor\u003dred\u003e/PH_PLUGIN_CMD info\u003c/color\u003e zeigt Plugin-Infos an\n\u003ccolor\u003dred\u003e/PH_PLUGIN_CMD open\u003c/color\u003e öffnet das Pluginmenü\n\u003ccolor\u003dred\u003e/PH_PLUGIN_CMD help\u003c/color\u003e zeigt diese Hilfe an\n\n\u003ccolor\u003dyellow\u003eTipp:\u003c/color\u003e Binde den Befehl \u003ccolor\u003dred\u003e/PH_PLUGIN_CMD open\u003c/color\u003e an eine Taste der Maus oder Tastatur.",
       "status": "🔎 Plugin Status\n➡️ Plugin version: PH_VERSION\n➡️ Installierte Sprachen: PH_LANG_AVAILABLE\n➡️ Deine Sprache: PH_LANGUAGE\n➡️ Verwendete Sprache: PH_USEDLANG"
@@ -26,6 +28,7 @@
     },
     "event": {
       "kill": {
+        "npc": "NPC PH_NPC_NAME starb durch PH_CAUSE.",
         "animal": "Spieler PH_PLAYER tötete ein nicht feindliches Tier [PH_NPC_CLASS] (PH_NPC_NAME) bei `goto PH_LOCATION` (Karte: PH_MAP_COORDINATES)",
         "mount": "Spieler PH_PLAYER tötete ein Reittier [PH_NPC_CLASS] (PH_NPC_NAME) bei `goto PH_LOCATION` (Karte: PH_MAP_COORDINATES)"
       },
@@ -173,6 +176,8 @@
       }
     },
     "setting": {
+      "discordchannels": {"label": "Discord-Kanäle", "desc": "Kanal-ID 0 deaktiviert die jeweilige Ereignismeldung."},
+      "blueprintminplayhours": {"label": "Blaupausen ab Spielstunden", "desc": "Mindestspielzeit in Stunden für alle Spieler einschließlich Admins; 0 deaktiviert die Sperre."},
       "renderworld": { "label": "Experimentelles RenderWorld", "desc": "Opt-in-Rendering veränderter Außenbereiche nach einem Chunk-Wechsel." },
       "allowrenderworld": { "label": "RenderWorld erlauben", "desc": "Erlaubt angemeldeten Administratoren und Spielern, veränderte Chunks zu rendern." },
       "maxrenderworldresolution": { "label": "Maximale RenderWorld-Auflösung", "desc": "Obergrenze für die von Spielern gewählte RenderWorld-Auflösung; erlaubt sind 64 bis 1024." },

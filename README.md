@@ -6,6 +6,15 @@ Collection of utilities to help server admins to manage their servers (logging, 
 
 All features can be enabled or disabled in `settings.<world>.json`
 
+`blueprintMinPlayHours` requires that many total world play hours before any
+player, including an admin, can place a blueprint; `0` disables the restriction. Discord event
+channel IDs appear in one admin settings group. A channel ID of `0` disables
+that event report. Attempts to interact with or leash protected NPCs are
+cancelled; the first attempt warns, attempts two through five warn and hurt,
+and each sixth attempt leads to a real-time prison sentence. The first is ten
+minutes, and each later sentence grows by ten minutes. Escalation state is
+stored in the Admin Utils database.
+
 ### New-player info panel
 
 Admins can enable an optional login info panel with `newPlayerInfo.enabled=true` and configure the text with `newPlayerInfo.text`.

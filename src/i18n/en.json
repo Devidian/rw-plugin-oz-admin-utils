@@ -12,9 +12,11 @@
     },
     "animal": {
       "protected": {
-        "interaction": "You cannot interact with this protected animal!"
+        "interaction": "You cannot interact with this protected animal!",
+        "theft": {"warning": "Protected animal: theft attempt PH_ATTEMPT/6. Stop trying!", "prison": "Repeated animal theft: PH_MINUTES minutes in prison."}
       }
     },
+    "blueprint": {"playtime": {"required": "Blueprints require PH_HOURS hours of play time."}},
     "cmd": {
       "help": "Help:\nAvailable chat commands:\n\u003ccolor\u003dred\u003e/PH_PLUGIN_CMD status\u003c/color\u003e or \u003ccolor\u003dred\u003e/PH_PLUGIN_CMD info\u003c/color\u003e shows plugin infos\n\u003ccolor\u003dred\u003e/PH_PLUGIN_CMD open\u003c/color\u003e opens the plugin menu\n\u003ccolor\u003dred\u003e/PH_PLUGIN_CMD help\u003c/color\u003e shows this help\n\n\u003ccolor\u003dyellow\u003eTip:\u003c/color\u003e Bind the command \u003ccolor\u003dred\u003e/PH_PLUGIN_CMD open\u003c/color\u003e to a mouse button or keyboard key.",
       "status": "🔎 Plugin Status\n➡️ Plugin version: PH_VERSION\n➡️ Installed languages: PH_LANG_AVAILABLE\n➡️ Your language: PH_LANGUAGE\n➡️ Used language: PH_USEDLANG\n➡️ Translated by: Devidian"
@@ -26,6 +28,7 @@
     },
     "event": {
       "kill": {
+        "npc": "NPC PH_NPC_NAME died from PH_CAUSE.",
         "animal": "Player PH_PLAYER killed a non hostile animal PH_NPC_CLASS (PH_NPC_NAME) at `goto PH_LOCATION` (map: PH_MAP_COORDINATES)",
         "mount": "Player PH_PLAYER killed a mount PH_NPC_CLASS (PH_NPC_NAME) at `goto PH_LOCATION` (map: PH_MAP_COORDINATES)"
       },
@@ -173,6 +176,8 @@
       }
     },
     "setting": {
+      "discordchannels": {"label": "Discord channels", "desc": "Channel ID 0 disables the corresponding event report."},
+      "blueprintminplayhours": {"label": "Blueprint play hours", "desc": "Minimum play hours for all players, including admins; 0 disables the restriction."},
       "renderworld": { "label": "Experimental RenderWorld", "desc": "Opt-in rendering of changed outdoor areas after entering a new chunk." },
       "allowrenderworld": { "label": "Allow RenderWorld", "desc": "Allows opted-in administrators and players to render changed chunks." },
       "maxrenderworldresolution": { "label": "Maximum RenderWorld resolution", "desc": "Maximum player-selected RenderWorld resolution; allowed range is 64 to 1024." },

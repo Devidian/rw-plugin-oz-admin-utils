@@ -51,15 +51,15 @@ public class AdminUtilsPluginInfoStatusProvider implements PluginInfoStatusProvi
     }
 
     private static boolean eventLoggingEnabled(PluginSettings settings) {
-        return settings.enablePlayerDeathLogging
-                || settings.enablePlayerStatusLogging
-                || settings.enablePlayerRemoveObjectLogging
-                || settings.enablePlayerDestroyObjectLogging
-                || settings.enableNpcDeathByNonPlayerLogging
-                || settings.enableMountDeathByPlayerLogging
-                || settings.enableAnimalDeathByPlayerLogging
-                || settings.enableSeasonChangeEventLogging
-                || settings.enableWeatherChangeEventLogging
-                || settings.enablePlayerTeleportEventLogging;
+        return settings.discordPlayerDeathChannelId != 0
+                || settings.discordPlayerStatusChannelId != 0
+                || settings.discordPlayerRemoveObjectChannelId != 0
+                || settings.discordPlayerDestroyObjectChannelId != 0
+                || settings.discordNpcDeathByNonPlayerChannelId != 0
+                || settings.discordMountDeathByPlayerChannelId != 0
+                || settings.discordAnimalDeathByPlayerChannelId != 0
+                || settings.discordSeasonChangeEventChannelId != 0
+                || settings.discordWeatherChangeEventChannelId != 0
+                || settings.discordPlayerTeleportChannelId != 0;
     }
 }

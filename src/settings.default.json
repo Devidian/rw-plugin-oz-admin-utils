@@ -6,6 +6,7 @@
       "widthPercent": 42,
       "heightPercent": 36
     },
+    "blueprintMinPlayHours": 0,
     "onlyAdminMapGen": true,
     "mapGenChunkScanRadius": 0,
     "mapGenChunkCooldownSeconds": 60,
@@ -39,18 +40,7 @@
     "prison": false,
     "sleepAnnouncement": false,
     "sleepKickAFKPlayer": false,
-    "speedUpTime": false,
-    "playerDeathLogging": true,
-    "playerStatusLogging": true,
-    "playerRemoveObjectLogging": false,
-    "playerDestroyObjectLogging": false,
-    "npcDeathByNonPlayerLogging": false,
-    "mountDeathByPlayerLogging": true,
-    "animalDeathByPlayerLogging": false,
-    "allAnimalDeathByPlayerLogging": false,
-    "seasonChangeEventLogging": false,
-    "weatherChangeEventLogging": false,
-    "playerTeleportEventLogging": true
+    "speedUpTime": false
   },
   "expose": {
     "nativeInfo": false,

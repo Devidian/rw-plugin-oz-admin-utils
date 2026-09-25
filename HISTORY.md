@@ -2,6 +2,13 @@
 
 <https://www.conventionalcommits.org/en/v1.0.0/>
 
+## Unreleased
+
+- feat: restrict blueprint placement by total world play hours when configured.
+- fix: apply the blueprint play-hour requirement to administrators too.
+- feat: protect NPCs against leashing and escalate repeated protected-animal theft to prison.
+- change: group Discord channel IDs and use ID 0 to disable event reports.
+
 ## [0.12.0] - 2026-09-23 | JSON-only settings and prison timer
 
 - change: use JSON-only world settings; legacy `settings.properties` values must be transferred manually.
