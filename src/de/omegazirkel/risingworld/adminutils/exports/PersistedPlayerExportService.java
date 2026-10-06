@@ -4,6 +4,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -12,8 +13,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import de.omegazirkel.risingworld.adminutils.live.LivePlayerPosition;
+import de.omegazirkel.risingworld.tools.db.ReadOnlyWorldDatabase;
 import net.risingworld.api.database.WorldDatabase;
-import net.risingworld.api.database.Database;
 import net.risingworld.api.Plugin;
 
 /** Reads the game-owned player database through the supported PluginAPI. */
@@ -42,8 +43,8 @@ final class PersistedPlayerExportService {
                 return read(result);
             }
         } catch (UnsupportedOperationException ex) {
-            try (Database sqlite = plugin.getSQLiteConnection(database.getPath());
-                    Statement statement = sqlite.getConnection().createStatement();
+            try (Connection sqlite = ReadOnlyWorldDatabase.open(database.getPath());
+                    Statement statement = sqlite.createStatement();
                     ResultSet result = statement.executeQuery("SELECT * FROM player")) {
                 return read(result);
             }

@@ -48,6 +48,10 @@ public final class AdminUtils extends AdminUtilsRuntime implements Listener, Fil
     public static PrisonReleaseService prisonReleaseService() {
         return AdminUtilsRuntime.prisonReleaseService();
     }
+    public String requestRestartFromDiscord() { return super.requestRestartFromDiscord(); }
+    public String requestRestartFromPlayer(net.risingworld.api.objects.Player player) {
+        return super.requestRestartFromPlayer(player);
+    }
 
     @Override
     public void onEnable() {

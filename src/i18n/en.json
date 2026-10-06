@@ -1,5 +1,18 @@
 {
   "tc": {
+    "restart": {
+      "scheduled": {"warning": "Scheduled server restart in PH_MINUTES minutes. Please prepare to leave."},
+      "queued": "Server restart queued. Please leave the server.",
+      "force": "Server restart in PH_MINUTES minute(s). Please leave the server; remaining players will be disconnected then.",
+      "kick": "Server restart",
+      "result": {
+        "started": "Server restart started.",
+        "queued": "Server restart queued until all players disconnect.",
+        "already_pending": "A server restart is already pending.",
+        "not_allowed": "You cannot restart the server.",
+        "unavailable": "Server restart is unavailable."
+      }
+    },
     "admin": {
       "utils": {
         "info": {
@@ -176,6 +189,15 @@
       }
     },
     "setting": {
+      "restart": {"label": "Server restart", "desc": "Scheduled and manual server restart settings."},
+      "allowrestart": {"label": "Allow player restart", "desc": "Enables in-game restart commands."},
+      "restartadminonly": {"label": "Admin only restart", "desc": "Limits the in-game command to admins."},
+      "restartminimumtime": {"label": "Minimum playtime", "desc": "Seconds needed for non-admin players."},
+      "restarttimed": {"label": "Scheduled restart", "desc": "Enables restarts at the configured times."},
+      "restarttimezone": {"label": "Restart time zone", "desc": "IANA zone such as Europe/Berlin; system uses the server zone."},
+      "restarttimes": {"label": "Restart times", "desc": "24-hour HH:mm values in this time zone, separated by |."},
+      "forcerestartafter": {"label": "Force after minutes", "desc": "0 waits for all players to leave."},
+      "useshutdownnotrestart": {"label": "Shutdown instead", "desc": "Use shutdown instead of restart."},
       "discordchannels": {"label": "Discord channels", "desc": "Channel ID 0 disables the corresponding event report."},
       "blueprintminplayhours": {"label": "Blueprint play hours", "desc": "Minimum play hours for all players, including admins; 0 disables the restriction."},
       "renderworld": { "label": "Experimental RenderWorld", "desc": "Opt-in rendering of changed outdoor areas after entering a new chunk." },

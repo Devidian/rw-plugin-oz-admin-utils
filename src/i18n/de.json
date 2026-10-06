@@ -1,5 +1,18 @@
 {
   "tc": {
+    "restart": {
+      "scheduled": {"warning": "Geplanter Server-Neustart in PH_MINUTES Minuten. Bitte bereite dich darauf vor."},
+      "queued": "Server-Neustart vorgemerkt. Bitte verlasse den Server.",
+      "force": "Server-Neustart in PH_MINUTES Minute(n). Bitte verlasse den Server; verbliebene Spieler werden dann getrennt.",
+      "kick": "Server-Neustart",
+      "result": {
+        "started": "Server-Neustart gestartet.",
+        "queued": "Server-Neustart vorgemerkt, bis alle Spieler den Server verlassen haben.",
+        "already_pending": "Ein Server-Neustart ist bereits vorgemerkt.",
+        "not_allowed": "Du darfst den Server nicht neu starten.",
+        "unavailable": "Server-Neustart ist nicht verfügbar."
+      }
+    },
     "admin": {
       "utils": {
         "info": {
@@ -176,6 +189,15 @@
       }
     },
     "setting": {
+      "restart": {"label": "Server-Neustart", "desc": "Einstellungen für geplante und manuelle Server-Neustarts."},
+      "allowrestart": {"label": "Neustart durch Spieler erlauben", "desc": "Aktiviert die Neustartbefehle im Spiel."},
+      "restartadminonly": {"label": "Neustart nur für Admins", "desc": "Beschränkt den Neustartbefehl im Spiel auf Administratoren."},
+      "restartminimumtime": {"label": "Mindestspielzeit", "desc": "Benötigte Spielzeit in Sekunden für Spieler ohne Adminrechte."},
+      "restarttimed": {"label": "Geplante Neustarts", "desc": "Aktiviert Neustarts zu den konfigurierten Uhrzeiten."},
+      "restarttimezone": {"label": "Neustart-Zeitzone", "desc": "IANA-Zeitzone wie Europe/Berlin; system verwendet die Zeitzone des Servers."},
+      "restarttimes": {"label": "Neustartzeiten", "desc": "Uhrzeiten im 24-Stunden-Format HH:mm in dieser Zeitzone, getrennt durch |."},
+      "forcerestartafter": {"label": "Nach Minuten erzwingen", "desc": "0 wartet, bis alle Spieler den Server verlassen haben."},
+      "useshutdownnotrestart": {"label": "Stattdessen herunterfahren", "desc": "Fährt den Server herunter, statt ihn neu zu starten."},
       "discordchannels": {"label": "Discord-Kanäle", "desc": "Kanal-ID 0 deaktiviert die jeweilige Ereignismeldung."},
       "blueprintminplayhours": {"label": "Blaupausen ab Spielstunden", "desc": "Mindestspielzeit in Stunden für alle Spieler einschließlich Admins; 0 deaktiviert die Sperre."},
       "renderworld": { "label": "Experimentelles RenderWorld", "desc": "Opt-in-Rendering veränderter Außenbereiche nach einem Chunk-Wechsel." },

@@ -31,6 +31,7 @@ import de.omegazirkel.risingworld.adminutils.ui.AdminUtilsPlayerPluginSettings;
 import de.omegazirkel.risingworld.adminutils.ui.NewPlayerInfoOverlay;
 import de.omegazirkel.risingworld.adminutils.ui.PrisonSentenceOverlay;
 import de.omegazirkel.risingworld.adminutils.ui.PrisonZoneIndicatorProvider;
+import de.omegazirkel.risingworld.adminutils.restart.ServerRestartService;
 import de.omegazirkel.risingworld.adminutils.web.WebserverTestRoute;
 import de.omegazirkel.risingworld.adminutils.web.AdminUtilsInfoExport;
 import de.omegazirkel.risingworld.adminutils.web.AdminUtilsInfoRoute;
@@ -136,6 +137,7 @@ class AdminUtilsRuntime extends Plugin {
 	private static boolean isInSpeedmode = false;
 	private static float normalGameSpeed = 2.5f;
 	private volatile boolean prisonGameTimeTickerActive;
+	private ServerRestartService restartService;
 	private long lastPrisonGameTimeTickMs;
 
 	public static OZLogger logger() {
@@ -172,6 +174,8 @@ class AdminUtilsRuntime extends Plugin {
 			s = PluginSettings.getInstance((AdminUtils) this);
 		t = I18n.getInstance(this);
 		s.initSettings();
+		restartService = new ServerRestartService((AdminUtils) this);
+		restartService.configure(s);
 		playerDatabase = getWorldDatabase(Target.Players);
 		registerWebserverTestRoute();
 		registerWebserverInfoRoute();
@@ -209,7 +213,10 @@ class AdminUtilsRuntime extends Plugin {
 		PlayerPluginSettingsOverlay.registerPlayerPluginData(new AdminUtilsPlayerPluginData(getDescription("version")));
 		PlayerPluginSettingsOverlay.registerPlayerPluginAdminSettings(
 				new PlayerPluginAdminSettings(name, getDescription("version"), () -> s.adminSettingsEntries(),
-						s::initSettings));
+						() -> {
+							s.initSettings();
+							if (restartService != null) restartService.configure(s);
+						}));
 		PluginInfoStatusProviders
 					.registerProvider(new AdminUtilsPluginInfoStatusProvider(
 							(AdminUtils) this, getDescription("version")));
@@ -219,6 +226,10 @@ class AdminUtilsRuntime extends Plugin {
 
 	@Override
 	public void onDisable() {
+		if (restartService != null) {
+			restartService.close();
+			restartService = null;
+		}
 		prisonGameTimeTickerActive = false;
 		closePlayerStatusConnector();
 		if (webserverTestRoute != null) {
@@ -399,6 +410,19 @@ class AdminUtilsRuntime extends Plugin {
 
 	public void onSettingsChanged(Path settingsPath) {
 		s.initSettings(settingsPath.toString());
+		if (restartService != null) restartService.configure(s);
+	}
+
+	public String requestRestartFromDiscord() {
+		return restartService == null ? "unavailable" : restartService.requestRestart("Discord /restart");
+	}
+
+	public String requestRestartFromPlayer(Player player) {
+		return restartService == null ? "unavailable" : restartService.requestRestartFromPlayer(player);
+	}
+
+	private void showRestartResult(Player player, String result) {
+		player.sendTextMessage(t.get("tc.restart.result." + result, player));
 	}
 
 	public void ensureDefaultPermissionFiles() {
@@ -451,6 +475,10 @@ class AdminUtilsRuntime extends Plugin {
 
 		String[] cmdParts = commandLine.split(" ", 2);
 		String command = cmdParts[0];
+		if (command.equalsIgnoreCase("/ozrestart")) {
+			showRestartResult(player, requestRestartFromPlayer(player));
+			return;
+		}
 
 		if (command.equals("/" + pluginCMD)) {
 			// Invalid number of arguments (0)
@@ -460,6 +488,9 @@ class AdminUtilsRuntime extends Plugin {
 			}
 			String option = cmdParts[1];
 			switch (option) {
+				case "restart":
+					showRestartResult(player, requestRestartFromPlayer(player));
+					break;
 				case "info":
 				case "status":
 					PluginInfoStatusProviders.show(player, name);
@@ -1183,6 +1214,7 @@ class AdminUtilsRuntime extends Plugin {
 	}
 
 	public void onPlayerDisconnect(PlayerDisconnectEvent event) {
+		if (restartService != null) restartService.onPlayerDisconnect();
 
 		Player player = event.getPlayer();
 		recentProtectedNpcAttempts.remove(player.getDbID());

@@ -4,6 +4,14 @@
 
 ## Unreleased
 
+## [0.13.1] - 2026-10-06 | Restart ownership and read-only player export
+
+- fix: announce scheduled restarts 10 and 5 minutes beforehand and repeat the forced-restart countdown in localized chat and on-screen messages.
+- feat: own scheduled and manual server restarts, including Discord command delegation.
+- fix: support an explicit restart time zone while preserving server-local schedules by default.
+- fix: use a read-only SQLite connection for persisted player export fallback
+  so Manager queries cannot remove the game-owned player WAL.
+
 ## [0.13.0] - 2026-09-25 | Blueprint and NPC protection
 
 - feat: restrict blueprint placement by total world play hours when configured.

@@ -41,9 +41,9 @@ public class PluginSettingsTest {
         Path directory = Files.createTempDirectory("oz-admin-utils-settings-");
         Path settings = directory.resolve("settings.world.json");
         Files.writeString(directory.resolve("settings.default.json"),
-                "{\"exposeMapData\":true,\"exposePlayerData\":true,\"exposeServerConfig\":true,\"exposeWorldAreas\":true,\"enableWebserverTestRoute\":false,\"exposeNativeInfo\":false,\"nativeMapUrl\":\"\",\"nativeAdminUid\":\"\",\"nativeAdmins\":\"\"}");
+                "{\"exposeMapData\":true,\"exposePlayerData\":true,\"exposeServerConfig\":true,\"exposeWorldAreas\":true,\"enableWebserverTestRoute\":false,\"exposeNativeInfo\":false,\"nativeMapUrl\":\"\",\"nativeAdminUid\":\"\",\"nativeAdmins\":\"\",\"restartTimeZone\":\"system\"}");
         Files.writeString(settings,
-                "{\"exposeMapData\":false,\"exposePlayerData\":false,\"exposeServerConfig\":false,\"exposeWorldAreas\":false,\"enableWebserverTestRoute\":true,\"exposeNativeInfo\":true,\"nativeMapUrl\":\"https://maps.example/\",\"nativeAdminUid\":\"76561198000000001\",\"nativeAdmins\":\"76561198000000002,76561198000000003\"}");
+                "{\"exposeMapData\":false,\"exposePlayerData\":false,\"exposeServerConfig\":false,\"exposeWorldAreas\":false,\"enableWebserverTestRoute\":true,\"exposeNativeInfo\":true,\"nativeMapUrl\":\"https://maps.example/\",\"nativeAdminUid\":\"76561198000000001\",\"nativeAdmins\":\"76561198000000002,76561198000000003\",\"restartTimeZone\":\"Europe/Berlin\",\"useShutdownNotRestart\":true}");
 
         PluginSettings pluginSettings = PluginSettings.getInstance();
         pluginSettings.initSettings(settings.toString());
@@ -57,6 +57,8 @@ public class PluginSettingsTest {
         assertEquals("https://maps.example/", pluginSettings.nativeMapUrl);
         assertEquals("76561198000000001", pluginSettings.nativeAdminUid);
         assertEquals("76561198000000002,76561198000000003", pluginSettings.nativeAdmins);
+        assertEquals("Europe/Berlin", pluginSettings.restartTimeZone);
+        assertTrue(pluginSettings.useShutdownNotRestart);
 
         Files.writeString(settings, "");
         pluginSettings.initSettings(settings.toString());
@@ -70,5 +72,7 @@ public class PluginSettingsTest {
         assertEquals("", pluginSettings.nativeMapUrl);
         assertEquals("", pluginSettings.nativeAdminUid);
         assertEquals("", pluginSettings.nativeAdmins);
+        assertEquals("system", pluginSettings.restartTimeZone);
+        assertFalse(pluginSettings.useShutdownNotRestart);
     }
 }

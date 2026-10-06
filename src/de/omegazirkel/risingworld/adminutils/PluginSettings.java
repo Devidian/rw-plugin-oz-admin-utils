@@ -80,6 +80,16 @@ public class PluginSettings {
 	public boolean enableSpeedUpTime = false;
 	public long discordSleepEventChannelId = 0;
 
+	// Server restart
+	public boolean allowRestart = false;
+	public boolean restartAdminOnly = false;
+	public int restartMinimumTime = 86400;
+	public boolean restartTimed = false;
+	public String restartTimeZone = "system";
+	public String restartTimes = "00:00";
+	public int forceRestartAfter = 0;
+	public boolean useShutdownNotRestart = false;
+
 	// Discord Settings
 	public long discordTheftReportChannelId = 0;
 
@@ -209,6 +219,14 @@ public class PluginSettings {
 			lowerSleepTimeHour = Short.parseShort(settings.getProperty("lowerSleepTimeHour", "7"));
 			enableSpeedUpTime = settings.getProperty("enableSpeedUpTime", "false").contentEquals("true");
 			discordSleepEventChannelId = Long.parseLong(settings.getProperty("discordSleepEventChannelId", "0"));
+			allowRestart = Boolean.parseBoolean(settings.getProperty("allowRestart", "false"));
+			restartAdminOnly = Boolean.parseBoolean(settings.getProperty("restartAdminOnly", "false"));
+			restartMinimumTime = Math.max(0, Integer.parseInt(settings.getProperty("restartMinimumTime", "86400")));
+			restartTimed = Boolean.parseBoolean(settings.getProperty("restartTimed", "false"));
+			restartTimeZone = settings.getProperty("restartTimeZone", "system");
+			restartTimes = settings.getProperty("restartTimes", "00:00");
+			forceRestartAfter = Math.max(0, Integer.parseInt(settings.getProperty("forceRestartAfter", "0")));
+			useShutdownNotRestart = Boolean.parseBoolean(settings.getProperty("useShutdownNotRestart", "false"));
 
 			// discord settings
 			discordTheftReportChannelId = Long.parseLong(settings.getProperty("discordTheftReportChannelId", "0"));
@@ -254,6 +272,23 @@ public class PluginSettings {
 
 	public java.util.List<AdminSettingsEntry> adminSettingsEntries() {
 		return java.util.List.of(
+				AdminSettingsEntry.group("restart", "Server restart", "Timed and manual server restart settings."),
+				entry("allowRestart", "Allow player restart", "Enables in-game restart commands.", allowRestart,
+						"false", AdminSettingsType.BOOLEAN),
+				entry("restartAdminOnly", "Admin only restart", "Limits the in-game command to admins.",
+						restartAdminOnly, "false", AdminSettingsType.BOOLEAN),
+				entry("restartMinimumTime", "Minimum playtime", "Seconds needed for non-admin players.",
+						restartMinimumTime, "86400", AdminSettingsType.INTEGER),
+				entry("restartTimed", "Scheduled restart", "Enables restarts at the configured times.",
+						restartTimed, "false", AdminSettingsType.BOOLEAN),
+				entry("restartTimeZone", "Restart time zone", "IANA zone such as Europe/Berlin; system uses the server zone.",
+						restartTimeZone, "system", AdminSettingsType.STRING),
+				entry("restartTimes", "Restart times", "24-hour HH:mm values in the configured zone, separated by |.",
+						restartTimes, "00:00", AdminSettingsType.STRING),
+				entry("forceRestartAfter", "Force after minutes", "0 waits for all players to leave.",
+						forceRestartAfter, "0", AdminSettingsType.INTEGER),
+				entry("useShutdownNotRestart", "Shutdown instead", "Use shutdown instead of restart.",
+						useShutdownNotRestart, "false", AdminSettingsType.BOOLEAN),
 				AdminSettingsEntry.group("general", "General", "Welcome behavior."),
 				entry("enableWelcomeMessage", "Welcome message", "Shows a short AdminUtils message when a player joins.",
 						enableWelcomeMessage, "false", AdminSettingsType.BOOLEAN),

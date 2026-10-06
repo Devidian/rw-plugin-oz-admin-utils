@@ -29,7 +29,15 @@
     "afkPlayerSleepTimeoutSeconds": 180,
     "afkPlayerSleepWarnSeconds": 30,
     "upperSleepTimeHour": 21,
-    "lowerSleepTimeHour": 7
+    "lowerSleepTimeHour": 7,
+    "allowRestart": false,
+    "restartAdminOnly": false,
+    "restartMinimumTime": 86400,
+    "restartTimed": false,
+    "restartTimeZone": "system",
+    "restartTimes": "00:00",
+    "forceRestartAfter": 0,
+    "useShutdownNotRestart": false
   },
   "feature": {
     "welcomeMessage": false,

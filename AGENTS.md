@@ -10,6 +10,7 @@ Owns:
 - mount ownership protection and theft-related workflows
 - sleep announcements, AFK handling, and optional sleep-time acceleration
 - admin-focused operational utility behavior, settings, events, and persistence
+- scheduled and manual server restart coordination and execution
 
 Does not own:
 - generic shared helpers that belong in `rw-plugin-oz-tools`

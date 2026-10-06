@@ -60,6 +60,34 @@ Sleep start and speed reset messages can also be forwarded to Discord with `disc
 
 - `/au`: open the Admin Utils menu.
 - `/au status` or `/au info`: open the shared Tools Info/Status panel.
+- `/au restart` or `/ozrestart`: request a server restart when `allowRestart=true`.
+
+### Server restart
+
+Admin Utils owns manual and scheduled server restarts. Set `restartTimed=true`
+and configure `restartTimes` as `HH:mm` values separated by `|` in the zone
+selected by `restartTimeZone`. The default `system` preserves the server's
+local time zone; set an IANA zone such as `Europe/Berlin` to use that wall clock
+regardless of the server's time zone. Invalid entries are skipped. A restart
+scheduled sufficiently far ahead is announced 10 and 5 minutes beforehand in
+each online player's language, in both chat and an on-screen message. A restart
+waits for the last player to disconnect; `forceRestartAfter` optionally kicks
+remaining players after that many minutes. `0` waits indefinitely. A pending
+restart locks new logins. During a forced-restart wait, players receive a
+visible minute-by-minute countdown.
+
+The default `useShutdownNotRestart=false` sends the native `restart`
+command. Setting it to `true` sends `shutdown`; the host must restart the
+process if automatic startup is desired. The Discord Connect `/restart` slash
+command and `/dc restart` forward to this service when Discord Connect is installed.
+
+When upgrading, copy `allowRestart`, `restartAdminOnly`, `restartMinimumTime`,
+`restartTimed`, `restartTimes`, `forceRestartAfter`, and `useShutdownNotRestart`
+manually from Discord Connect's `settings.<world>.json` into Admin Utils' world
+JSON settings. Check the new values before enabling `restartTimed`; Discord
+Connect no longer reads these keys. Keep a copy of the previous JSON file for
+rollback. To roll back, restore the previous plugin builds and settings files.
+If the old schedule used the server time zone, leave `restartTimeZone=system`.
 
 ## Map source capture
 
@@ -91,6 +119,8 @@ position snapshot in `live_player_positions_v1`. The default
 `livePlayerPositionIntervalSeconds=1` may be raised up to 30 seconds. Disabling
 player exposure clears the snapshot; the player export continues to use
 persisted `Player.db` coordinates through the PluginAPI.
+When native player queries are unsupported, the export opens `Player.db` with
+the OZ Tools read-only SQLite reader, preserving the game-owned WAL.
 World area geometry is intentionally owned by Admin Utils because it comes from
 the Rising World world database rather than from LandClaim plugin persistence.
 
