@@ -1,5 +1,7 @@
 # Server administration utilities plugin for rising world
 
+**Build baseline:** JDK 25 (`--release 25`) and the bundled Rising World PluginAPI 0.9.3.2 JAR.
+
 Collection of utilities to help server admins to manage their servers (logging, anti griefer, etc)
 
 ## Current features
