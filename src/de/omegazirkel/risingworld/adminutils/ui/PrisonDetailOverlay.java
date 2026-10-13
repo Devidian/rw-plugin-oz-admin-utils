@@ -39,6 +39,7 @@ public class PrisonDetailOverlay extends BasePluginOverlayWithTabs {
         super(player, onClose);
         this.player = player;
         this.prison = prison;
+        if (prison == null) activeDetailTab = DetailTab.OTHER;
         rebuild();
     }
 
@@ -49,12 +50,14 @@ public class PrisonDetailOverlay extends BasePluginOverlayWithTabs {
 
     @Override
     protected String titleText() {
-        return t().get("tc.ui.prison.detail.title", player).replace("PH_PRISON_NAME", prison.name);
+        return prison == null ? t().get("tc.ui.prison.detail.tab.other", player)
+                : t().get("tc.ui.prison.detail.title", player).replace("PH_PRISON_NAME", prison.name);
     }
 
     @Override
     protected String descriptionText() {
-        return t().get("tc.ui.prison.detail.subtitle", player).replace("PH_AREA_ID", String.valueOf(prison.areaId));
+        return prison == null ? "" : t().get("tc.ui.prison.detail.subtitle", player)
+                .replace("PH_AREA_ID", String.valueOf(prison.areaId));
     }
 
     @Override
@@ -65,7 +68,7 @@ public class PrisonDetailOverlay extends BasePluginOverlayWithTabs {
     @Override
     protected void setupTabs() {
         setupTabContainer();
-        addTab(t().get("tc.ui.prison.detail.tab.current", player), 180, activeDetailTab == DetailTab.CURRENT, true, () -> {
+        addTab(t().get("tc.ui.prison.detail.tab.current", player), 180, activeDetailTab == DetailTab.CURRENT, prison != null, () -> {
             activeDetailTab = DetailTab.CURRENT;
             rebuild();
         });

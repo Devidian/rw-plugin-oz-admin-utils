@@ -57,6 +57,18 @@ public class PluginGUI {
         List<MenuItem> menuItems = new ArrayList<>();
         if (uiPlayer.isAdmin()) {
             menuItems.add(menuItemManagePrisonZone(uiPlayer));
+            menuItems.add(new MenuItem("zone-prison-manage",
+                    t().get("tc.ui.prison.detail.tab.other", uiPlayer), p -> {
+                        if (AdminUtils.prisonService() == null) {
+                            p.sendTextMessage(t().get("tc.prison.zone.service.unavailable", p));
+                            return;
+                        }
+                        p.deleteAttribute(PrisonDetailOverlay.ATTRIBUTE_KEY);
+                        PrisonDetailOverlay overlay = new PrisonDetailOverlay(p, null, this::openMainMenu);
+                        p.addUIElement(overlay, UITarget.Modal);
+                        p.setAttribute(PrisonDetailOverlay.ATTRIBUTE_KEY, overlay);
+                        p.hideRadialMenu(false);
+                    }));
         }
         menuItems.add(PluginInfoStatusProviders.menuItem(t().get("tc.menu.info.status", uiPlayer), AdminUtils.name));
         menuItems.add(MenuItem.closeMenu(uiPlayer));

@@ -41,6 +41,7 @@ Admin Utils can manage prison zones for moderation workflows.
 - Enable the feature with `enablePrison=true`.
 - Stand inside an existing Rising World area and open the Admin Utils menu.
 - Use `Manage zone` / `Zone verwalten` to create a prison record for the current area.
+- Admins can open `Other zones` / `Andere Zonen` from the radial menu outside any prison zone to edit existing prisons.
 - Set the prison spawn to the admin's current position and keep the area enabled.
 - Prisoners receive the bundled `ozau-prisoner` area permission, are teleported to the prison spawn, and their inventory is stored for release.
 - The transfer stabilizes the player before moving them so prison replacement does not reuse the old theft kill path.

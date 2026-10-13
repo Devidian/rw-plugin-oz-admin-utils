@@ -4,6 +4,10 @@
 
 ## Unreleased
 
+## [0.14.0] - 2026-10-13 | Prison management outside zones
+
+- feat: let administrators open the prison management overlay outside a prison zone and edit existing prison records.
+
 ## [0.13.1] - 2026-10-06 | Restart ownership and read-only player export
 
 - fix: announce scheduled restarts 10 and 5 minutes beforehand and repeat the forced-restart countdown in localized chat and on-screen messages.
