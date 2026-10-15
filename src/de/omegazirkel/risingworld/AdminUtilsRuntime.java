@@ -647,7 +647,7 @@ class AdminUtilsRuntime extends Plugin {
 		if (s.discordSleepEventChannelId != 0)
 			DiscordConnect.sendDiscordMessage(
 					t().get("tc.sleep.time.speed.normal", DiscordConnect.botLang()),
-					s.discordSleepEventChannelId);
+					s.discordSleepEventChannelId, null, s.discordSleepEventThreadTopic);
 		isInSpeedmode = false;
 	}
 
@@ -687,7 +687,7 @@ class AdminUtilsRuntime extends Plugin {
 			if (s.discordSleepEventChannelId != 0)
 				DiscordConnect.sendDiscordMessage(
 						t().get("tc.sleep.time.speed.up", DiscordConnect.botLang()),
-						s.discordSleepEventChannelId);
+						s.discordSleepEventChannelId, null, s.discordSleepEventThreadTopic);
 			// time per minute in seconds, 60 = real-time, 1 = 1 in game minute per second
 			// we set it to 1/60 so 1 second real life should be 1 hour ingame
 			Server.setGameTimeSpeed(targetTimeSpeed);
@@ -1180,7 +1180,7 @@ class AdminUtilsRuntime extends Plugin {
 		if (s.discordPlayerDeathChannelId != 0)
 			eventLogger().info(message);
 		if (s.discordPlayerDeathChannelId != 0)
-			DiscordConnect.sendDiscordMessage(message, s.discordPlayerDeathChannelId);
+			DiscordConnect.sendDiscordMessage(message, s.discordPlayerDeathChannelId, null, s.discordPlayerDeathThreadTopic);
 	}
 
 	private String playerDeathCause(PlayerDeathEvent event) {
@@ -1202,7 +1202,7 @@ class AdminUtilsRuntime extends Plugin {
 			DiscordConnect.sendDiscordMessage(
 					t.get("tc.event.player.connected", DiscordConnect.botLang())
 							.replace("PH_PLAYER", player.getName()),
-					s.discordPlayerStatusChannelId);
+					s.discordPlayerStatusChannelId, null, s.discordPlayerStatusThreadTopic);
 
 		if (prisonReleaseService != null) {
 			this.executeDelayed(1, () -> {
@@ -1227,7 +1227,7 @@ class AdminUtilsRuntime extends Plugin {
 			DiscordConnect.sendDiscordMessage(
 					t.get("tc.event.player.disconnected", DiscordConnect.botLang())
 							.replace("PH_PLAYER", player.getName()),
-					s.discordPlayerStatusChannelId);
+					s.discordPlayerStatusChannelId, null, s.discordPlayerStatusThreadTopic);
 		}
 		executeDelayed(1, this::publishPlayerStatus);
 	}
@@ -1251,7 +1251,7 @@ class AdminUtilsRuntime extends Plugin {
 		if (s.discordPlayerRemoveObjectChannelId != 0)
 			eventLogger().info(msg);
 		if (s.discordPlayerRemoveObjectChannelId != 0)
-			DiscordConnect.sendDiscordMessage(msg, s.discordPlayerRemoveObjectChannelId);
+			DiscordConnect.sendDiscordMessage(msg, s.discordPlayerRemoveObjectChannelId, null, s.discordPlayerRemoveObjectThreadTopic);
 	}
 
 	public void onPlayerDestroyObject(PlayerDestroyObjectEvent event) {
@@ -1271,7 +1271,7 @@ class AdminUtilsRuntime extends Plugin {
 		if (s.discordPlayerDestroyObjectChannelId != 0)
 			eventLogger().warn(msg);
 		if (s.discordPlayerDestroyObjectChannelId != 0)
-			DiscordConnect.sendDiscordMessage(msg, s.discordPlayerDestroyObjectChannelId);
+			DiscordConnect.sendDiscordMessage(msg, s.discordPlayerDestroyObjectChannelId, null, s.discordPlayerDestroyObjectThreadTopic);
 	}
 
 	public void onNpcDeath(NpcDeathEvent event) {
@@ -1302,7 +1302,7 @@ class AdminUtilsRuntime extends Plugin {
 				DiscordConnect.sendDiscordMessage(t.get("tc.event.kill.npc", DiscordConnect.botLang())
 						.replace("PH_NPC_NAME", replacementNPCNameString)
 						.replace("PH_CAUSE", event.getCause().toString()),
-						s.discordNpcDeathByNonPlayerChannelId);
+						s.discordNpcDeathByNonPlayerChannelId, null, s.discordNpcDeathByNonPlayerThreadTopic);
 			}
 			return;
 		}
@@ -1319,7 +1319,7 @@ class AdminUtilsRuntime extends Plugin {
 			if (s.discordMountDeathByPlayerChannelId != 0)
 				eventLogger().warn(msg);
 			if (s.discordMountDeathByPlayerChannelId != 0)
-				DiscordConnect.sendDiscordMessage(msg, s.discordMountDeathByPlayerChannelId);
+				DiscordConnect.sendDiscordMessage(msg, s.discordMountDeathByPlayerChannelId, null, s.discordMountDeathByPlayerThreadTopic);
 			return;
 		} else if (isAnimal && !isAggressive) {
 			// Non agressive animal was killed
@@ -1332,7 +1332,7 @@ class AdminUtilsRuntime extends Plugin {
 			if (s.discordAnimalDeathByPlayerChannelId != 0)
 				eventLogger().warn(msg);
 			if (s.discordAnimalDeathByPlayerChannelId != 0)
-				DiscordConnect.sendDiscordMessage(msg, s.discordAnimalDeathByPlayerChannelId);
+				DiscordConnect.sendDiscordMessage(msg, s.discordAnimalDeathByPlayerChannelId, null, s.discordAnimalDeathByPlayerThreadTopic);
 			return;
 		}
 
@@ -1350,7 +1350,7 @@ class AdminUtilsRuntime extends Plugin {
 			eventLogger().info(message);
 
 		if (s.discordSeasonChangeEventChannelId != 0)
-			DiscordConnect.sendDiscordMessage(message, s.discordSeasonChangeEventChannelId);
+			DiscordConnect.sendDiscordMessage(message, s.discordSeasonChangeEventChannelId, null, s.discordSeasonChangeEventThreadTopic);
 	}
 
 	public void onWeatherChange(WeatherChangeEvent event) {
@@ -1369,7 +1369,7 @@ class AdminUtilsRuntime extends Plugin {
 			eventLogger().info(message);
 
 		if (s.discordWeatherChangeEventChannelId != 0)
-			DiscordConnect.sendDiscordMessage(message, s.discordWeatherChangeEventChannelId);
+			DiscordConnect.sendDiscordMessage(message, s.discordWeatherChangeEventChannelId, null, s.discordWeatherChangeEventThreadTopic);
 	}
 
 	public void onPlayerTeleport(PlayerTeleportEvent event) {
@@ -1382,7 +1382,7 @@ class AdminUtilsRuntime extends Plugin {
 		if (s.discordPlayerTeleportChannelId != 0)
 			eventLogger().info(message);
 		if (s.discordPlayerTeleportChannelId != 0)
-			DiscordConnect.sendDiscordMessage(message, s.discordPlayerTeleportChannelId);
+			DiscordConnect.sendDiscordMessage(message, s.discordPlayerTeleportChannelId, null, s.discordPlayerTeleportThreadTopic);
 	}
 
 }

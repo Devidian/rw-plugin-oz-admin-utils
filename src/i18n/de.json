@@ -189,6 +189,18 @@
       }
     },
     "setting": {
+      "discordsleepeventthreadtopic": {"label": "Schlafereignisse-Thread", "desc": "Leer verwendet den Plugin-Namen. Gleicher Kanal und Thread-Titel nutzen denselben Thread."},
+      "discordtheftreportthreadtopic": {"label": "Diebstahlberichte-Thread", "desc": "Leer verwendet den Plugin-Namen. Gleicher Kanal und Thread-Titel nutzen denselben Thread."},
+      "discordplayerdeaththreadtopic": {"label": "Spielertode-Thread", "desc": "Leer verwendet den Plugin-Namen. Gleicher Kanal und Thread-Titel nutzen denselben Thread."},
+      "discordplayerstatusthreadtopic": {"label": "Spielerstatus-Thread", "desc": "Leer verwendet den Plugin-Namen. Gleicher Kanal und Thread-Titel nutzen denselben Thread."},
+      "discordplayerremoveobjectthreadtopic": {"label": "Objektentfernungen-Thread", "desc": "Leer verwendet den Plugin-Namen. Gleicher Kanal und Thread-Titel nutzen denselben Thread."},
+      "discordplayerdestroyobjectthreadtopic": {"label": "Objektzerstörungen-Thread", "desc": "Leer verwendet den Plugin-Namen. Gleicher Kanal und Thread-Titel nutzen denselben Thread."},
+      "discordnpcdeathbynonplayerthreadtopic": {"label": "NPC-Tode-Thread", "desc": "Leer verwendet den Plugin-Namen. Gleicher Kanal und Thread-Titel nutzen denselben Thread."},
+      "discordmountdeathbyplayerthreadtopic": {"label": "Reittiertode-Thread", "desc": "Leer verwendet den Plugin-Namen. Gleicher Kanal und Thread-Titel nutzen denselben Thread."},
+      "discordanimaldeathbyplayerthreadtopic": {"label": "Tiertode-Thread", "desc": "Leer verwendet den Plugin-Namen. Gleicher Kanal und Thread-Titel nutzen denselben Thread."},
+      "discordseasonchangeeventthreadtopic": {"label": "Jahreszeitenwechsel-Thread", "desc": "Leer verwendet den Plugin-Namen. Gleicher Kanal und Thread-Titel nutzen denselben Thread."},
+      "discordweatherchangeeventthreadtopic": {"label": "Wetterwechsel-Thread", "desc": "Leer verwendet den Plugin-Namen. Gleicher Kanal und Thread-Titel nutzen denselben Thread."},
+      "discordplayerteleportthreadtopic": {"label": "Spielerteleports-Thread", "desc": "Leer verwendet den Plugin-Namen. Gleicher Kanal und Thread-Titel nutzen denselben Thread."},
       "restart": {"label": "Server-Neustart", "desc": "Einstellungen für geplante und manuelle Server-Neustarts."},
       "allowrestart": {"label": "Neustart durch Spieler erlauben", "desc": "Aktiviert die Neustartbefehle im Spiel."},
       "restartadminonly": {"label": "Neustart nur für Admins", "desc": "Beschränkt den Neustartbefehl im Spiel auf Administratoren."},

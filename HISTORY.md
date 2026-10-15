@@ -4,6 +4,10 @@
 
 ## Unreleased
 
+## [0.14.1] - 2026-10-15 | Discord event threads
+
+- feat: Route Admin Utils Discord event reports into configurable per-route threads.
+
 ## [0.14.0] - 2026-10-13 | Prison management outside zones
 
 - feat: let administrators open the prison management overlay outside a prison zone and edit existing prison records.

@@ -12,3 +12,5 @@ Restart handoff: scheduled times and restart permissions move from Discord Conne
 - Planning and documentation standards: [docs/policies/repository-policy.md](docs/policies/repository-policy.md)
 
 Every implementation plan must include objective, ownership, dependencies, risks, validation strategy, affected repositories/plugins, rollback considerations, and a markdown checkbox checklist.
+
+Discord event threads are available in the Development build; live event-destination checks remain open.

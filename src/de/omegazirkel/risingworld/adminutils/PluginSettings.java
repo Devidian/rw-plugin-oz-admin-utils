@@ -79,6 +79,7 @@ public class PluginSettings {
 	public short lowerSleepTimeHour = 7;
 	public boolean enableSpeedUpTime = false;
 	public long discordSleepEventChannelId = 0;
+	public String discordSleepEventThreadTopic = "";
 
 	// Server restart
 	public boolean allowRestart = false;
@@ -92,31 +93,42 @@ public class PluginSettings {
 
 	// Discord Settings
 	public long discordTheftReportChannelId = 0;
+	public String discordTheftReportThreadTopic = "";
 
 	// player death
 	public long discordPlayerDeathChannelId = 0;
+	public String discordPlayerDeathThreadTopic = "";
 
 	// player connect and disconnect
 	public long discordPlayerStatusChannelId = 0;
+	public String discordPlayerStatusThreadTopic = "";
 
 	// player remove object
 	public long discordPlayerRemoveObjectChannelId = 0;
+	public String discordPlayerRemoveObjectThreadTopic = "";
 
 	// player destroy object
 	public long discordPlayerDestroyObjectChannelId = 0;
+	public String discordPlayerDestroyObjectThreadTopic = "";
 
 	// npc death
 	public long discordNpcDeathByNonPlayerChannelId = 0;
+	public String discordNpcDeathByNonPlayerThreadTopic = "";
 	public long discordMountDeathByPlayerChannelId = 0;
+	public String discordMountDeathByPlayerThreadTopic = "";
 	public long discordAnimalDeathByPlayerChannelId = 0;
+	public String discordAnimalDeathByPlayerThreadTopic = "";
 
 
 	// season change event
 	public long discordSeasonChangeEventChannelId = 0;
+	public String discordSeasonChangeEventThreadTopic = "";
 	public long discordWeatherChangeEventChannelId = 0;
+	public String discordWeatherChangeEventThreadTopic = "";
 
 	// player teleport
 	public long discordPlayerTeleportChannelId = 0;
+	public String discordPlayerTeleportThreadTopic = "";
 
 	// END Settings
 
@@ -219,6 +231,7 @@ public class PluginSettings {
 			lowerSleepTimeHour = Short.parseShort(settings.getProperty("lowerSleepTimeHour", "7"));
 			enableSpeedUpTime = settings.getProperty("enableSpeedUpTime", "false").contentEquals("true");
 			discordSleepEventChannelId = Long.parseLong(settings.getProperty("discordSleepEventChannelId", "0"));
+			discordSleepEventThreadTopic = settings.getProperty("discordSleepEventThreadTopic", "");
 			allowRestart = Boolean.parseBoolean(settings.getProperty("allowRestart", "false"));
 			restartAdminOnly = Boolean.parseBoolean(settings.getProperty("restartAdminOnly", "false"));
 			restartMinimumTime = Math.max(0, Integer.parseInt(settings.getProperty("restartMinimumTime", "86400")));
@@ -230,32 +243,43 @@ public class PluginSettings {
 
 			// discord settings
 			discordTheftReportChannelId = Long.parseLong(settings.getProperty("discordTheftReportChannelId", "0"));
+			discordTheftReportThreadTopic = settings.getProperty("discordTheftReportThreadTopic", "");
 
 			// player death
 			discordPlayerDeathChannelId = Long.parseLong(settings.getProperty("discordPlayerDeathChannelId", "0"));
+			discordPlayerDeathThreadTopic = settings.getProperty("discordPlayerDeathThreadTopic", "");
 			// player connect and disconnect
 			discordPlayerStatusChannelId = Long.parseLong(settings.getProperty("discordPlayerStatusChannelId", "0"));
+			discordPlayerStatusThreadTopic = settings.getProperty("discordPlayerStatusThreadTopic", "");
 			// player remove object
 			discordPlayerRemoveObjectChannelId = Long
 					.parseLong(settings.getProperty("discordPlayerRemoveObjectChannelId", "0"));
+			discordPlayerRemoveObjectThreadTopic = settings.getProperty("discordPlayerRemoveObjectThreadTopic", "");
 			// player destroy object
 			discordPlayerDestroyObjectChannelId = Long
 					.parseLong(settings.getProperty("discordPlayerDestroyObjectChannelId", "0"));
+			discordPlayerDestroyObjectThreadTopic = settings.getProperty("discordPlayerDestroyObjectThreadTopic", "");
 			// npc death
 			discordNpcDeathByNonPlayerChannelId = Long
 					.parseLong(settings.getProperty("discordNpcDeathByNonPlayerChannelId", "0"));
+			discordNpcDeathByNonPlayerThreadTopic = settings.getProperty("discordNpcDeathByNonPlayerThreadTopic", "");
 			discordMountDeathByPlayerChannelId = Long
 					.parseLong(settings.getProperty("discordMountDeathByPlayerChannelId", "0"));
+			discordMountDeathByPlayerThreadTopic = settings.getProperty("discordMountDeathByPlayerThreadTopic", "");
 			discordAnimalDeathByPlayerChannelId = Long
 					.parseLong(settings.getProperty("discordAnimalDeathByPlayerChannelId", "0"));
+			discordAnimalDeathByPlayerThreadTopic = settings.getProperty("discordAnimalDeathByPlayerThreadTopic", "");
 			// season change event
 			discordSeasonChangeEventChannelId = Long
 					.parseLong(settings.getProperty("discordSeasonChangeEventChannelId", "0"));
+			discordSeasonChangeEventThreadTopic = settings.getProperty("discordSeasonChangeEventThreadTopic", "");
 			discordWeatherChangeEventChannelId = Long
 					.parseLong(settings.getProperty("discordWeatherChangeEventChannelId", "0"));
+			discordWeatherChangeEventThreadTopic = settings.getProperty("discordWeatherChangeEventThreadTopic", "");
 			// player teleport
 			discordPlayerTeleportChannelId = Long
 					.parseLong(settings.getProperty("discordPlayerTeleportChannelId", "0"));
+			discordPlayerTeleportThreadTopic = settings.getProperty("discordPlayerTeleportThreadTopic", "");
 
 			logger().info((plugin == null ? "OZAdminUtils" : plugin.getName()) + " Plugin settings loaded");
 			logger().info("Sending welcome message on login is: " + String.valueOf(enableWelcomeMessage));
@@ -453,7 +477,31 @@ public class PluginSettings {
 						AdminSettingsType.STRING),
 				entry("discordPlayerTeleportChannelId", "Player teleport channel",
 						"Discord channel id for player teleport events.", discordPlayerTeleportChannelId, "0",
-						AdminSettingsType.STRING));
+						AdminSettingsType.STRING),
+				entry("discordSleepEventThreadTopic", "Sleep event thread", "Blank uses the plugin display name.",
+						discordSleepEventThreadTopic, "", AdminSettingsType.STRING),
+				entry("discordTheftReportThreadTopic", "Theft report thread", "Blank uses the plugin display name.",
+						discordTheftReportThreadTopic, "", AdminSettingsType.STRING),
+				entry("discordPlayerDeathThreadTopic", "Player death thread", "Blank uses the plugin display name.",
+						discordPlayerDeathThreadTopic, "", AdminSettingsType.STRING),
+				entry("discordPlayerStatusThreadTopic", "Player status thread", "Blank uses the plugin display name.",
+						discordPlayerStatusThreadTopic, "", AdminSettingsType.STRING),
+				entry("discordPlayerRemoveObjectThreadTopic", "Object removal thread", "Blank uses the plugin display name.",
+						discordPlayerRemoveObjectThreadTopic, "", AdminSettingsType.STRING),
+				entry("discordPlayerDestroyObjectThreadTopic", "Object destruction thread", "Blank uses the plugin display name.",
+						discordPlayerDestroyObjectThreadTopic, "", AdminSettingsType.STRING),
+				entry("discordNpcDeathByNonPlayerThreadTopic", "NPC death by non-player thread", "Blank uses the plugin display name.",
+						discordNpcDeathByNonPlayerThreadTopic, "", AdminSettingsType.STRING),
+				entry("discordMountDeathByPlayerThreadTopic", "Mount death by player thread", "Blank uses the plugin display name.",
+						discordMountDeathByPlayerThreadTopic, "", AdminSettingsType.STRING),
+				entry("discordAnimalDeathByPlayerThreadTopic", "Animal death by player thread", "Blank uses the plugin display name.",
+						discordAnimalDeathByPlayerThreadTopic, "", AdminSettingsType.STRING),
+				entry("discordSeasonChangeEventThreadTopic", "Season change thread", "Blank uses the plugin display name.",
+						discordSeasonChangeEventThreadTopic, "", AdminSettingsType.STRING),
+				entry("discordWeatherChangeEventThreadTopic", "Weather change thread", "Blank uses the plugin display name.",
+						discordWeatherChangeEventThreadTopic, "", AdminSettingsType.STRING),
+				entry("discordPlayerTeleportThreadTopic", "Player teleport thread", "Blank uses the plugin display name.",
+						discordPlayerTeleportThreadTopic, "", AdminSettingsType.STRING));
 	}
 
 	static int clampMapGenChunkScanRadius(int radius) {

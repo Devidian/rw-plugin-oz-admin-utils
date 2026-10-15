@@ -189,6 +189,18 @@
       }
     },
     "setting": {
+      "discordsleepeventthreadtopic": {"label": "Sleep events thread", "desc": "Blank uses the plugin display name. The same channel and thread name reuse one thread."},
+      "discordtheftreportthreadtopic": {"label": "Theft reports thread", "desc": "Blank uses the plugin display name. The same channel and thread name reuse one thread."},
+      "discordplayerdeaththreadtopic": {"label": "Player deaths thread", "desc": "Blank uses the plugin display name. The same channel and thread name reuse one thread."},
+      "discordplayerstatusthreadtopic": {"label": "Player status thread", "desc": "Blank uses the plugin display name. The same channel and thread name reuse one thread."},
+      "discordplayerremoveobjectthreadtopic": {"label": "Object removal thread", "desc": "Blank uses the plugin display name. The same channel and thread name reuse one thread."},
+      "discordplayerdestroyobjectthreadtopic": {"label": "Object destruction thread", "desc": "Blank uses the plugin display name. The same channel and thread name reuse one thread."},
+      "discordnpcdeathbynonplayerthreadtopic": {"label": "NPC deaths thread", "desc": "Blank uses the plugin display name. The same channel and thread name reuse one thread."},
+      "discordmountdeathbyplayerthreadtopic": {"label": "Mount deaths thread", "desc": "Blank uses the plugin display name. The same channel and thread name reuse one thread."},
+      "discordanimaldeathbyplayerthreadtopic": {"label": "Animal deaths thread", "desc": "Blank uses the plugin display name. The same channel and thread name reuse one thread."},
+      "discordseasonchangeeventthreadtopic": {"label": "Season changes thread", "desc": "Blank uses the plugin display name. The same channel and thread name reuse one thread."},
+      "discordweatherchangeeventthreadtopic": {"label": "Weather changes thread", "desc": "Blank uses the plugin display name. The same channel and thread name reuse one thread."},
+      "discordplayerteleportthreadtopic": {"label": "Player teleports thread", "desc": "Blank uses the plugin display name. The same channel and thread name reuse one thread."},
       "restart": {"label": "Server restart", "desc": "Scheduled and manual server restart settings."},
       "allowrestart": {"label": "Allow player restart", "desc": "Enables in-game restart commands."},
       "restartadminonly": {"label": "Admin only restart", "desc": "Limits the in-game command to admins."},

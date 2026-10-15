@@ -69,6 +69,18 @@
     "animalDeathByPlayerChannelId": 0,
     "seasonChangeEventChannelId": 0,
     "weatherChangeEventChannelId": 0,
-    "playerTeleportChannelId": 0
+    "playerTeleportChannelId": 0,
+    "sleepEventThreadTopic": "",
+    "theftReportThreadTopic": "",
+    "playerDeathThreadTopic": "",
+    "playerStatusThreadTopic": "",
+    "playerRemoveObjectThreadTopic": "",
+    "playerDestroyObjectThreadTopic": "",
+    "npcDeathByNonPlayerThreadTopic": "",
+    "mountDeathByPlayerThreadTopic": "",
+    "animalDeathByPlayerThreadTopic": "",
+    "seasonChangeEventThreadTopic": "",
+    "weatherChangeEventThreadTopic": "",
+    "playerTeleportThreadTopic": ""
   }
 }

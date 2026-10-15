@@ -9,6 +9,7 @@ public class DiscordConnect extends DiscordBridge {
 
     private static DiscordConnect bridge;
     private static final PluginSettings s = PluginSettings.getInstance();
+    private static String displayName = "OZ - Admin Utils";
 
     private DiscordConnect(Plugin owner) {
         super(owner);
@@ -23,6 +24,7 @@ public class DiscordConnect extends DiscordBridge {
     }
 
     public static void init(Plugin plugin) {
+        displayName = plugin.getDescription("name");
         bridge = new DiscordConnect(plugin);
         if (bridge.isAvailable())
             logger().info("✅ OZ - Discord Connect found!");
@@ -38,8 +40,13 @@ public class DiscordConnect extends DiscordBridge {
         if (bridge != null) bridge.sendTextMessage(message, channelId, image);
     }
 
+    public static void sendDiscordMessage(String message, long channelId, byte[] image, String topic) {
+        if (bridge != null) bridge.sendTextMessage(message, channelId, image,
+                topic == null || topic.isBlank() ? displayName : topic.trim());
+    }
+
     public static void sendDiscordTheftReport(String message) {
-        sendDiscordMessage(message, s.discordTheftReportChannelId);
+        sendDiscordMessage(message, s.discordTheftReportChannelId, null, s.discordTheftReportThreadTopic);
     }
 
 }
