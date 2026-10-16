@@ -16,6 +16,7 @@ import net.risingworld.api.events.npc.NpcDeathEvent;
 import net.risingworld.api.events.npc.NpcRemoveSaddleBagEvent;
 import net.risingworld.api.events.npc.NpcRemoveSaddleEvent;
 import net.risingworld.api.events.player.PlayerChangeStateEvent;
+import net.risingworld.api.events.player.PlayerCreateBlueprintEvent;
 import net.risingworld.api.events.player.PlayerCommandEvent;
 import net.risingworld.api.events.player.PlayerConnectEvent;
 import net.risingworld.api.events.player.PlayerDeathEvent;
@@ -70,6 +71,7 @@ public final class AdminUtils extends AdminUtilsRuntime implements Listener, Fil
     @Override @EventMethod public void onPlayerHitNpcEvent(PlayerHitNpcEvent e) { super.onPlayerHitNpcEvent(e); }
     @Override @EventMethod public void onPlayerNpcInteractionEvent(PlayerNpcInteractionEvent e) { super.onPlayerNpcInteractionEvent(e); }
     @EventMethod public void onPlayerNpcLeashEvent(PlayerNpcLeashEvent e) { super.onPlayerNpcLeashEvent(e); }
+    @EventMethod public void onPlayerCreateBlueprintEvent(PlayerCreateBlueprintEvent e) { super.onPlayerCreateBlueprintEvent(e); }
     @EventMethod public void onPlayerPlaceBlueprintEvent(PlayerPlaceBlueprintEvent e) { super.onPlayerPlaceBlueprintEvent(e); }
     @Override @EventMethod public void onPlayerMountNpcEvent(PlayerMountNpcEvent e) { super.onPlayerMountNpcEvent(e); }
     @Override @EventMethod public void onNpcAddSaddleEvent(NpcAddSaddleEvent e) { super.onNpcAddSaddleEvent(e); }

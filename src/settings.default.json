@@ -7,6 +7,8 @@
       "heightPercent": 36
     },
     "blueprintMinPlayHours": 0,
+    "maxConstructionCountInExternalBlueprints": -1,
+    "blueprintAdminExempt": true,
     "onlyAdminMapGen": true,
     "mapGenChunkScanRadius": 0,
     "mapGenChunkCooldownSeconds": 60,
@@ -60,6 +62,8 @@
   "discord": {
     "sleepEventChannelId": 0,
     "theftReportChannelId": 0,
+    "blueprintCreateChannelId": 0,
+    "blueprintPlaceChannelId": 0,
     "playerDeathChannelId": 0,
     "playerStatusChannelId": 0,
     "playerRemoveObjectChannelId": 0,
@@ -72,6 +76,8 @@
     "playerTeleportChannelId": 0,
     "sleepEventThreadTopic": "",
     "theftReportThreadTopic": "",
+    "blueprintCreateThreadTopic": "",
+    "blueprintPlaceThreadTopic": "",
     "playerDeathThreadTopic": "",
     "playerStatusThreadTopic": "",
     "playerRemoveObjectThreadTopic": "",

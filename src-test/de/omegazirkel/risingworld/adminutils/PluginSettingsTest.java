@@ -75,4 +75,28 @@ public class PluginSettingsTest {
         assertEquals("system", pluginSettings.restartTimeZone);
         assertFalse(pluginSettings.useShutdownNotRestart);
     }
+
+    @Test
+    public void blueprintSettingsLoadFromCanonicalJsonAndRestoreSafeDefaults() throws Exception {
+        Path directory = Files.createTempDirectory("oz-admin-utils-blueprint-settings-");
+        Path settings = directory.resolve("settings.world.json");
+        Files.writeString(directory.resolve("settings.default.json"), "{}");
+        Files.writeString(settings, """
+                {"general":{"maxConstructionCountInExternalBlueprints":3,"blueprintAdminExempt":false},
+                 "discord":{"blueprintCreateChannelId":123,"blueprintPlaceChannelId":456}}
+                """);
+        PluginSettings pluginSettings = PluginSettings.getInstance();
+        pluginSettings.initSettings(settings.toString());
+        assertEquals(3, pluginSettings.maxConstructionCountInExternalBlueprints);
+        assertFalse(pluginSettings.blueprintAdminExempt);
+        assertEquals(123L, pluginSettings.discordBlueprintCreateChannelId);
+        assertEquals(456L, pluginSettings.discordBlueprintPlaceChannelId);
+
+        Files.writeString(settings, "{}");
+        pluginSettings.initSettings(settings.toString());
+        assertEquals(-1, pluginSettings.maxConstructionCountInExternalBlueprints);
+        assertTrue(pluginSettings.blueprintAdminExempt);
+        assertEquals(0L, pluginSettings.discordBlueprintCreateChannelId);
+        assertEquals(0L, pluginSettings.discordBlueprintPlaceChannelId);
+    }
 }

@@ -51,7 +51,9 @@ public class AdminUtilsPluginInfoStatusProvider implements PluginInfoStatusProvi
     }
 
     private static boolean eventLoggingEnabled(PluginSettings settings) {
-        return settings.discordPlayerDeathChannelId != 0
+        return settings.discordBlueprintCreateChannelId != 0
+                || settings.discordBlueprintPlaceChannelId != 0
+                || settings.discordPlayerDeathChannelId != 0
                 || settings.discordPlayerStatusChannelId != 0
                 || settings.discordPlayerRemoveObjectChannelId != 0
                 || settings.discordPlayerDestroyObjectChannelId != 0

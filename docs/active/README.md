@@ -4,7 +4,7 @@ Active implementation tasks live here.
 
 ## Current Tasks
 
-No active Admin Utils implementation tasks. Completed work is stored under
+Blueprint Discord acceptance: [server-blueprints.md](server-blueprints.md). Completed work is stored under
 `docs/archive/`.
 
 Use one markdown file per task. Each task must include objective, ownership, dependencies, risks, validation strategy, affected repositories/plugins, rollback considerations, and a markdown checkbox checklist.

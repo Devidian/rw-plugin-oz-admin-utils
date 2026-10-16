@@ -14,6 +14,8 @@ import de.omegazirkel.risingworld.adminutils.PluginGUI;
 import de.omegazirkel.risingworld.adminutils.PrisonIncarcerationService;
 import de.omegazirkel.risingworld.adminutils.PrisonReleaseService;
 import de.omegazirkel.risingworld.adminutils.PluginSettings;
+import de.omegazirkel.risingworld.adminutils.blueprint.BlueprintProvenanceStore;
+import de.omegazirkel.risingworld.adminutils.blueprint.BlueprintService;
 import de.omegazirkel.risingworld.adminutils.mapsource.MapChunkSourceStore;
 import de.omegazirkel.risingworld.adminutils.mapsource.RisingWorldMapChunkCapture;
 import de.omegazirkel.risingworld.adminutils.render.RenderWorldService;
@@ -68,6 +70,7 @@ import net.risingworld.api.events.npc.NpcDeathEvent;
 import net.risingworld.api.events.npc.NpcRemoveSaddleBagEvent;
 import net.risingworld.api.events.npc.NpcRemoveSaddleEvent;
 import net.risingworld.api.events.player.PlayerChangeStateEvent;
+import net.risingworld.api.events.player.PlayerCreateBlueprintEvent;
 import net.risingworld.api.events.player.PlayerCommandEvent;
 import net.risingworld.api.events.player.PlayerConnectEvent;
 import net.risingworld.api.events.player.PlayerDeathEvent;
@@ -110,6 +113,7 @@ class AdminUtilsRuntime extends Plugin {
 	private static I18n t = null;
 	private static PluginSettings s = null;
 	private ProtectedNpcTheftStore protectedNpcTheftStore;
+	private BlueprintService blueprintService;
 	private final java.util.Map<Integer, Long> recentProtectedNpcAttempts = new java.util.HashMap<>();
 	private static PluginGUI gui;
 	public static String name;
@@ -188,6 +192,13 @@ class AdminUtilsRuntime extends Plugin {
 		} catch (SQLException ex) {
 			logger().error("Failed to initialize protected NPC theft state: " + ex.getMessage());
 		}
+		BlueprintProvenanceStore blueprintStore = null;
+		try {
+			blueprintStore = new BlueprintProvenanceStore(sqliteCon);
+		} catch (SQLException ex) {
+			logger().error("Failed to initialize blueprint provenance: " + ex.getMessage());
+		}
+		blueprintService = new BlueprintService(blueprintStore, s, t, logger());
 		initRenderWorldService();
 		initLivePlayerPositionCapture();
 		registerPlayerStatusConnector();
@@ -1019,15 +1030,12 @@ class AdminUtilsRuntime extends Plugin {
 		punishProtectedNpcTheft(player, npc);
 	}
 
+	public void onPlayerCreateBlueprintEvent(PlayerCreateBlueprintEvent event) {
+		if (blueprintService != null) blueprintService.onCreate(event);
+	}
+
 	public void onPlayerPlaceBlueprintEvent(PlayerPlaceBlueprintEvent event) {
-		int hours = s.blueprintMinPlayHours;
-		Player player = event.getPlayer();
-		if (hours <= 0 || player == null) return;
-		long requiredSeconds = hours * 3600L;
-		if (player.getTotalPlayTime() >= requiredSeconds) return;
-		event.setCancelled(true);
-		player.sendTextMessage(t().get("tc.blueprint.playtime.required", player)
-				.replace("PH_HOURS", Integer.toString(hours)));
+		if (blueprintService != null) blueprintService.onPlace(event);
 	}
 
 	private void punishProtectedNpcTheft(Player player, Npc npc) {

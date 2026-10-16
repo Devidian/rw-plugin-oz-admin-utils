@@ -29,7 +29,14 @@
         "theft": {"warning": "Geschütztes Tier: Diebstahlversuch PH_ATTEMPT/6. Unterlasse weitere Versuche!", "prison": "Wegen wiederholten Tierdiebstahls: PH_MINUTES Minuten Haft."}
       }
     },
-    "blueprint": {"playtime": {"required": "Blaupausen sind erst nach PH_HOURS Stunden Spielzeit erlaubt."}},
+    "blueprint": {
+      "playtime": {"required": "Blaupausen sind erst nach PH_HOURS Stunden Spielzeit erlaubt."},
+      "error": {"title": "Blaupause nicht erlaubt"},
+      "provenance": {
+        "external": "Diese Blaupause wurde nicht auf diesem Server erstellt.",
+        "database": "Die Herkunft der Blaupause kann momentan nicht geprüft werden. Bitte versuche es später erneut."
+      }
+    },
     "cmd": {
       "help": "Hilfe:\nVerfügbare Chat-Kommandos:\n\u003ccolor\u003dred\u003e/PH_PLUGIN_CMD status\u003c/color\u003e oder \u003ccolor\u003dred\u003e/PH_PLUGIN_CMD info\u003c/color\u003e zeigt Plugin-Infos an\n\u003ccolor\u003dred\u003e/PH_PLUGIN_CMD open\u003c/color\u003e öffnet das Pluginmenü\n\u003ccolor\u003dred\u003e/PH_PLUGIN_CMD help\u003c/color\u003e zeigt diese Hilfe an\n\n\u003ccolor\u003dyellow\u003eTipp:\u003c/color\u003e Binde den Befehl \u003ccolor\u003dred\u003e/PH_PLUGIN_CMD open\u003c/color\u003e an eine Taste der Maus oder Tastatur.",
       "status": "🔎 Plugin Status\n➡️ Plugin version: PH_VERSION\n➡️ Installierte Sprachen: PH_LANG_AVAILABLE\n➡️ Deine Sprache: PH_LANGUAGE\n➡️ Verwendete Sprache: PH_USEDLANG"
@@ -40,6 +47,11 @@
       }
     },
     "event": {
+      "blueprint": {
+        "created": "PH_PLAYER (DB-ID PH_DBID) hat eine Blaupause erstellt: PH_DETAILS",
+        "placed": "PH_PLAYER (DB-ID PH_DBID) hat versucht, Blaupause PH_BLUEPRINT_ID von PH_CREATOR zu platzieren: PH_RESULT. PH_DETAILS",
+        "result": {"allowed": "erlaubt", "playtime": "wegen Spielzeit gesperrt", "external": "externe Blaupause gesperrt", "database": "wegen Datenbankfehler gesperrt"}
+      },
       "kill": {
         "npc": "NPC PH_NPC_NAME starb durch PH_CAUSE.",
         "animal": "Spieler PH_PLAYER tötete ein nicht feindliches Tier [PH_NPC_CLASS] (PH_NPC_NAME) bei `goto PH_LOCATION` (Karte: PH_MAP_COORDINATES)",
@@ -191,6 +203,8 @@
     "setting": {
       "discordsleepeventthreadtopic": {"label": "Schlafereignisse-Thread", "desc": "Leer verwendet den Plugin-Namen. Gleicher Kanal und Thread-Titel nutzen denselben Thread."},
       "discordtheftreportthreadtopic": {"label": "Diebstahlberichte-Thread", "desc": "Leer verwendet den Plugin-Namen. Gleicher Kanal und Thread-Titel nutzen denselben Thread."},
+      "discordblueprintcreatethreadtopic": {"label": "Blaupausen-Erstellung-Thread", "desc": "Leer verwendet den Plugin-Namen."},
+      "discordblueprintplacethreadtopic": {"label": "Blaupausen-Platzierung-Thread", "desc": "Leer verwendet den Plugin-Namen."},
       "discordplayerdeaththreadtopic": {"label": "Spielertode-Thread", "desc": "Leer verwendet den Plugin-Namen. Gleicher Kanal und Thread-Titel nutzen denselben Thread."},
       "discordplayerstatusthreadtopic": {"label": "Spielerstatus-Thread", "desc": "Leer verwendet den Plugin-Namen. Gleicher Kanal und Thread-Titel nutzen denselben Thread."},
       "discordplayerremoveobjectthreadtopic": {"label": "Objektentfernungen-Thread", "desc": "Leer verwendet den Plugin-Namen. Gleicher Kanal und Thread-Titel nutzen denselben Thread."},
@@ -211,7 +225,11 @@
       "forcerestartafter": {"label": "Nach Minuten erzwingen", "desc": "0 wartet, bis alle Spieler den Server verlassen haben."},
       "useshutdownnotrestart": {"label": "Stattdessen herunterfahren", "desc": "Fährt den Server herunter, statt ihn neu zu starten."},
       "discordchannels": {"label": "Discord-Kanäle", "desc": "Kanal-ID 0 deaktiviert die jeweilige Ereignismeldung."},
-      "blueprintminplayhours": {"label": "Blaupausen ab Spielstunden", "desc": "Mindestspielzeit in Stunden für alle Spieler einschließlich Admins; 0 deaktiviert die Sperre."},
+      "blueprintminplayhours": {"label": "Blaupausen ab Spielstunden", "desc": "Mindestspielzeit in Stunden; 0 deaktiviert die Sperre. Die Admin-Ausnahme kann Admins ausnehmen."},
+      "maxconstructioncountinexternalblueprints": {"label": "Grenze für externe Blaupausen", "desc": "-1 deaktiviert die Herkunftsprüfung, 0 prüft alle, positive Werte prüfen Blaupausen mit mehr Konstruktionselementen."},
+      "blueprintadminexempt": {"label": "Admin-Ausnahme für Blaupausen", "desc": "Admins umgehen die Spielzeit- und Herkunftsprüfung."},
+      "discordblueprintcreatechannelid": {"label": "Blaupausen-Erstellungskanal", "desc": "Discord-Kanal-ID für erstellte Blaupausen; 0 deaktiviert Meldungen."},
+      "discordblueprintplacechannelid": {"label": "Blaupausen-Platzierungskanal", "desc": "Discord-Kanal-ID für erlaubte und gesperrte Platzierungsversuche; 0 deaktiviert Meldungen."},
       "renderworld": { "label": "Experimentelles RenderWorld", "desc": "Opt-in-Rendering veränderter Außenbereiche nach einem Chunk-Wechsel." },
       "allowrenderworld": { "label": "RenderWorld erlauben", "desc": "Erlaubt angemeldeten Administratoren und Spielern, veränderte Chunks zu rendern." },
       "maxrenderworldresolution": { "label": "Maximale RenderWorld-Auflösung", "desc": "Obergrenze für die von Spielern gewählte RenderWorld-Auflösung; erlaubt sind 64 bis 1024." },

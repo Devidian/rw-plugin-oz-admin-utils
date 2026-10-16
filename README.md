@@ -8,10 +8,21 @@ Collection of utilities to help server admins to manage their servers (logging, 
 
 All features can be enabled or disabled in `settings.<world>.json`
 
-`blueprintMinPlayHours` requires that many total world play hours before any
-player, including an admin, can place a blueprint; `0` disables the restriction. Discord event
-channel IDs appear in one admin settings group. A channel ID of `0` disables
-that event report. Attempts to interact with or leash protected NPCs are
+`blueprintMinPlayHours` requires that many total world play hours before a player can place a blueprint;
+`0` disables that restriction. `maxConstructionCountInExternalBlueprints=-1` disables the
+server-origin check (the default), `0` checks every blueprint, and a positive value checks only
+blueprints with more construction elements than the limit. Admin Utils records all four blueprint
+hashes and element counts with the creator's player DB ID in its world-local SQLite database when
+a blueprint is created. A match can be placed by any player on the server. Blueprints made before
+this recording began have no matching entry and are treated as external when checked. A database
+error blocks a placement that needs an origin check.
+
+`blueprintAdminExempt=true` lets admins bypass both the play-hour and origin rules; set it to
+`false` to enforce both rules for admins too. Rejected placements show a localized native error
+dialog. Optional `discord.blueprintCreateChannelId` and `discord.blueprintPlaceChannelId` send
+creation and allowed/blocked placement details. Their matching `ThreadTopic` settings use the
+existing Discord thread routing; channel ID `0` disables a report. Discord event
+channel IDs appear in one admin settings group. Attempts to interact with or leash protected NPCs are
 cancelled; the first attempt warns, attempts two through five warn and hurt,
 and each sixth attempt leads to a real-time prison sentence. The first is ten
 minutes, and each later sentence grows by ten minutes. Escalation state is

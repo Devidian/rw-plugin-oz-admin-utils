@@ -28,6 +28,8 @@ public class PluginSettings {
 	public boolean enableWelcomeMessage = false;
 	public boolean newPlayerInfoEnabled = false;
 	public int blueprintMinPlayHours = 0;
+	public int maxConstructionCountInExternalBlueprints = -1;
+	public boolean blueprintAdminExempt = true;
 	public String newPlayerInfoText = "";
 	public int newPlayerInfoWidthPercent = 42;
 	public int newPlayerInfoHeightPercent = 36;
@@ -94,6 +96,10 @@ public class PluginSettings {
 	// Discord Settings
 	public long discordTheftReportChannelId = 0;
 	public String discordTheftReportThreadTopic = "";
+	public long discordBlueprintCreateChannelId = 0;
+	public String discordBlueprintCreateThreadTopic = "";
+	public long discordBlueprintPlaceChannelId = 0;
+	public String discordBlueprintPlaceThreadTopic = "";
 
 	// player death
 	public long discordPlayerDeathChannelId = 0;
@@ -223,6 +229,9 @@ public class PluginSettings {
 
 			enableSleepAnnouncement = settings.getProperty("enableSleepAnnouncement", "false").contentEquals("true");
 			blueprintMinPlayHours = Math.max(0, Integer.parseInt(settings.getProperty("blueprintMinPlayHours", "0")));
+			maxConstructionCountInExternalBlueprints = Math.max(-1,
+					Integer.parseInt(settings.getProperty("maxConstructionCountInExternalBlueprints", "-1")));
+			blueprintAdminExempt = Boolean.parseBoolean(settings.getProperty("blueprintAdminExempt", "true"));
 			enableSleepKickAFKPlayer = settings.getProperty("enableSleepKickAFKPlayer", "false").contentEquals("true");
 			afkPlayerSleepTimeoutSeconds = Integer
 					.parseInt(settings.getProperty("afkPlayerSleepTimeoutSeconds", "300"));
@@ -244,6 +253,10 @@ public class PluginSettings {
 			// discord settings
 			discordTheftReportChannelId = Long.parseLong(settings.getProperty("discordTheftReportChannelId", "0"));
 			discordTheftReportThreadTopic = settings.getProperty("discordTheftReportThreadTopic", "");
+			discordBlueprintCreateChannelId = Long.parseLong(settings.getProperty("discordBlueprintCreateChannelId", "0"));
+			discordBlueprintCreateThreadTopic = settings.getProperty("discordBlueprintCreateThreadTopic", "");
+			discordBlueprintPlaceChannelId = Long.parseLong(settings.getProperty("discordBlueprintPlaceChannelId", "0"));
+			discordBlueprintPlaceThreadTopic = settings.getProperty("discordBlueprintPlaceThreadTopic", "");
 
 			// player death
 			discordPlayerDeathChannelId = Long.parseLong(settings.getProperty("discordPlayerDeathChannelId", "0"));
@@ -329,8 +342,14 @@ public class PluginSettings {
 						"Panel height as percentage of the screen; allowed range is 24 to 95.",
 						newPlayerInfoHeightPercent, "36", AdminSettingsType.INTEGER),
 				entry("blueprintMinPlayHours", "Blueprint minimum play hours",
-						"Minimum total play hours for all players, including admins, before placing blueprints; 0 disables the restriction.",
+						"Minimum total play hours before placing blueprints; 0 disables the restriction.",
 						blueprintMinPlayHours, "0", AdminSettingsType.INTEGER),
+				entry("maxConstructionCountInExternalBlueprints", "External blueprint limit",
+						"-1 disables provenance checks, 0 checks all blueprints, positive values check larger blueprints.",
+						maxConstructionCountInExternalBlueprints, "-1", AdminSettingsType.INTEGER),
+				entry("blueprintAdminExempt", "Blueprint admin exemption",
+						"Admins bypass the blueprint play-time and provenance rules when enabled.",
+						blueprintAdminExempt, "true", AdminSettingsType.BOOLEAN),
 				AdminSettingsEntry.group("mapSource", "Map source capture",
 						"Automatic raw chunk capture for backend map rendering."),
 				entry("enableMapGen", "Map source capture",
@@ -448,6 +467,12 @@ public class PluginSettings {
 				entry("discordTheftReportChannelId", "Theft report channel",
 						"Discord channel id for theft reports; 0 disables channel-specific routing.",
 						discordTheftReportChannelId, "0", AdminSettingsType.STRING),
+				entry("discordBlueprintCreateChannelId", "Blueprint creation channel",
+						"Discord channel id for blueprint creation; 0 disables reports.",
+						discordBlueprintCreateChannelId, "0", AdminSettingsType.STRING),
+				entry("discordBlueprintPlaceChannelId", "Blueprint placement channel",
+						"Discord channel id for allowed and blocked placement attempts; 0 disables reports.",
+						discordBlueprintPlaceChannelId, "0", AdminSettingsType.STRING),
 				entry("discordPlayerDeathChannelId", "Player death channel",
 						"Discord channel id for player death events.", discordPlayerDeathChannelId, "0",
 						AdminSettingsType.STRING),
@@ -482,6 +507,10 @@ public class PluginSettings {
 						discordSleepEventThreadTopic, "", AdminSettingsType.STRING),
 				entry("discordTheftReportThreadTopic", "Theft report thread", "Blank uses the plugin display name.",
 						discordTheftReportThreadTopic, "", AdminSettingsType.STRING),
+				entry("discordBlueprintCreateThreadTopic", "Blueprint creation thread", "Blank uses the plugin display name.",
+						discordBlueprintCreateThreadTopic, "", AdminSettingsType.STRING),
+				entry("discordBlueprintPlaceThreadTopic", "Blueprint placement thread", "Blank uses the plugin display name.",
+						discordBlueprintPlaceThreadTopic, "", AdminSettingsType.STRING),
 				entry("discordPlayerDeathThreadTopic", "Player death thread", "Blank uses the plugin display name.",
 						discordPlayerDeathThreadTopic, "", AdminSettingsType.STRING),
 				entry("discordPlayerStatusThreadTopic", "Player status thread", "Blank uses the plugin display name.",
