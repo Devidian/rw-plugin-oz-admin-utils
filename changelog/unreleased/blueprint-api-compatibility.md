@@ -1,1 +1,0 @@
-- fix: disable blueprint provenance and Discord reports gracefully when the runtime PluginAPI lacks blueprint signature methods, while retaining the play-hour restriction.

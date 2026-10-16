@@ -4,6 +4,10 @@
 
 ## Unreleased
 
+## [0.15.1] - 2026-10-16 | Blueprint API compatibility
+
+- fix: check for blueprint count and hash methods at startup before enabling provenance and blueprint Discord reports; retain the play-hour rule on older PluginAPI builds.
+
 ## [0.15.0] - 2026-10-16 | Server blueprint provenance
 
 - feat: record server-created blueprint signatures and optionally block external blueprints above a configurable construction count.
