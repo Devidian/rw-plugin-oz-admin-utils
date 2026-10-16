@@ -17,15 +17,19 @@ public final class BlueprintService {
     private final PluginSettings settings;
     private final I18n i18n;
     private final OZLogger logger;
+    private final boolean signaturesAvailable;
 
-    public BlueprintService(BlueprintProvenanceStore store, PluginSettings settings, I18n i18n, OZLogger logger) {
+    public BlueprintService(BlueprintProvenanceStore store, PluginSettings settings, I18n i18n, OZLogger logger,
+                            boolean signaturesAvailable) {
         this.store = store;
         this.settings = settings;
         this.i18n = i18n;
         this.logger = logger;
+        this.signaturesAvailable = signaturesAvailable;
     }
 
     public void onCreate(PlayerCreateBlueprintEvent event) {
+        if (!signaturesAvailable) return;
         Player player = event.getPlayer();
         if (player == null || event.isCancelled()) return;
         Signature signature = new Signature(event.getConstructionCount(), event.getObjectCount(),
@@ -55,17 +59,16 @@ public final class BlueprintService {
     public void onPlace(PlayerPlaceBlueprintEvent event) {
         Player player = event.getPlayer();
         if (player == null || event.isCancelled()) return;
-        Signature signature = new Signature(event.getConstructionCount(), event.getObjectCount(),
-                event.getPlantCount(), event.getTerrainCount(), event.getConstructionsHash(),
-                event.getObjectsHash(), event.getPlantsHash(), event.getTerrainHash());
         boolean admin = player.isAdmin();
         if (decide(settings.maxConstructionCountInExternalBlueprints, settings.blueprintMinPlayHours,
-                settings.blueprintAdminExempt, admin, player.getTotalPlayTime(), signature.constructionCount(), true)
+                settings.blueprintAdminExempt, admin, player.getTotalPlayTime(), event.getConstructionCount(), true)
                 == Decision.PLAYTIME) {
             reject(event, player, Decision.PLAYTIME);
-            reportPlace(event, player, signature, Decision.PLAYTIME);
+            if (signaturesAvailable) reportPlace(event, player, signature(event), Decision.PLAYTIME);
             return;
         }
+        if (!signaturesAvailable) return;
+        Signature signature = signature(event);
         boolean known = true;
         Decision decision;
         if (needsLookup(settings.maxConstructionCountInExternalBlueprints, settings.blueprintAdminExempt,
@@ -85,6 +88,12 @@ public final class BlueprintService {
                 settings.blueprintAdminExempt, admin, player.getTotalPlayTime(), signature.constructionCount(), known);
         if (decision != Decision.ALLOWED) reject(event, player, decision);
         reportPlace(event, player, signature, decision);
+    }
+
+    private static Signature signature(PlayerPlaceBlueprintEvent event) {
+        return new Signature(event.getConstructionCount(), event.getObjectCount(), event.getPlantCount(),
+                event.getTerrainCount(), event.getConstructionsHash(), event.getObjectsHash(),
+                event.getPlantsHash(), event.getTerrainHash());
     }
 
     private void reject(PlayerPlaceBlueprintEvent event, Player player, Decision decision) {

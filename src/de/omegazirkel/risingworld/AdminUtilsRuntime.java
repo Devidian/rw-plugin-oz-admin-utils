@@ -15,6 +15,7 @@ import de.omegazirkel.risingworld.adminutils.PrisonIncarcerationService;
 import de.omegazirkel.risingworld.adminutils.PrisonReleaseService;
 import de.omegazirkel.risingworld.adminutils.PluginSettings;
 import de.omegazirkel.risingworld.adminutils.blueprint.BlueprintProvenanceStore;
+import de.omegazirkel.risingworld.adminutils.blueprint.BlueprintApiSupport;
 import de.omegazirkel.risingworld.adminutils.blueprint.BlueprintService;
 import de.omegazirkel.risingworld.adminutils.mapsource.MapChunkSourceStore;
 import de.omegazirkel.risingworld.adminutils.mapsource.RisingWorldMapChunkCapture;
@@ -192,13 +193,18 @@ class AdminUtilsRuntime extends Plugin {
 		} catch (SQLException ex) {
 			logger().error("Failed to initialize protected NPC theft state: " + ex.getMessage());
 		}
+		boolean blueprintSignaturesAvailable = BlueprintApiSupport.hasSignatures();
 		BlueprintProvenanceStore blueprintStore = null;
-		try {
-			blueprintStore = new BlueprintProvenanceStore(sqliteCon);
-		} catch (SQLException ex) {
-			logger().error("Failed to initialize blueprint provenance: " + ex.getMessage());
+		if (blueprintSignaturesAvailable) {
+			try {
+				blueprintStore = new BlueprintProvenanceStore(sqliteCon);
+			} catch (SQLException ex) {
+				logger().error("Failed to initialize blueprint provenance: " + ex.getMessage());
+			}
+		} else {
+			logger().warn("Blueprint provenance and Discord reports disabled: runtime PluginAPI lacks blueprint signature methods; play-hour rule remains active");
 		}
-		blueprintService = new BlueprintService(blueprintStore, s, t, logger());
+		blueprintService = new BlueprintService(blueprintStore, s, t, logger(), blueprintSignaturesAvailable);
 		initRenderWorldService();
 		initLivePlayerPositionCapture();
 		registerPlayerStatusConnector();

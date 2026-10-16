@@ -16,6 +16,9 @@ hashes and element counts with the creator's player DB ID in its world-local SQL
 a blueprint is created. A match can be placed by any player on the server. Blueprints made before
 this recording began have no matching entry and are treated as external when checked. A database
 error blocks a placement that needs an origin check.
+At startup, Admin Utils checks that the runtime PluginAPI provides all blueprint count and hash
+methods on both events. If any are missing, it logs a warning and disables provenance recording,
+origin checks, and blueprint Discord reports; the existing play-hour rule remains active.
 
 `blueprintAdminExempt=true` lets admins bypass both the play-hour and origin rules; set it to
 `false` to enforce both rules for admins too. Rejected placements show a localized native error
