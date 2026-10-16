@@ -4,6 +4,11 @@
 
 ## Unreleased
 
+## [0.15.0] - 2026-10-16 | Server blueprint provenance
+
+- feat: record server-created blueprint signatures and optionally block external blueprints above a configurable construction count.
+- feat: let admins bypass both blueprint placement rules by default and report blueprint creation and placement attempts to optional Discord channels.
+
 ## [0.14.1] - 2026-10-15 | Discord event threads
 
 - feat: Route Admin Utils Discord event reports into configurable per-route threads.
