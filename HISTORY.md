@@ -4,6 +4,11 @@
 
 ## Unreleased
 
+## [0.15.2] - 2026-11-06 | Optional map source retention
+
+- feat: acknowledge rendered map chunks per version and remove confirmed source data seven days after its last scan, in bounded background batches when explicitly enabled.
+- fix: provide complete German and English labels and descriptions for the cleanup setting and export-route group.
+
 ## [0.15.1] - 2026-10-16 | Blueprint API compatibility
 
 - fix: check for blueprint count and hash methods at startup before enabling provenance and blueprint Discord reports; retain the play-hour rule on older PluginAPI builds.
