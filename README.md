@@ -125,6 +125,25 @@ an external backend renderer. Admin Utils does not generate PNG map tiles or a
 tile pyramid. A successful database insert/update writes the debug-level log
 `chunk <x> <z> updated in <ms>ms`.
 
+Optional terrain retention uses `mapSourceCleanupEnabled=false` by default and
+`mapRendererAckToken` (a private random token of at least 32 characters in
+`settings.<world>.json`). Give the same token to the renderer as `mapAckToken`
+in its server config. After the
+renderer has stored a chunk and rendered its tile, it POSTs its coordinates,
+content hash and change time to `/plugins/oz---admin-utils/map-ack` with a
+`Bearer` token. Only the current matching version is acknowledged. A background
+job removes up to 1000 acknowledged chunks per minute once seven days have
+passed since their last successful surface scan. An unchanged scan renews that
+seven-day period without changing the map export cursor. If the renderer is
+unreachable or acknowledgement fails, rows remain. Enable cleanup only after
+a complete renderer sync and keep the renderer's persistent tile/cache volume.
+Use one authoritative renderer per world while cleanup is enabled; independent
+renderers are not tracked separately by the acknowledgement state.
+If that volume is lost, chunks older than the retention window cannot be
+reconstructed until players visit them again. Deleting rows frees SQLite pages
+for reuse, limiting future file growth; physical file size may remain high.
+The token and cleanup switch are optional for normal plugin and renderer operation.
+
 Admin Utils also contains route-ready export DTOs/services for native
 plugin routes. Prepared exports cover map source chunks with `lastChange`
 cursor filtering, complete persisted player snapshots with current live

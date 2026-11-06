@@ -2,6 +2,8 @@
 
 Planning is stored in repository-local docs.
 
+Map source retention and Development acceptance: [docs/active/map-source-retention.md](docs/active/map-source-retention.md).
+
 Current Development test work: [docs/active/next-250926b.md](docs/active/next-250926b.md).
 Server blueprint origin control: [docs/active/server-blueprints.md](docs/active/server-blueprints.md).
 Blueprint API compatibility: probe event count/hash methods at startup; keep the play-hour rule when provenance is unavailable.

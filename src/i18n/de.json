@@ -387,6 +387,10 @@
         "desc": "Erlaubt nativen Manager-Routen Lesezugriff auf Weltbereiche.",
         "label": "Weltbereiche bereitstellen"
       },
+      "exportroutes": {
+        "desc": "Freigaben für native Datenrouten an externe Dienste.",
+        "label": "Datenrouten"
+      },
       "forceareaownership": {
         "desc": "Erfordert die Gebietsberechtigung zum Hinzufügen von Spielern, bevor Mount-Besitz übernommen werden kann.",
         "label": "Gebietsbesitz erzwingen"
@@ -410,6 +414,10 @@
       "mapgenchunkscanradius": {
         "desc": "Erfasst einen quadratischen Chunk-Radius um den verlassenen Chunk; erlaubter Bereich ist 0 bis 5.",
         "label": "Chunk-Scanradius"
+      },
+      "mapsourcecleanupenabled": {
+        "desc": "Löscht bestätigte Oberflächendaten frühestens sieben Tage nach dem letzten Scan. Erfordert ein konfiguriertes Renderer-Bestätigungstoken.",
+        "label": "Gerenderte Oberflächendaten bereinigen"
       },
       "mapsource": {
         "desc": "Automatische Roh-Chunk-Erfassung für Backend-Kartenrendering.",

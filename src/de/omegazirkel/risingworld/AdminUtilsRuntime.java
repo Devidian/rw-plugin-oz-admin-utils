@@ -18,6 +18,7 @@ import de.omegazirkel.risingworld.adminutils.blueprint.BlueprintProvenanceStore;
 import de.omegazirkel.risingworld.adminutils.blueprint.BlueprintApiSupport;
 import de.omegazirkel.risingworld.adminutils.blueprint.BlueprintService;
 import de.omegazirkel.risingworld.adminutils.mapsource.MapChunkSourceStore;
+import de.omegazirkel.risingworld.adminutils.mapsource.MapChunkCleanupService;
 import de.omegazirkel.risingworld.adminutils.mapsource.RisingWorldMapChunkCapture;
 import de.omegazirkel.risingworld.adminutils.render.RenderWorldService;
 import de.omegazirkel.risingworld.adminutils.live.LivePlayerPositionCapture;
@@ -39,6 +40,7 @@ import de.omegazirkel.risingworld.adminutils.web.WebserverTestRoute;
 import de.omegazirkel.risingworld.adminutils.web.AdminUtilsInfoExport;
 import de.omegazirkel.risingworld.adminutils.web.AdminUtilsInfoRoute;
 import de.omegazirkel.risingworld.adminutils.web.NativeJsonExportRoute;
+import de.omegazirkel.risingworld.adminutils.web.MapChunkAcknowledgeRoute;
 import de.omegazirkel.risingworld.adminutils.exports.AdminUtilsMapExportService;
 import de.omegazirkel.risingworld.adminutils.exports.AdminUtilsPlayerExportService;
 import de.omegazirkel.risingworld.adminutils.exports.AdminUtilsWorldAreaExportService;
@@ -106,6 +108,7 @@ class AdminUtilsRuntime extends Plugin {
 	private static final String WEBSERVER_TEST_ROUTE = "oz-admin-utils-test";
 	private static final String WEBSERVER_INFO_ROUTE = "info";
 	private static final String WEBSERVER_MAP_ROUTE = "map";
+	private static final String WEBSERVER_MAP_ACK_ROUTE = "map-ack";
 	private static final String WEBSERVER_PLAYERLIST_ROUTE = "playerlist";
 	private static final String WEBSERVER_WORLD_AREAS_ROUTE = "world-areas";
 	private static final String WEBSERVER_SERVER_CONFIG_ROUTE = "server-config";
@@ -127,6 +130,8 @@ class AdminUtilsRuntime extends Plugin {
 	private static PrisonIncarcerationService prisonIncarcerationService;
 	private static PrisonReleaseService prisonReleaseService;
 	private MapChunkSourceStore mapChunkSourceStore;
+	private MapChunkCleanupService mapChunkCleanupService;
+	private MapChunkAcknowledgeRoute webserverMapAckRoute;
 	private RisingWorldMapChunkCapture mapChunkCapture;
 	private RenderWorldService renderWorldService;
 	private LivePlayerPositionCapture livePlayerPositionCapture;
@@ -184,10 +189,10 @@ class AdminUtilsRuntime extends Plugin {
 		playerDatabase = getWorldDatabase(Target.Players);
 		registerWebserverTestRoute();
 		registerWebserverInfoRoute();
-		registerWebserverExportRoutes();
 		ensureDefaultPermissionFiles();
 		initMapChunkSourcePersistence();
 		sqliteCon = SQLiteConnectionFactory.open(this);
+		registerWebserverExportRoutes();
 		try {
 			protectedNpcTheftStore = new ProtectedNpcTheftStore(sqliteCon);
 		} catch (SQLException ex) {
@@ -269,6 +274,7 @@ class AdminUtilsRuntime extends Plugin {
 			prisonStore.shutdown();
 		if (mapChunkCapture != null)
 			mapChunkCapture.shutdown();
+		if (mapChunkCleanupService != null) mapChunkCleanupService.close();
 		if (livePlayerPositionCapture != null)
 			livePlayerPositionCapture.shutdown();
 		if (mapChunkSourceStore != null) {
@@ -338,6 +344,11 @@ class AdminUtilsRuntime extends Plugin {
 						NativeJsonExportRoute.optionalNonNegativeLong(query, "lastChange"),
 						NativeJsonExportRoute.optionalBoundedInteger(query, "limit", 1, MAP_EXPORT_PAGE_SIZE),
 						NativeJsonExportRoute.optionalBoundedInteger(query, "offset", 0, Integer.MAX_VALUE)));
+		if (mapChunkSourceStore != null) {
+			webserverMapAckRoute = new MapChunkAcknowledgeRoute(() -> s.exposeMapData,
+					() -> s.mapRendererAckToken, mapChunkSourceStore);
+			registerWebserverHandler(WEBSERVER_MAP_ACK_ROUTE, webserverMapAckRoute);
+		}
 		webserverPlayerlistRoute = new NativeJsonExportRoute(() -> s.exposePlayerData,
 				query -> exportPlayers(),
 				"playerlist_unavailable");
@@ -393,6 +404,10 @@ class AdminUtilsRuntime extends Plugin {
 	}
 
 	private void unregisterWebserverExportRoutes() {
+		if (webserverMapAckRoute != null) {
+			unregisterWebserverHandler(WEBSERVER_MAP_ACK_ROUTE);
+			webserverMapAckRoute = null;
+		}
 		if (webserverMapRoute != null) {
 			unregisterWebserverHandler(WEBSERVER_MAP_ROUTE);
 			webserverMapRoute = null;
@@ -472,6 +487,11 @@ class AdminUtilsRuntime extends Plugin {
 			mapSourceConnection = SQLiteConnectionFactory.open(this);
 			mapChunkSourceStore = new MapChunkSourceStore(mapSourceConnection);
 			mapChunkCapture = new RisingWorldMapChunkCapture((AdminUtils) this, mapChunkSourceStore);
+			mapChunkCleanupService = new MapChunkCleanupService(mapChunkSourceStore,
+					() -> s != null && s.mapSourceCleanupEnabled && s.mapRendererAckToken.length() >= 32,
+					(count, bytes) -> logger().debug("Removed " + count
+							+ " acknowledged map source chunks; database page size: " + bytes + " bytes"),
+					ex -> logger().warn("Map source cleanup failed: " + ex.getMessage()));
 		} catch (SQLException ex) {
 			if (mapSourceConnection != null) {
 				try {

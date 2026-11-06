@@ -12,6 +12,8 @@
     "onlyAdminMapGen": true,
     "mapGenChunkScanRadius": 0,
     "mapGenChunkCooldownSeconds": 60,
+    "mapSourceCleanupEnabled": false,
+    "mapRendererAckToken": "",
     "maxRenderWorldResolution": 256,
     "livePlayerPositionIntervalSeconds": 1,
     "nativeMapUrl": "",
