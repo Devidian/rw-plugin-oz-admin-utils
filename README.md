@@ -1,8 +1,12 @@
 # Server administration utilities plugin for rising world
 
+Configured administrative Discord event reports continue when a player declines optional Discord chat permission. These reports use the server-local `DBID #…` label instead of the player's name; channel IDs and topic settings still control which reports are sent. DBIDs are pseudonymous and server operators remain responsible for event scope and recipient access.
+
 **Build baseline:** JDK 25 (`--release 25`) and the bundled Rising World PluginAPI 0.9.3.2 JAR.
 
 Collection of utilities to help server admins to manage their servers (logging, anti griefer, etc)
+
+Manager and map consent changes publish a fresh player-status snapshot to the active OZ Tools connector. Revocations also send a targeted event; revoking map consent removes the online player's stored live position locally.
 
 ## Current features
 
@@ -197,6 +201,20 @@ it does not expose player positions or server configuration.
 Standalone renderers can point their `baseUrl` at the game HTTP server directly.
 No Manager proxy, pairing or private connector credential is required. Existing
 GET-only handling and pagination bounds remain in effect.
+
+Experimental satellite preparation uses the same `exposeMapData` switch.
+`GET /plugins/oz---admin-utils/sat-changes` returns up to 100 stored image
+changes per page (`lastChange`, `limit`, `offset`); `sat-tile?x=<chunkX>&z=<chunkZ>&res=<pixels>`
+returns PNG bytes. Images are stored under the plugin's `satellite/source/`
+directory and indexed in `satellite_chunks_v1`. When `allowRenderWorld=true` and
+the player has enabled RenderWorld in their plugin settings, entering a chunk
+without an image or with changed source data requests a one-chunk orthographic
+`world` render through the staging game API. The client uploads the image to
+Admin Utils, which stores it as a PNG and
+updates the change route. A failed render is retried on a later chunk entry.
+The client must have the relevant world geometry loaded; capture alignment and
+coverage still require a Development runtime check before using these images
+as production map tiles.
 
 The native `server-config` handler uses the existing `exposeServerConfig` flag
 and reads `server.properties` two directory levels above the plugin directory.

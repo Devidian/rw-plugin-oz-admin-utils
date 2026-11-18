@@ -17,5 +17,7 @@ public record PlayerExport(
         Long lastseen,
         Double health,
         Double hunger,
-        Double thirst) {
+        Double thirst,
+        String platform,
+        Integer ping) {
 }

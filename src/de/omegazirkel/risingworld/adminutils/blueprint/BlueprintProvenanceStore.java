@@ -46,6 +46,15 @@ public final class BlueprintProvenanceStore {
         }
     }
 
+    public synchronized void erasePlayer(int playerDbId) throws SQLException {
+        if (playerDbId <= 0) throw new IllegalArgumentException("Player DBID required");
+        try (PreparedStatement statement = connection.prepareStatement(
+                "DELETE FROM server_blueprints WHERE player_db_id=?")) {
+            statement.setInt(1, playerDbId);
+            statement.executeUpdate();
+        }
+    }
+
     public synchronized boolean contains(Signature signature) throws SQLException {
         try (PreparedStatement statement = connection.prepareStatement("""
                 SELECT 1 FROM server_blueprints WHERE construction_count = ? AND object_count = ?

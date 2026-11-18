@@ -54,6 +54,11 @@ public final class NativeJsonExportRoute implements WebserverHandler {
     public void onRequest(HttpRequestEvent event) {
         event.setResponseHeader("Cache-Control", "no-store");
         event.setContentType("application/json; charset=utf-8");
+        if (!OZToolsNativeWebAccess.routesEnabled()) {
+            event.setResponseCode(404);
+            event.setResponseBody("{\"error\":\"not_found\"}");
+            return;
+        }
         Access access = checkAccess(() -> OZToolsNativeWebAccess.authorize(event));
         if (access == Access.DISABLED) {
             event.setResponseCode(404);

@@ -10,6 +10,7 @@ import java.util.function.Supplier;
 import com.google.gson.Gson;
 import com.google.gson.JsonParseException;
 
+import de.omegazirkel.risingworld.OZToolsNativeWebAccess;
 import de.omegazirkel.risingworld.adminutils.mapsource.MapChunkSourceStore;
 import de.omegazirkel.risingworld.adminutils.mapsource.MapChunkSourceStore.Acknowledgement;
 import net.risingworld.api.callbacks.WebserverHandler;
@@ -35,7 +36,8 @@ public final class MapChunkAcknowledgeRoute implements WebserverHandler {
         event.setResponseHeader("Cache-Control", "no-store");
         event.setContentType("application/json; charset=utf-8");
         String configuredToken = token.get();
-        if (!enabled.getAsBoolean() || configuredToken == null || configuredToken.length() < 32) {
+        if (!enabled.getAsBoolean() || !OZToolsNativeWebAccess.routesEnabled()
+                || configuredToken == null || configuredToken.length() < 32) {
             reply(event, 404, "not_found");
             return;
         }

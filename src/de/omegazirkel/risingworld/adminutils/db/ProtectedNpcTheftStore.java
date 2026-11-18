@@ -46,5 +46,14 @@ public final class ProtectedNpcTheftStore {
         }
     }
 
+    public synchronized void erasePlayer(int playerDbId) throws SQLException {
+        if (playerDbId <= 0) throw new IllegalArgumentException("Player DBID required");
+        try (PreparedStatement statement = connection.prepareStatement(
+                "DELETE FROM protected_npc_theft WHERE player_db_id=?")) {
+            statement.setInt(1, playerDbId);
+            statement.executeUpdate();
+        }
+    }
+
     public record State(int attempt, int incarcerations) { }
 }
