@@ -48,7 +48,7 @@ public final class BlueprintService {
         }
         if (settings.discordBlueprintCreateChannelId != 0) {
             String message = i18n.get("tc.event.blueprint.created", DiscordConnect.botLang())
-                    .replace("PH_PLAYER", player.getName())
+                    .replace("PH_PLAYER", discordPlayerLabel(player))
                     .replace("PH_DBID", Integer.toString(player.getDbID()))
                     .replace("PH_DETAILS", details(signature, event.getSize(), event.getPosition()));
             DiscordConnect.sendDiscordMessage(message, settings.discordBlueprintCreateChannelId, null,
@@ -117,11 +117,11 @@ public final class BlueprintService {
         String language = DiscordConnect.botLang();
         String result = i18n.get("tc.event.blueprint.result." + decision.name().toLowerCase(), language);
         String message = i18n.get("tc.event.blueprint.placed", language)
-                .replace("PH_PLAYER", player.getName())
+                .replace("PH_PLAYER", discordPlayerLabel(player))
                 .replace("PH_DBID", Integer.toString(player.getDbID()))
                 .replace("PH_RESULT", result)
                 .replace("PH_BLUEPRINT_ID", Long.toString(event.getBlueprintID()))
-                .replace("PH_CREATOR", String.valueOf(event.getCreatorName()))
+                .replace("PH_CREATOR", "unknown")
                 .replace("PH_DETAILS", details(signature, event.getSize(), event.getPosition()));
         DiscordConnect.sendDiscordMessage(message, settings.discordBlueprintPlaceChannelId, null,
                 settings.discordBlueprintPlaceThreadTopic);
@@ -133,6 +133,12 @@ public final class BlueprintService {
                 + ", hashes=" + signature.constructionsHash() + "/" + signature.objectsHash() + "/"
                 + signature.plantsHash() + "/" + signature.terrainHash()
                 + ", size=" + size + ", position=" + position;
+    }
+
+    private static String discordPlayerLabel(Player player) {
+        return de.omegazirkel.risingworld.tools.ExternalDataConsent.isGranted(player,
+                de.omegazirkel.risingworld.tools.ExternalDataConsent.Purpose.DISCORD)
+                ? player.getName() : "Spieler #" + player.getDbID();
     }
 
     static boolean needsLookup(int maximum, boolean adminExempt, boolean admin, int constructions) {

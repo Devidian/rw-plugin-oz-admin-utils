@@ -34,4 +34,15 @@ public class LivePlayerPositionStoreTest {
             }
         }
     }
+
+    @Test
+    public void erasePlayerRemovesOnlyRequestedPosition() throws Exception {
+        try (Connection connection = DriverManager.getConnection("jdbc:sqlite::memory:")) {
+            LivePlayerPositionStore store = new LivePlayerPositionStore(connection);
+            store.replace(List.of(new LivePlayerPosition("one", "One", 1, 2, 3, 100),
+                    new LivePlayerPosition("two", "Two", 4, 5, 6, 100)));
+            store.erasePlayer("one");
+            assertEquals(List.of("two"), List.copyOf(store.list().keySet()));
+        }
+    }
 }

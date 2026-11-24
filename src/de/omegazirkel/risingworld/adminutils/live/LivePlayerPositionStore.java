@@ -81,4 +81,13 @@ public final class LivePlayerPositionStore {
         }
         return positions;
     }
+
+    public synchronized void erasePlayer(String uid) throws SQLException {
+        if (uid == null || uid.isBlank()) throw new IllegalArgumentException("Player UID required");
+        try (PreparedStatement statement = connection.prepareStatement(
+                "DELETE FROM live_player_positions_v1 WHERE uid = ?")) {
+            statement.setString(1, uid);
+            statement.executeUpdate();
+        }
+    }
 }

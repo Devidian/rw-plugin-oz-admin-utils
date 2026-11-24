@@ -46,6 +46,14 @@ public final class RenderWorldService {
         }
     }
 
+    public void erasePlayer(int playerDbId) throws SQLException {
+        try (PreparedStatement statement = connection.prepareStatement(
+                "DELETE FROM render_world_v1 WHERE player_id = ?")) {
+            statement.setInt(1, playerDbId);
+            statement.executeUpdate();
+        }
+    }
+
     private Long changedAt(int chunkX, int chunkZ) throws SQLException {
         try (PreparedStatement statement = connection.prepareStatement(
                 "SELECT updated_at_ms FROM map_chunks_v1 WHERE chunk_x = ? AND chunk_z = ?")) {

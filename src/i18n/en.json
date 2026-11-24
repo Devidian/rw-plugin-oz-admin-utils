@@ -387,6 +387,10 @@
         "desc": "Allows native manager routes to read world areas.",
         "label": "Expose world areas"
       },
+      "exportroutes": {
+        "desc": "Native data route access for external services.",
+        "label": "Export routes"
+      },
       "forceareaownership": {
         "desc": "Requires area add-player permission before taking mount ownership.",
         "label": "Force area ownership"
@@ -410,6 +414,10 @@
       "mapgenchunkscanradius": {
         "desc": "Captures a square radius of chunks around the departed chunk; allowed range is 0 to 5.",
         "label": "Map chunk scan radius"
+      },
+      "mapsourcecleanupenabled": {
+        "desc": "Deletes acknowledged surface data no sooner than seven days after its last scan. Requires a configured renderer acknowledgement token.",
+        "label": "Clean up rendered map source"
       },
       "mapsource": {
         "desc": "Automatic raw chunk capture for backend map rendering.",

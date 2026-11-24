@@ -1,8 +1,12 @@
 # Server administration utilities plugin for rising world
 
+Configured administrative Discord event reports continue when a player declines optional Discord chat permission. These reports use the server-local `DBID #…` label instead of the player's name; channel IDs and topic settings still control which reports are sent. DBIDs are pseudonymous and server operators remain responsible for event scope and recipient access.
+
 **Build baseline:** JDK 25 (`--release 25`) and the bundled Rising World PluginAPI 0.9.3.2 JAR.
 
 Collection of utilities to help server admins to manage their servers (logging, anti griefer, etc)
+
+Manager and map consent changes publish a fresh player-status snapshot to the active OZ Tools connector. Revocations also send a targeted event; revoking map consent removes the online player's stored live position locally.
 
 ## Current features
 
@@ -125,6 +129,25 @@ an external backend renderer. Admin Utils does not generate PNG map tiles or a
 tile pyramid. A successful database insert/update writes the debug-level log
 `chunk <x> <z> updated in <ms>ms`.
 
+Optional terrain retention uses `mapSourceCleanupEnabled=false` by default and
+`mapRendererAckToken` (a private random token of at least 32 characters in
+`settings.<world>.json`). Give the same token to the renderer as `mapAckToken`
+in its server config. After the
+renderer has stored a chunk and rendered its tile, it POSTs its coordinates,
+content hash and change time to `/plugins/oz---admin-utils/map-ack` with a
+`Bearer` token. Only the current matching version is acknowledged. A background
+job removes up to 1000 acknowledged chunks per minute once seven days have
+passed since their last successful surface scan. An unchanged scan renews that
+seven-day period without changing the map export cursor. If the renderer is
+unreachable or acknowledgement fails, rows remain. Enable cleanup only after
+a complete renderer sync and keep the renderer's persistent tile/cache volume.
+Use one authoritative renderer per world while cleanup is enabled; independent
+renderers are not tracked separately by the acknowledgement state.
+If that volume is lost, chunks older than the retention window cannot be
+reconstructed until players visit them again. Deleting rows frees SQLite pages
+for reuse, limiting future file growth; physical file size may remain high.
+The token and cleanup switch are optional for normal plugin and renderer operation.
+
 Admin Utils also contains route-ready export DTOs/services for native
 plugin routes. Prepared exports cover map source chunks with `lastChange`
 cursor filtering, complete persisted player snapshots with current live
@@ -178,6 +201,20 @@ it does not expose player positions or server configuration.
 Standalone renderers can point their `baseUrl` at the game HTTP server directly.
 No Manager proxy, pairing or private connector credential is required. Existing
 GET-only handling and pagination bounds remain in effect.
+
+Experimental satellite preparation uses the same `exposeMapData` switch.
+`GET /plugins/oz---admin-utils/sat-changes` returns up to 100 stored image
+changes per page (`lastChange`, `limit`, `offset`); `sat-tile?x=<chunkX>&z=<chunkZ>&res=<pixels>`
+returns PNG bytes. Images are stored under the plugin's `satellite/source/`
+directory and indexed in `satellite_chunks_v1`. When `allowRenderWorld=true` and
+the player has enabled RenderWorld in their plugin settings, entering a chunk
+without an image or with changed source data requests a one-chunk orthographic
+`world` render through the staging game API. The client uploads the image to
+Admin Utils, which stores it as a PNG and
+updates the change route. A failed render is retried on a later chunk entry.
+The client must have the relevant world geometry loaded; capture alignment and
+coverage still require a Development runtime check before using these images
+as production map tiles.
 
 The native `server-config` handler uses the existing `exposeServerConfig` flag
 and reads `server.properties` two directory levels above the plugin directory.

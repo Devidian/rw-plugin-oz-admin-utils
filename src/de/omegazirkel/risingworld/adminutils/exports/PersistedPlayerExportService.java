@@ -16,6 +16,8 @@ import de.omegazirkel.risingworld.adminutils.live.LivePlayerPosition;
 import de.omegazirkel.risingworld.tools.db.ReadOnlyWorldDatabase;
 import net.risingworld.api.database.WorldDatabase;
 import net.risingworld.api.Plugin;
+import net.risingworld.api.objects.Player;
+import net.risingworld.api.utils.Platform;
 
 /** Reads the game-owned player database through the supported PluginAPI. */
 final class PersistedPlayerExportService {
@@ -25,7 +27,8 @@ final class PersistedPlayerExportService {
     private PersistedPlayerExportService() {
     }
 
-    static List<PlayerExport> read(Plugin plugin, WorldDatabase database, Map<String, LivePlayerPosition> livePositions) throws SQLException {
+    static List<PlayerExport> read(Plugin plugin, WorldDatabase database,
+            Map<String, LivePlayerPosition> livePositions, Player[] onlinePlayers) throws SQLException {
         if (database == null) return List.of();
         String cacheKey = database.getPath();
         CachedPlayers cached = cacheKey == null ? null : CACHE.get(cacheKey);
@@ -34,7 +37,7 @@ final class PersistedPlayerExportService {
         if (!fresh && cacheKey != null) {
             CACHE.put(cacheKey, new CachedPlayers(System.currentTimeMillis() + CACHE_TTL_MS, persisted));
         }
-        return applyLivePositions(persisted, livePositions);
+        return applyLiveData(persisted, livePositions, onlinePlayers);
     }
 
     private static List<PlayerExport> load(Plugin plugin, WorldDatabase database) throws SQLException {
@@ -69,20 +72,30 @@ final class PersistedPlayerExportService {
                         decimal(result, columns, "posz", "pos_z", "z"), lastSeen,
                         decimal(result, columns, "health"),
                         decimal(result, columns, "hunger"),
-                        decimal(result, columns, "thirst")));
+                        decimal(result, columns, "thirst"), null, null));
             }
             return players;
     }
 
-    private static List<PlayerExport> applyLivePositions(List<PlayerExport> players,
-            Map<String, LivePlayerPosition> livePositions) {
-        if (livePositions == null || livePositions.isEmpty()) return players;
+    private static List<PlayerExport> applyLiveData(List<PlayerExport> players,
+            Map<String, LivePlayerPosition> livePositions, Player[] onlinePlayers) {
+        Map<String, Player> connected = new HashMap<>();
+        for (Player player : onlinePlayers) {
+            if (player.isConnected()) connected.put(player.getUID(), player);
+        }
         return players.stream().map(player -> {
             LivePlayerPosition live = livePositions.get(player.uid());
-            return live == null ? player : new PlayerExport(player.id(), player.uid(), player.dbId(), player.name(),
+            Player runtime = connected.get(player.uid());
+            if (live == null && runtime == null) return player;
+            Platform platform = runtime == null ? null : runtime.getPlatform();
+            return new PlayerExport(player.id(), player.uid(), player.dbId(), player.name(),
                     player.permissionGroup(), player.admin(), true, player.lastTimeOnline(), player.currentPlayTime(),
-                    player.totalPlayTime(), (double) live.x(), (double) live.y(), (double) live.z(),
-                    live.updatedAtMs() / 1000, player.health(), player.hunger(), player.thirst());
+                    player.totalPlayTime(), live == null ? player.posx() : Double.valueOf(live.x()),
+                    live == null ? player.posy() : Double.valueOf(live.y()),
+                    live == null ? player.posz() : Double.valueOf(live.z()),
+                    live == null ? player.lastseen() : Long.valueOf(live.updatedAtMs() / 1000),
+                    player.health(), player.hunger(), player.thirst(),
+                    platform == null ? null : platform.name(), runtime == null ? null : runtime.getPing());
         }).toList();
     }
 

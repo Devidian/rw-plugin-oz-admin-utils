@@ -18,8 +18,11 @@ import de.omegazirkel.risingworld.adminutils.blueprint.BlueprintProvenanceStore;
 import de.omegazirkel.risingworld.adminutils.blueprint.BlueprintApiSupport;
 import de.omegazirkel.risingworld.adminutils.blueprint.BlueprintService;
 import de.omegazirkel.risingworld.adminutils.mapsource.MapChunkSourceStore;
+import de.omegazirkel.risingworld.adminutils.mapsource.MapChunkCleanupService;
 import de.omegazirkel.risingworld.adminutils.mapsource.RisingWorldMapChunkCapture;
 import de.omegazirkel.risingworld.adminutils.render.RenderWorldService;
+import de.omegazirkel.risingworld.adminutils.render.SatelliteCaptureService;
+import de.omegazirkel.risingworld.adminutils.render.SatelliteImageStore;
 import de.omegazirkel.risingworld.adminutils.live.LivePlayerPositionCapture;
 import de.omegazirkel.risingworld.adminutils.live.LivePlayerPositionStore;
 import de.omegazirkel.risingworld.adminutils.db.PrisonService;
@@ -39,6 +42,8 @@ import de.omegazirkel.risingworld.adminutils.web.WebserverTestRoute;
 import de.omegazirkel.risingworld.adminutils.web.AdminUtilsInfoExport;
 import de.omegazirkel.risingworld.adminutils.web.AdminUtilsInfoRoute;
 import de.omegazirkel.risingworld.adminutils.web.NativeJsonExportRoute;
+import de.omegazirkel.risingworld.adminutils.web.MapChunkAcknowledgeRoute;
+import de.omegazirkel.risingworld.adminutils.web.SatelliteTileRoute;
 import de.omegazirkel.risingworld.adminutils.exports.AdminUtilsMapExportService;
 import de.omegazirkel.risingworld.adminutils.exports.AdminUtilsPlayerExportService;
 import de.omegazirkel.risingworld.adminutils.exports.AdminUtilsWorldAreaExportService;
@@ -106,6 +111,9 @@ class AdminUtilsRuntime extends Plugin {
 	private static final String WEBSERVER_TEST_ROUTE = "oz-admin-utils-test";
 	private static final String WEBSERVER_INFO_ROUTE = "info";
 	private static final String WEBSERVER_MAP_ROUTE = "map";
+	private static final String WEBSERVER_MAP_ACK_ROUTE = "map-ack";
+	private static final String WEBSERVER_SAT_CHANGES_ROUTE = "sat-changes";
+	private static final String WEBSERVER_SAT_TILE_ROUTE = "sat-tile";
 	private static final String WEBSERVER_PLAYERLIST_ROUTE = "playerlist";
 	private static final String WEBSERVER_WORLD_AREAS_ROUTE = "world-areas";
 	private static final String WEBSERVER_SERVER_CONFIG_ROUTE = "server-config";
@@ -114,6 +122,7 @@ class AdminUtilsRuntime extends Plugin {
 	private static I18n t = null;
 	private static PluginSettings s = null;
 	private ProtectedNpcTheftStore protectedNpcTheftStore;
+	private de.omegazirkel.risingworld.tools.privacy.PlayerErasureService.Registration erasureRegistration;
 	private BlueprintService blueprintService;
 	private final java.util.Map<Integer, Long> recentProtectedNpcAttempts = new java.util.HashMap<>();
 	private static PluginGUI gui;
@@ -127,18 +136,29 @@ class AdminUtilsRuntime extends Plugin {
 	private static PrisonIncarcerationService prisonIncarcerationService;
 	private static PrisonReleaseService prisonReleaseService;
 	private MapChunkSourceStore mapChunkSourceStore;
+	private MapChunkCleanupService mapChunkCleanupService;
+	private MapChunkAcknowledgeRoute webserverMapAckRoute;
 	private RisingWorldMapChunkCapture mapChunkCapture;
 	private RenderWorldService renderWorldService;
+	private SatelliteCaptureService satelliteCaptureService;
 	private LivePlayerPositionCapture livePlayerPositionCapture;
 	private LivePlayerPositionStore livePlayerPositionStore;
 	private WebserverTestRoute webserverTestRoute;
 	private AdminUtilsInfoRoute webserverInfoRoute;
 	private NativeJsonExportRoute webserverMapRoute;
+	private NativeJsonExportRoute webserverSatChangesRoute;
+	private SatelliteTileRoute webserverSatTileRoute;
+	private SatelliteImageStore satelliteImageStore;
 	private NativeJsonExportRoute webserverPlayerlistRoute;
 	private NativeJsonExportRoute webserverWorldAreasRoute;
 	private NativeJsonExportRoute webserverServerConfigRoute;
 	private WorldDatabase playerDatabase;
 	private AutoCloseable playerStatusConnectorFeature;
+	private AutoCloseable playerConsentRevokedConnectorFeature;
+	private AutoCloseable managerConsentRegistration;
+	private AutoCloseable mapConsentRegistration;
+	private AutoCloseable managerDecisionRegistration;
+	private AutoCloseable mapDecisionRegistration;
 	private static boolean isInSpeedmode = false;
 	private static float normalGameSpeed = 2.5f;
 	private volatile boolean prisonGameTimeTickerActive;
@@ -179,15 +199,45 @@ class AdminUtilsRuntime extends Plugin {
 			s = PluginSettings.getInstance((AdminUtils) this);
 		t = I18n.getInstance(this);
 		s.initSettings();
+		managerConsentRegistration = de.omegazirkel.risingworld.tools.ExternalDataConsent.registerPurpose(
+				de.omegazirkel.risingworld.tools.ExternalDataConsent.Purpose.MANAGER,
+				() -> de.omegazirkel.risingworld.OZTools.getSettings().webUseWebsockets
+						|| (de.omegazirkel.risingworld.OZTools.getSettings().webAllowRoutes && s.exposePlayerData));
+		mapConsentRegistration = de.omegazirkel.risingworld.tools.ExternalDataConsent.registerPurpose(
+				de.omegazirkel.risingworld.tools.ExternalDataConsent.Purpose.MAP,
+				() -> de.omegazirkel.risingworld.OZTools.getSettings().webAllowRoutes && s.exposeMapData);
+		managerDecisionRegistration = de.omegazirkel.risingworld.tools.ExternalDataConsent.registerDecisionListener(
+				de.omegazirkel.risingworld.tools.ExternalDataConsent.Purpose.MANAGER,
+				(dbId, status) -> {
+					if (status != de.omegazirkel.risingworld.tools.ExternalDataConsent.Status.ACCEPTED)
+						publishPlayerConsentRevoked(dbId, "manager");
+					publishPlayerStatus();
+				});
+		mapDecisionRegistration = de.omegazirkel.risingworld.tools.ExternalDataConsent.registerDecisionListener(
+				de.omegazirkel.risingworld.tools.ExternalDataConsent.Purpose.MAP,
+				(dbId, status) -> {
+					if (status != de.omegazirkel.risingworld.tools.ExternalDataConsent.Status.ACCEPTED
+							&& livePlayerPositionStore != null) {
+						Player player = Server.getPlayerByDbID(dbId);
+						if (player != null) {
+							try { livePlayerPositionStore.erasePlayer(player.getUID()); }
+							catch (java.sql.SQLException ex) { logger().warn("Map-position erasure failed: " + ex.getMessage()); }
+						}
+					}
+					if (status != de.omegazirkel.risingworld.tools.ExternalDataConsent.Status.ACCEPTED)
+						publishPlayerConsentRevoked(dbId, "map");
+					publishPlayerStatus();
+				});
 		restartService = new ServerRestartService((AdminUtils) this);
 		restartService.configure(s);
 		playerDatabase = getWorldDatabase(Target.Players);
 		registerWebserverTestRoute();
 		registerWebserverInfoRoute();
-		registerWebserverExportRoutes();
 		ensureDefaultPermissionFiles();
 		initMapChunkSourcePersistence();
 		sqliteCon = SQLiteConnectionFactory.open(this);
+		initRenderWorldService();
+		registerWebserverExportRoutes();
 		try {
 			protectedNpcTheftStore = new ProtectedNpcTheftStore(sqliteCon);
 		} catch (SQLException ex) {
@@ -195,21 +245,36 @@ class AdminUtilsRuntime extends Plugin {
 		}
 		boolean blueprintSignaturesAvailable = BlueprintApiSupport.hasSignatures();
 		BlueprintProvenanceStore blueprintStore = null;
-		if (blueprintSignaturesAvailable) {
-			try {
-				blueprintStore = new BlueprintProvenanceStore(sqliteCon);
-			} catch (SQLException ex) {
-				logger().error("Failed to initialize blueprint provenance: " + ex.getMessage());
-			}
-		} else {
+		try {
+			blueprintStore = new BlueprintProvenanceStore(sqliteCon);
+		} catch (SQLException ex) {
+			logger().error("Failed to initialize blueprint provenance: " + ex.getMessage());
+		}
+		if (!blueprintSignaturesAvailable) {
 			logger().warn("Blueprint provenance and Discord reports disabled: runtime PluginAPI lacks blueprint signature methods; play-hour rule remains active");
 		}
 		blueprintService = new BlueprintService(blueprintStore, s, t, logger(), blueprintSignaturesAvailable);
-		initRenderWorldService();
 		initLivePlayerPositionCapture();
 		registerPlayerStatusConnector();
 		ps = new PlayerSettings(sqliteCon);
 		initPrisonPersistence();
+		BlueprintProvenanceStore provenance = blueprintStore;
+		erasureRegistration = de.omegazirkel.risingworld.tools.privacy.PlayerErasureService.register(
+				"admin-utils", this::playerErasureReady, request -> {
+					int dbId = request.playerDbId();
+					if (!playerErasureReady(dbId)) return false;
+					String uid = Server.getPlayerUID(dbId);
+					if (uid == null || uid.isBlank() || livePlayerPositionStore == null
+							|| protectedNpcTheftStore == null || provenance == null) return false;
+					livePlayerPositionStore.erasePlayer(uid);
+					protectedNpcTheftStore.erasePlayer(dbId);
+					provenance.erasePlayer(dbId);
+					renderWorldService.erasePlayer(dbId);
+					Prisoner prisoner = prisonerService.get(dbId);
+					if (prisoner != null) prisonerService.release(prisoner);
+					ps.erasePlayer(dbId);
+					return true;
+				});
 		startPrisonGameTimeTicker();
 		gui = PluginGUI.getInstance(this);
 		// Load Plugin Menu into Main Plugin Menu
@@ -243,12 +308,21 @@ class AdminUtilsRuntime extends Plugin {
 
 	@Override
 	public void onDisable() {
+		if (erasureRegistration != null) erasureRegistration.close();
 		if (restartService != null) {
 			restartService.close();
 			restartService = null;
 		}
 		prisonGameTimeTickerActive = false;
 		closePlayerStatusConnector();
+		try { if (managerConsentRegistration != null) managerConsentRegistration.close(); }
+		catch (Exception ex) { logger().warn("Manager consent registration cleanup failed: " + ex.getMessage()); }
+		try { if (mapConsentRegistration != null) mapConsentRegistration.close(); }
+		catch (Exception ex) { logger().warn("Map consent registration cleanup failed: " + ex.getMessage()); }
+		try { if (managerDecisionRegistration != null) managerDecisionRegistration.close(); }
+		catch (Exception ex) { logger().warn("Manager consent listener cleanup failed: " + ex.getMessage()); }
+		try { if (mapDecisionRegistration != null) mapDecisionRegistration.close(); }
+		catch (Exception ex) { logger().warn("Map consent listener cleanup failed: " + ex.getMessage()); }
 		if (webserverTestRoute != null) {
 			unregisterWebserverHandler(WEBSERVER_TEST_ROUTE);
 			webserverTestRoute = null;
@@ -269,6 +343,7 @@ class AdminUtilsRuntime extends Plugin {
 			prisonStore.shutdown();
 		if (mapChunkCapture != null)
 			mapChunkCapture.shutdown();
+		if (mapChunkCleanupService != null) mapChunkCleanupService.close();
 		if (livePlayerPositionCapture != null)
 			livePlayerPositionCapture.shutdown();
 		if (mapChunkSourceStore != null) {
@@ -333,11 +408,34 @@ class AdminUtilsRuntime extends Plugin {
 	}
 
 	private void registerWebserverExportRoutes() {
+		try {
+			satelliteImageStore = new SatelliteImageStore(sqliteCon, Path.of(getPath()));
+		} catch (SQLException ex) {
+			logger().warn("Failed to initialize satellite image store: " + ex.getMessage());
+		}
 		webserverMapRoute = NativeJsonExportRoute.publicMap(() -> s.exposeMapData, query ->
 				new AdminUtilsMapExportService(sqliteCon).exportMapData(
 						NativeJsonExportRoute.optionalNonNegativeLong(query, "lastChange"),
 						NativeJsonExportRoute.optionalBoundedInteger(query, "limit", 1, MAP_EXPORT_PAGE_SIZE),
 						NativeJsonExportRoute.optionalBoundedInteger(query, "offset", 0, Integer.MAX_VALUE)));
+		if (mapChunkSourceStore != null) {
+			webserverMapAckRoute = new MapChunkAcknowledgeRoute(() -> s.exposeMapData,
+					() -> s.mapRendererAckToken, mapChunkSourceStore);
+			registerWebserverHandler(WEBSERVER_MAP_ACK_ROUTE, webserverMapAckRoute);
+		}
+		if (satelliteImageStore != null) {
+			if (renderWorldService != null) {
+				satelliteCaptureService = new SatelliteCaptureService(satelliteImageStore, renderWorldService, logger());
+			}
+			webserverSatChangesRoute = NativeJsonExportRoute.publicMap(() -> s.exposeMapData, query ->
+					satelliteImageStore.changes(
+							NativeJsonExportRoute.optionalNonNegativeLong(query, "lastChange"),
+							NativeJsonExportRoute.optionalBoundedInteger(query, "limit", 1, SatelliteImageStore.PAGE_SIZE),
+							NativeJsonExportRoute.optionalBoundedInteger(query, "offset", 0, Integer.MAX_VALUE)));
+			webserverSatTileRoute = new SatelliteTileRoute(() -> s.exposeMapData, satelliteImageStore);
+			registerWebserverHandler(WEBSERVER_SAT_CHANGES_ROUTE, webserverSatChangesRoute);
+			registerWebserverHandler(WEBSERVER_SAT_TILE_ROUTE, webserverSatTileRoute);
+		}
 		webserverPlayerlistRoute = new NativeJsonExportRoute(() -> s.exposePlayerData,
 				query -> exportPlayers(),
 				"playerlist_unavailable");
@@ -357,10 +455,11 @@ class AdminUtilsRuntime extends Plugin {
 
 	private Object exportPlayers() throws Exception {
 		try {
-			return new AdminUtilsPlayerExportService().exportPlayers(
+			return filterConsentedPlayers(new AdminUtilsPlayerExportService().exportPlayers(
 					this,
 					playerDatabase,
-					livePlayerPositionStore == null ? java.util.Map.of() : livePlayerPositionStore.list());
+					livePlayerPositionStore == null ? java.util.Map.of() : livePlayerPositionStore.list(),
+					Server.getAllPlayers()));
 		} catch (Exception ex) {
 			logger().warn("Native player export failed: " + ex.getMessage());
 			throw ex;
@@ -369,9 +468,25 @@ class AdminUtilsRuntime extends Plugin {
 
 	private void registerPlayerStatusConnector() {
 		playerStatusConnectorFeature = OZTools.registerGameConnectorFeature("playerStatus", this::publishPlayerStatus);
+		playerConsentRevokedConnectorFeature = OZTools.registerGameConnectorFeature("playerConsentRevoked");
+	}
+
+	private void publishPlayerConsentRevoked(int dbId, String purpose) {
+		Player player = Server.getPlayerByDbID(dbId);
+		if (player == null) return;
+		com.google.gson.JsonObject data = new com.google.gson.JsonObject();
+		data.addProperty("uid", player.getUID());
+		data.addProperty("dbId", dbId);
+		data.addProperty("purpose", purpose);
+		OZTools.publishGameConnectorEvent("playerConsentRevoked", data);
 	}
 
 	private void closePlayerStatusConnector() {
+		if (playerConsentRevokedConnectorFeature != null) {
+			try { playerConsentRevokedConnectorFeature.close(); }
+			catch (Exception ex) { logger().warn("Failed to unregister consent connector feature: " + ex.getMessage()); }
+			finally { playerConsentRevokedConnectorFeature = null; }
+		}
 		if (playerStatusConnectorFeature == null) return;
 		try {
 			playerStatusConnectorFeature.close();
@@ -385,14 +500,50 @@ class AdminUtilsRuntime extends Plugin {
 	/** Sends a complete runtime snapshot; the backend owns its server-scoped cache. */
 	private void publishPlayerStatus() {
 		try {
-			Object payload = new AdminUtilsPlayerExportService().exportRuntimePlayers(Server.getAllPlayers());
+			Object payload = filterConsentedPlayers(
+					new AdminUtilsPlayerExportService().exportRuntimePlayers(Server.getAllPlayers()));
 			OZTools.publishGameConnectorEvent("playerStatus", new Gson().toJsonTree(payload));
 		} catch (RuntimeException ex) {
 			logger().warn("Failed to publish player-status connector event: " + ex.getMessage());
 		}
 	}
 
+	private Object filterConsentedPlayers(
+			de.omegazirkel.risingworld.adminutils.exports.PlayerListExport source) {
+		java.util.List<de.omegazirkel.risingworld.adminutils.exports.PlayerExport> players = source.players().stream()
+				.filter(player -> de.omegazirkel.risingworld.tools.ExternalDataConsent.isGranted(
+						player.dbId(), de.omegazirkel.risingworld.tools.ExternalDataConsent.Purpose.MANAGER))
+				.map(player -> de.omegazirkel.risingworld.tools.ExternalDataConsent.isGranted(
+						player.dbId(), de.omegazirkel.risingworld.tools.ExternalDataConsent.Purpose.MAP)
+						? player : new de.omegazirkel.risingworld.adminutils.exports.PlayerExport(
+								player.id(), player.uid(), player.dbId(), player.name(), player.permissionGroup(),
+								player.admin(), player.connected(), player.lastTimeOnline(), player.currentPlayTime(),
+								player.totalPlayTime(), null, null, null, null, player.health(), player.hunger(), player.thirst(),
+								player.platform(), player.ping()))
+				.toList();
+		return java.util.Map.of("schemaVersion", source.schemaVersion(),
+				"generatedAtMs", source.generatedAtMs(), "consentVersion", 1, "players", players,
+				"mapViewerUids", source.players().stream()
+						.filter(player -> de.omegazirkel.risingworld.tools.ExternalDataConsent.isGranted(
+								player.dbId(), de.omegazirkel.risingworld.tools.ExternalDataConsent.Purpose.MAP))
+						.map(de.omegazirkel.risingworld.adminutils.exports.PlayerExport::uid)
+						.filter(java.util.Objects::nonNull)
+						.toList());
+	}
+
 	private void unregisterWebserverExportRoutes() {
+		if (webserverMapAckRoute != null) {
+			unregisterWebserverHandler(WEBSERVER_MAP_ACK_ROUTE);
+			webserverMapAckRoute = null;
+		}
+		if (webserverSatChangesRoute != null) {
+			unregisterWebserverHandler(WEBSERVER_SAT_CHANGES_ROUTE);
+			webserverSatChangesRoute = null;
+		}
+		if (webserverSatTileRoute != null) {
+			unregisterWebserverHandler(WEBSERVER_SAT_TILE_ROUTE);
+			webserverSatTileRoute = null;
+		}
 		if (webserverMapRoute != null) {
 			unregisterWebserverHandler(WEBSERVER_MAP_ROUTE);
 			webserverMapRoute = null;
@@ -466,12 +617,25 @@ class AdminUtilsRuntime extends Plugin {
 		}
 	}
 
+	private boolean playerErasureReady(int dbId) {
+		if (prisonerService == null || renderWorldService == null || livePlayerPositionStore == null
+				|| (satelliteCaptureService != null && satelliteCaptureService.hasPendingCapture(dbId))) return false;
+		Prisoner prisoner = prisonerService.get(dbId);
+		return prisoner == null || ("RELEASED".equals(prisoner.status)
+				&& !prisoner.restorePending && prisoner.inventoryBlob == null);
+	}
+
 	private void initMapChunkSourcePersistence() {
 		Connection mapSourceConnection = null;
 		try {
 			mapSourceConnection = SQLiteConnectionFactory.open(this);
 			mapChunkSourceStore = new MapChunkSourceStore(mapSourceConnection);
 			mapChunkCapture = new RisingWorldMapChunkCapture((AdminUtils) this, mapChunkSourceStore);
+			mapChunkCleanupService = new MapChunkCleanupService(mapChunkSourceStore,
+					() -> s != null && s.mapSourceCleanupEnabled && s.mapRendererAckToken.length() >= 32,
+					(count, bytes) -> logger().debug("Removed " + count
+							+ " acknowledged map source chunks; database page size: " + bytes + " bytes"),
+					ex -> logger().warn("Map source cleanup failed: " + ex.getMessage()));
 		} catch (SQLException ex) {
 			if (mapSourceConnection != null) {
 				try {
@@ -570,18 +734,15 @@ class AdminUtilsRuntime extends Plugin {
 	}
 
 	private void maybeRenderWorld(Player player, Vector3i chunk) {
-		if (player == null || chunk == null || renderWorldService == null || s == null || !s.allowRenderWorld
+		if (player == null || chunk == null || satelliteCaptureService == null || s == null || !s.allowRenderWorld
 				|| !AdminUtilsPlayerPluginSettings.renderWorldEnabled(player) || player.isIndoor() || player.isInCave()) {
 			return;
 		}
-		try {
-			if (!renderWorldService.changedSinceLastRender(player.getDbID(), chunk.x, chunk.z)) return;
-			int requested = AdminUtilsPlayerPluginSettings.renderWorldResolution(player, 256);
-			int resolution = Math.max(64, Math.min(s.maxRenderWorldResolution, requested));
-			player.executeCommand("renderworld " + resolution + " 0");
-			renderWorldService.recordRender(player.getDbID(), chunk.x, chunk.z);
-		} catch (SQLException ex) {
-			logger().warn("RenderWorld state lookup failed: " + ex.getMessage());
+		int requested = AdminUtilsPlayerPluginSettings.renderWorldResolution(player, 256);
+		int resolution = Integer.highestOneBit(Math.max(64, Math.min(s.maxRenderWorldResolution, requested)));
+		Vector3f cameraPosition = player.getViewPosition();
+		if (cameraPosition != null) {
+			satelliteCaptureService.captureIfChanged(player, ChunkUtils.getChunkPosition(cameraPosition), resolution);
 		}
 	}
 
@@ -863,9 +1024,9 @@ class AdminUtilsRuntime extends Plugin {
 				}
 
 				player.ban(t().get("TC_THEFT_BAN_" + playerTheftKicked.toString(), player), durationSeconds);
-				DiscordConnect.sendDiscordTheftReport(
+				if (canReportAdministrativeEvent(player)) DiscordConnect.sendDiscordTheftReport(
 						t().get("TC_THEFT_BANNED_" + playerTheftKicked.toString(), DiscordConnect.botLang())
-								.replace("PH_PLAYER_NAME", player.getName())
+								.replace("PH_PLAYER_NAME", discordEventPlayerLabel(player))
 								.replace("PH_MOUNT_NAME", mount.getName()));
 				for (Player p : Server.getAllPlayers()) {
 					p.sendTextMessage(t().get("TC_THEFT_BANNED_" + playerTheftKicked.toString(), p)
@@ -881,8 +1042,8 @@ class AdminUtilsRuntime extends Plugin {
 				}
 
 				player.kick(t().get("tc.theft.kick", player));
-				DiscordConnect.sendDiscordTheftReport(t().get("tc.theft.kicked", DiscordConnect.botLang())
-						.replace("PH_PLAYER_NAME", player.getName())
+				if (canReportAdministrativeEvent(player)) DiscordConnect.sendDiscordTheftReport(t().get("tc.theft.kicked", DiscordConnect.botLang())
+						.replace("PH_PLAYER_NAME", discordEventPlayerLabel(player))
 						.replace("PH_MOUNT_NAME", mount.getName()));
 				for (Player p : Server.getAllPlayers()) {
 					p.sendTextMessage(t().get("tc.theft.kicked", p)
@@ -902,8 +1063,8 @@ class AdminUtilsRuntime extends Plugin {
 			player.addDamage(5 * playerTheftAttempt);
 		if (playerTheftAttempt > 5) {
 			player.kill();
-			DiscordConnect.sendDiscordTheftReport(t().get("tc.theft.kill", DiscordConnect.botLang())
-					.replace("PH_PLAYER_NAME", player.getName())
+			if (canReportAdministrativeEvent(player)) DiscordConnect.sendDiscordTheftReport(t().get("tc.theft.kill", DiscordConnect.botLang())
+					.replace("PH_PLAYER_NAME", discordEventPlayerLabel(player))
 					.replace("PH_MOUNT_NAME", mount.getName()));
 			// loop all player
 			for (Player p : Server.getAllPlayers()) {
@@ -949,8 +1110,8 @@ class AdminUtilsRuntime extends Plugin {
 		}
 
 		String prisonName = result.prison == null ? "-" : result.prison.name;
-		DiscordConnect.sendDiscordTheftReport(t().get(messageKey, DiscordConnect.botLang())
-				.replace("PH_PLAYER_NAME", player.getName())
+		if (canReportAdministrativeEvent(player)) DiscordConnect.sendDiscordTheftReport(t().get(messageKey, DiscordConnect.botLang())
+				.replace("PH_PLAYER_NAME", discordEventPlayerLabel(player))
 				.replace("PH_MOUNT_NAME", mount.getName())
 				.replace("PH_PRISON_NAME", prisonName));
 		for (Player p : Server.getAllPlayers()) {
@@ -1181,19 +1342,29 @@ class AdminUtilsRuntime extends Plugin {
 
 	// Event tracking (previously handled in DiscordConnect)
 
+	private boolean canReportAdministrativeEvent(Player player) {
+		return player != null;
+	}
+
+	private String discordEventPlayerLabel(Player player) {
+		return de.omegazirkel.risingworld.tools.ExternalDataConsent.isGranted(player,
+				de.omegazirkel.risingworld.tools.ExternalDataConsent.Purpose.DISCORD)
+				? player.getName() : "Spieler #" + player.getDbID();
+	}
+
 	public void onPlayerDeath(PlayerDeathEvent event) {
 		if (s.discordPlayerDeathChannelId == 0) {
 			return;
 		}
 		Player player = event.getPlayer();
 		String message = t.get("tc.event.player.death", DiscordConnect.botLang())
-				.replace("PH_PLAYER", player.getName())
+				.replace("PH_PLAYER", discordEventPlayerLabel(player))
 				.replace("PH_CAUSE", playerDeathCause(event))
 				.replace("PH_LOCATION", event.getDeathPosition().toString().replaceAll("[,()]", ""));
 
 		if (s.discordPlayerDeathChannelId != 0)
 			eventLogger().info(message);
-		if (s.discordPlayerDeathChannelId != 0)
+		if (s.discordPlayerDeathChannelId != 0 && canReportAdministrativeEvent(player))
 			DiscordConnect.sendDiscordMessage(message, s.discordPlayerDeathChannelId, null, s.discordPlayerDeathThreadTopic);
 	}
 
@@ -1212,10 +1383,10 @@ class AdminUtilsRuntime extends Plugin {
 			eventLogger().info("Player " + player.getName() + " connected at "
 					+ player.getPosition().toString().replaceAll("[,()]", ""));
 
-		if (s.discordPlayerStatusChannelId != 0)
+		if (s.discordPlayerStatusChannelId != 0 && canReportAdministrativeEvent(player))
 			DiscordConnect.sendDiscordMessage(
 					t.get("tc.event.player.connected", DiscordConnect.botLang())
-							.replace("PH_PLAYER", player.getName()),
+							.replace("PH_PLAYER", discordEventPlayerLabel(player)),
 					s.discordPlayerStatusChannelId, null, s.discordPlayerStatusThreadTopic);
 
 		if (prisonReleaseService != null) {
@@ -1237,10 +1408,10 @@ class AdminUtilsRuntime extends Plugin {
 			eventLogger().info("Player " + player.getName() + " disconnected at "
 					+ player.getPosition().toString().replaceAll("[,()]", ""));
 		}
-		if (s.discordPlayerStatusChannelId != 0) {
+		if (s.discordPlayerStatusChannelId != 0 && canReportAdministrativeEvent(player)) {
 			DiscordConnect.sendDiscordMessage(
 					t.get("tc.event.player.disconnected", DiscordConnect.botLang())
-							.replace("PH_PLAYER", player.getName()),
+							.replace("PH_PLAYER", discordEventPlayerLabel(player)),
 					s.discordPlayerStatusChannelId, null, s.discordPlayerStatusThreadTopic);
 		}
 		executeDelayed(1, this::publishPlayerStatus);
@@ -1257,14 +1428,14 @@ class AdminUtilsRuntime extends Plugin {
 			return;
 
 		String msg = t.get("tc.event.object.remove", DiscordConnect.botLang())
-				.replace("PH_PLAYER", player.getName())
+				.replace("PH_PLAYER", discordEventPlayerLabel(player))
 				.replace("PH_OBJECT_NAME", name)
 				.replace("PH_LOCATION", player.getPosition().toString().replaceAll("[,()]", ""))
 				.replace("PH_MAP_COORDINATES", posMap);
 
 		if (s.discordPlayerRemoveObjectChannelId != 0)
 			eventLogger().info(msg);
-		if (s.discordPlayerRemoveObjectChannelId != 0)
+		if (s.discordPlayerRemoveObjectChannelId != 0 && canReportAdministrativeEvent(player))
 			DiscordConnect.sendDiscordMessage(msg, s.discordPlayerRemoveObjectChannelId, null, s.discordPlayerRemoveObjectThreadTopic);
 	}
 
@@ -1278,13 +1449,13 @@ class AdminUtilsRuntime extends Plugin {
 		if (!pickupable)
 			return;
 		String msg = t.get("tc.event.object.destroy", DiscordConnect.botLang())
-				.replace("PH_PLAYER", player.getName())
+				.replace("PH_PLAYER", discordEventPlayerLabel(player))
 				.replace("PH_OBJECT_NAME", name)
 				.replace("PH_LOCATION", player.getPosition().toString().replaceAll("[,()]", ""))
 				.replace("PH_MAP_COORDINATES", posMap);
 		if (s.discordPlayerDestroyObjectChannelId != 0)
 			eventLogger().warn(msg);
-		if (s.discordPlayerDestroyObjectChannelId != 0)
+		if (s.discordPlayerDestroyObjectChannelId != 0 && canReportAdministrativeEvent(player))
 			DiscordConnect.sendDiscordMessage(msg, s.discordPlayerDestroyObjectChannelId, null, s.discordPlayerDestroyObjectThreadTopic);
 	}
 
@@ -1325,27 +1496,27 @@ class AdminUtilsRuntime extends Plugin {
 		if (isMount) {
 			// a mount was killed
 			String msg = t.get("tc.event.kill.mount", DiscordConnect.botLang())
-					.replace("PH_PLAYER", player.getName())
+					.replace("PH_PLAYER", discordEventPlayerLabel(player))
 					.replace("PH_NPC_NAME", replacementNPCNameString)
 					.replace("PH_NPC_CLASS", replacementNPCClassString)
 					.replace("PH_LOCATION", replacementLocatioString)
 					.replace("PH_MAP_COORDINATES", replacementMapCoordinates);
 			if (s.discordMountDeathByPlayerChannelId != 0)
 				eventLogger().warn(msg);
-			if (s.discordMountDeathByPlayerChannelId != 0)
+			if (s.discordMountDeathByPlayerChannelId != 0 && canReportAdministrativeEvent(player))
 				DiscordConnect.sendDiscordMessage(msg, s.discordMountDeathByPlayerChannelId, null, s.discordMountDeathByPlayerThreadTopic);
 			return;
 		} else if (isAnimal && !isAggressive) {
 			// Non agressive animal was killed
 			String msg = t.get("tc.event.kill.animal", DiscordConnect.botLang())
-					.replace("PH_PLAYER", player.getName())
+					.replace("PH_PLAYER", discordEventPlayerLabel(player))
 					.replace("PH_NPC_NAME", replacementNPCNameString)
 					.replace("PH_NPC_CLASS", replacementNPCClassString)
 					.replace("PH_LOCATION", replacementLocatioString)
 					.replace("PH_MAP_COORDINATES", replacementMapCoordinates);
 			if (s.discordAnimalDeathByPlayerChannelId != 0)
 				eventLogger().warn(msg);
-			if (s.discordAnimalDeathByPlayerChannelId != 0)
+			if (s.discordAnimalDeathByPlayerChannelId != 0 && canReportAdministrativeEvent(player))
 				DiscordConnect.sendDiscordMessage(msg, s.discordAnimalDeathByPlayerChannelId, null, s.discordAnimalDeathByPlayerThreadTopic);
 			return;
 		}
@@ -1390,12 +1561,12 @@ class AdminUtilsRuntime extends Plugin {
 		Player player = event.getPlayer();
 
 		String message = t.get("tc.event.player.teleport", DiscordConnect.botLang())
-				.replace("PH_PLAYER", player.getName())
+				.replace("PH_PLAYER", discordEventPlayerLabel(player))
 				.replace("PH_LOCATION", player.getPosition().toString().replaceAll("[,()]", ""));
 
 		if (s.discordPlayerTeleportChannelId != 0)
 			eventLogger().info(message);
-		if (s.discordPlayerTeleportChannelId != 0)
+		if (s.discordPlayerTeleportChannelId != 0 && canReportAdministrativeEvent(player))
 			DiscordConnect.sendDiscordMessage(message, s.discordPlayerTeleportChannelId, null, s.discordPlayerTeleportThreadTopic);
 	}
 

@@ -39,6 +39,8 @@ public class PluginSettings {
 	public boolean onlyAdminMapGen = true;
 	public int mapGenChunkScanRadius = 0;
 	public int mapGenChunkCooldownSeconds = 60;
+	public boolean mapSourceCleanupEnabled = false;
+	public String mapRendererAckToken = "";
 	public boolean allowRenderWorld = false;
 	public int maxRenderWorldResolution = 256;
 
@@ -186,6 +188,8 @@ public class PluginSettings {
 					Integer.parseInt(settings.getProperty("mapGenChunkScanRadius", "0")));
 			mapGenChunkCooldownSeconds = Math.max(0,
 					Integer.parseInt(settings.getProperty("mapGenChunkCooldownSeconds", "60")));
+			mapSourceCleanupEnabled = settings.getProperty("mapSourceCleanupEnabled", "false").contentEquals("true");
+			mapRendererAckToken = settings.getProperty("mapRendererAckToken", "").trim();
 			allowRenderWorld = settings.getProperty("allowRenderWorld", "false").contentEquals("true");
 			maxRenderWorldResolution = clampRenderWorldResolution(
 					Integer.parseInt(settings.getProperty("maxRenderWorldResolution", "256")));
@@ -364,6 +368,9 @@ public class PluginSettings {
 				entry("mapGenChunkCooldownSeconds", "Map chunk cooldown",
 						"Minimum seconds before the same chunk can trigger another capture.",
 						mapGenChunkCooldownSeconds, "60", AdminSettingsType.INTEGER),
+				entry("mapSourceCleanupEnabled", "Clean up rendered map source",
+						"Deletes acknowledged terrain chunks seven days after their last scan.",
+						mapSourceCleanupEnabled, "false", AdminSettingsType.BOOLEAN),
 				AdminSettingsEntry.group("renderWorld", "Experimental RenderWorld",
 						"Opt-in client world rendering after entering a changed outdoor chunk."),
 				entry("allowRenderWorld", "Allow RenderWorld", "Allows opted-in administrators and players to render changed chunks.",
