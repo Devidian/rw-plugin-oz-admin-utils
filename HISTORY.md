@@ -4,6 +4,13 @@
 
 ## Unreleased
 
+## [0.16.1] - 2026-11-27 | OZ Admin Utils sleep and cache reliability
+
+- Sleep restores the original clock speed only when the active sleep session still owns it. Waking one of several sleeping players keeps the session active when appropriate.
+- Shutdown reports failed prison-cache writes and continues other cleanup. The bundled prison permission template uses the shared Tools copier, preserving local files by default.
+
+Requires OZ Tools 0.30.0.
+
 ## [0.15.2] - 2026-11-06 | Optional map source retention
 
 - feat: acknowledge rendered map chunks per version and remove confirmed source data seven days after its last scan, in bounded background batches when explicitly enabled.

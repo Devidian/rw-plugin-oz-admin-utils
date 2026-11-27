@@ -18,3 +18,7 @@ Administration, prison, anti-theft, restarts and native data export. The [plugin
 ## Dependencies
 
 - `rw-plugin-oz-tools/shared-api` — build and runtime shared infrastructure. [Evidence](../pom.xml)
+
+## Permission templates
+
+Tools copies the [prison permission template](../src/de/omegazirkel/risingworld/adminutils/PermissionFileUtil.java). Admin Utils owns the template and installation decision.
