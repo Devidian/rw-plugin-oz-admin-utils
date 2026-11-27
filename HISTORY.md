@@ -4,17 +4,10 @@
 
 ## Unreleased
 
-- Sleep restores only a speed still owned by its active session. Shutdown logs cached prison write failures and continues other cleanup.
+## [0.15.2] - 2026-11-06 | Optional map source retention
 
-- Continue configured administrative Discord event reports without optional Discord consent using the server-local player DBID instead of the player name.
-
-- Refresh the Manager player snapshot immediately when Manager or map consent changes; send targeted Manager/map revocations and clear a revoked online player's stored map position.
-- Add local deletion for player blueprint signatures and protected-NPC theft escalation records.
-
-- feat: retain acknowledged map source chunks for seven days since the last scan, with optional bounded background cleanup and authenticated renderer acknowledgements.
-- fix: complete German and English PluginSettings text for map source cleanup and the export-route group.
-- feat: prepare experimental satellite image storage and read-only renderer routes under the existing map exposure switch.
-- feat: capture opted-in changed chunks with the staging client world-render API and store uploaded PNGs for satellite export.
+- feat: acknowledge rendered map chunks per version and remove confirmed source data seven days after its last scan, in bounded background batches when explicitly enabled.
+- fix: provide complete German and English labels and descriptions for the cleanup setting and export-route group.
 
 ## [0.15.1] - 2026-10-16 | Blueprint API compatibility
 
