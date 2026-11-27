@@ -337,10 +337,16 @@ class AdminUtilsRuntime extends Plugin {
 			PluginInfoStatusProviders.unregisterProvider(name);
 			SharedIndicators.unregisterProvider(name);
 		}
-		if (prisonerStore != null)
-			prisonerStore.shutdown();
-		if (prisonStore != null)
-			prisonStore.shutdown();
+		try {
+			if (prisonerStore != null) prisonerStore.shutdown();
+		} catch (RuntimeException ex) {
+			logger().error("Failed to persist cached prisoners during shutdown: " + ex.getMessage());
+		}
+		try {
+			if (prisonStore != null) prisonStore.shutdown();
+		} catch (RuntimeException ex) {
+			logger().error("Failed to persist cached prisons during shutdown: " + ex.getMessage());
+		}
 		if (mapChunkCapture != null)
 			mapChunkCapture.shutdown();
 		if (mapChunkCleanupService != null) mapChunkCleanupService.close();

@@ -14,3 +14,7 @@ Prison, theft protection, operational restart and runtime event handling. Prison
 - [`ServerRestartService`](../../src/de/omegazirkel/risingworld/adminutils/restart/ServerRestartService.java)
 
 See the [repository index](../README.md) for lifecycle, build and cross-repository dependencies.
+
+## Dependencies
+
+- `rw-plugin-oz-tools/persistence` — cached prison and prisoner storage with final flush. [Call site](../../src/de/omegazirkel/risingworld/AdminUtilsRuntime.java)
