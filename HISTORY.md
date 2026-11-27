@@ -4,6 +4,8 @@
 
 ## Unreleased
 
+- Sleep restores only a speed still owned by its active session. Shutdown logs cached prison write failures and continues other cleanup.
+
 - Continue configured administrative Discord event reports without optional Discord consent using the server-local player DBID instead of the player name.
 
 - Refresh the Manager player snapshot immediately when Manager or map consent changes; send targeted Manager/map revocations and clear a revoked online player's stored map position.

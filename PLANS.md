@@ -25,3 +25,7 @@ Satellite image ingestion uses the staging `Internals.renderImage` world render 
 Every implementation plan must include objective, ownership, dependencies, risks, validation strategy, affected repositories/plugins, rollback considerations, and a markdown checkbox checklist.
 
 Discord event threads are available in the Development build; live event-destination checks remain open.
+
+## Maintenance
+
+Sleep restores only a speed still owned by its active session. Shutdown logs cached prison write failures and continues other cleanup.

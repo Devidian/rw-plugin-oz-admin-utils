@@ -7,6 +7,7 @@ Prison, theft protection, operational restart and runtime event handling. Prison
 
 ## Source and tests
 
+- [Sleep time controller](../../src/de/omegazirkel/risingworld/adminutils/SleepTimeController.java) scopes temporary speed changes to a session. [Sleep state tests](../../src-test/de/omegazirkel/risingworld/adminutils/SleepTimeControllerTest.java) cover ownership and stale callbacks.
 - [`AdminUtilsRuntime`](../../src/de/omegazirkel/risingworld/AdminUtilsRuntime.java)
 - [`PrisonIncarcerationService`](../../src/de/omegazirkel/risingworld/adminutils/PrisonIncarcerationService.java)
 - [`PrisonReleaseService`](../../src/de/omegazirkel/risingworld/adminutils/PrisonReleaseService.java)

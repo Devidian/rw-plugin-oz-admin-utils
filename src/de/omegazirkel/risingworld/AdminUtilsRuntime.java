@@ -14,6 +14,7 @@ import de.omegazirkel.risingworld.adminutils.PluginGUI;
 import de.omegazirkel.risingworld.adminutils.PrisonIncarcerationService;
 import de.omegazirkel.risingworld.adminutils.PrisonReleaseService;
 import de.omegazirkel.risingworld.adminutils.PluginSettings;
+import de.omegazirkel.risingworld.adminutils.SleepTimeController;
 import de.omegazirkel.risingworld.adminutils.blueprint.BlueprintProvenanceStore;
 import de.omegazirkel.risingworld.adminutils.blueprint.BlueprintApiSupport;
 import de.omegazirkel.risingworld.adminutils.blueprint.BlueprintService;
@@ -159,8 +160,8 @@ class AdminUtilsRuntime extends Plugin {
 	private AutoCloseable mapConsentRegistration;
 	private AutoCloseable managerDecisionRegistration;
 	private AutoCloseable mapDecisionRegistration;
-	private static boolean isInSpeedmode = false;
-	private static float normalGameSpeed = 2.5f;
+	private final SleepTimeController sleepTime = new SleepTimeController();
+	private boolean sleepCallbacksEnabled;
 	private volatile boolean prisonGameTimeTickerActive;
 	private ServerRestartService restartService;
 	private long lastPrisonGameTimeTickMs;
@@ -195,6 +196,7 @@ class AdminUtilsRuntime extends Plugin {
 
 	@Override
 	public void onEnable() {
+		sleepCallbacksEnabled = true;
 		name = this.getDescription("name");
 			s = PluginSettings.getInstance((AdminUtils) this);
 		t = I18n.getInstance(this);
@@ -284,9 +286,6 @@ class AdminUtilsRuntime extends Plugin {
 							gui.openMainMenu(p);
 						}));
 		PluginShortcutVisibility.register(name, AdminUtilsPlayerPluginSettings::shortcutVisible);
-		normalGameSpeed = Server.getGameTimeSpeed();
-		if (normalGameSpeed == 0)
-			normalGameSpeed = 2.5f;
 		// connect plugins
 		DiscordConnect.init(this);
 		// register plugin settings
@@ -308,6 +307,10 @@ class AdminUtilsRuntime extends Plugin {
 
 	@Override
 	public void onDisable() {
+		sleepCallbacksEnabled = false;
+		if (sleepTime.isActive()) {
+			returnToNormalTimeSpeed(sleepTime.generation(), false);
+		}
 		if (erasureRegistration != null) erasureRegistration.close();
 		if (restartService != null) {
 			restartService.close();
@@ -815,16 +818,11 @@ class AdminUtilsRuntime extends Plugin {
 		}
 	}
 
-	private void returnToNormalTimeSpeed() {
-		float currentSpeed = Server.getGameTimeSpeed();
-		// abort if time is already returned to normal
-		if (currentSpeed == normalGameSpeed) {
-			isInSpeedmode = false;
-			return;
-		}
-
-		// reset game time speed
-		Server.setGameTimeSpeed(normalGameSpeed);
+	private void returnToNormalTimeSpeed(long generation, boolean announce) {
+		var restore = sleepTime.release(generation, Server.getGameTimeSpeed());
+		if (restore.isEmpty()) return;
+		Server.setGameTimeSpeed((float) restore.getAsDouble());
+		if (!announce) return;
 		for (Player p : Server.getAllPlayers()) {
 			p.sendTextMessage(t().get("tc.sleep.time.speed.normal", p));
 		}
@@ -832,7 +830,6 @@ class AdminUtilsRuntime extends Plugin {
 			DiscordConnect.sendDiscordMessage(
 					t().get("tc.sleep.time.speed.normal", DiscordConnect.botLang()),
 					s.discordSleepEventChannelId, null, s.discordSleepEventThreadTopic);
-		isInSpeedmode = false;
 	}
 
 	private short getSleepingPlayerCount() {
@@ -849,21 +846,21 @@ class AdminUtilsRuntime extends Plugin {
 		Player[] allPlayers = Server.getAllPlayers();
 		float targetTimeSpeed = 0.5f;
 		// skip if already in speed mode or not enough players or feature not enabled
-		if (isInSpeedmode || allPlayers.length < 2 || !s.enableSpeedUpTime)
+		if (!sleepCallbacksEnabled || sleepTime.isActive() || allPlayers.length < 2 || !s.enableSpeedUpTime)
 			return;
 
 		short sleepingPlayers = getSleepingPlayerCount();
 		// only trigger if at least 50% of players are sleeping
 		if (sleepingPlayers * 2 >= allPlayers.length) {
-			normalGameSpeed = Server.getGameTimeSpeed();
-			if (normalGameSpeed == 0)
-				normalGameSpeed = 2.5f;
-			isInSpeedmode = true;
+			long generation = sleepTime.acquire(Server.getGameTimeSpeed(), targetTimeSpeed);
+			if (!sleepTime.isActive()) return;
 			int hoursToSkip = (int) s.lowerSleepTimeHour
 					- (currentGameHour > s.lowerSleepTimeHour ? currentGameHour - 24 : currentGameHour);
 			int minutesToSkip = hoursToSkip * 60 - Server.getGameTime(Unit.Minutes);
 
-			this.executeDelayed(minutesToSkip * targetTimeSpeed, () -> returnToNormalTimeSpeed());
+			Server.setGameTimeSpeed(targetTimeSpeed);
+			this.executeDelayed(minutesToSkip * targetTimeSpeed,
+					() -> returnToNormalTimeSpeed(generation, sleepCallbacksEnabled));
 
 			for (Player p : allPlayers) {
 				p.sendTextMessage(t().get("tc.sleep.time.speed.up", p));
@@ -872,9 +869,6 @@ class AdminUtilsRuntime extends Plugin {
 				DiscordConnect.sendDiscordMessage(
 						t().get("tc.sleep.time.speed.up", DiscordConnect.botLang()),
 						s.discordSleepEventChannelId, null, s.discordSleepEventThreadTopic);
-			// time per minute in seconds, 60 = real-time, 1 = 1 in game minute per second
-			// we set it to 1/60 so 1 second real life should be 1 hour ingame
-			Server.setGameTimeSpeed(targetTimeSpeed);
 		}
 
 	}
@@ -897,9 +891,10 @@ class AdminUtilsRuntime extends Plugin {
 			translateKey = "tc.player.state.awake";
 			// must be executed delayed because event is not persisted until all handlers
 			// are done
+			long generation = sleepTime.generation();
 			this.executeDelayed(1, () -> {
-				if (getSleepingPlayerCount() == 0)
-					returnToNormalTimeSpeed();
+				if (sleepCallbacksEnabled && sleepTime.isActive() && getSleepingPlayerCount() == 0)
+					returnToNormalTimeSpeed(generation, true);
 			});
 		}
 		if (toState == State.Sleeping) {
